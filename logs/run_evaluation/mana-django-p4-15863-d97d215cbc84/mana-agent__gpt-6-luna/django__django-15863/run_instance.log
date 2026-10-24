@@ -1,0 +1,46 @@
+2026-10-22 20:41:37,146 - INFO - Creating container for django__django-15863...
+2026-10-22 20:41:37,274 - INFO - Container for django__django-15863 created: 3bdd7a24f6f90a6de5df87a840bd7449ab5087ac56c6f40790b95b0de4628555
+2026-10-22 20:41:37,332 - INFO - Container for django__django-15863 started: 3bdd7a24f6f90a6de5df87a840bd7449ab5087ac56c6f40790b95b0de4628555
+2026-10-22 20:41:37,333 - INFO - Intermediate patch for django__django-15863 written to logs/run_evaluation/mana-django-p4-15863-d97d215cbc84/mana-agent__gpt-6-luna/django__django-15863/patch.diff, now applying to container...
+2026-10-22 20:41:37,439 - INFO - >>>>> Applied Patch:
+Checking patch django/template/defaultfilters.py...
+Applied patch django/template/defaultfilters.py cleanly.
+
+2026-10-22 20:41:37,935 - INFO - Git diff before:
+diff --git a/django/template/defaultfilters.py b/django/template/defaultfilters.py
+index 7a5b28d159..23c3a08c67 100644
+--- a/django/template/defaultfilters.py
++++ b/django/template/defaultfilters.py
+@@ -151,7 +151,7 @@ def floatformat(text, arg=-1):
+             use_l10n = False
+             arg = arg[:-1] or -1
+     try:
+-        input_val = repr(text)
++        input_val = str(text)
+         d = Decimal(input_val)
+     except InvalidOperation:
+         try:
+2026-10-22 20:41:37,935 - INFO - Eval script for django__django-15863 written to logs/run_evaluation/mana-django-p4-15863-d97d215cbc84/mana-agent__gpt-6-luna/django__django-15863/eval.sh; copying to container...
+2026-10-22 20:41:49,203 - INFO - Test runtime: 11.23 seconds
+2026-10-22 20:41:49,203 - INFO - Test output for django__django-15863 written to logs/run_evaluation/mana-django-p4-15863-d97d215cbc84/mana-agent__gpt-6-luna/django__django-15863/test_output.txt
+2026-10-22 20:41:49,285 - INFO - Git diff after:
+diff --git a/django/template/defaultfilters.py b/django/template/defaultfilters.py
+index 7a5b28d159..23c3a08c67 100644
+--- a/django/template/defaultfilters.py
++++ b/django/template/defaultfilters.py
+@@ -151,7 +151,7 @@ def floatformat(text, arg=-1):
+             use_l10n = False
+             arg = arg[:-1] or -1
+     try:
+-        input_val = repr(text)
++        input_val = str(text)
+         d = Decimal(input_val)
+     except InvalidOperation:
+         try:
+2026-10-22 20:41:49,285 - INFO - Grading answer for django__django-15863...
+2026-10-22 20:41:49,286 - INFO - report: {'django__django-15863': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': True, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': ['test_inputs (template_tests.filter_tests.test_floatformat.FunctionTests)'], 'failure': []}, 'PASS_TO_PASS': {'success': ['test_floatformat01 (template_tests.filter_tests.test_floatformat.FloatformatTests)', 'test_floatformat02 (template_tests.filter_tests.test_floatformat.FloatformatTests)', 'test_float_dunder_method (template_tests.filter_tests.test_floatformat.FunctionTests)', 'test_force_grouping (template_tests.filter_tests.test_floatformat.FunctionTests)', 'test_infinity (template_tests.filter_tests.test_floatformat.FunctionTests)', '#15789', 'test_negative_zero_values (template_tests.filter_tests.test_floatformat.FunctionTests)', 'test_unlocalize (template_tests.filter_tests.test_floatformat.FunctionTests)', 'test_zero_values (template_tests.filter_tests.test_floatformat.FunctionTests)'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for django__django-15863: resolved: True
+2026-10-22 20:41:49,286 - INFO - Attempting to stop container sweb.eval.django__django-15863.mana-django-p4-15863-d97d215cbc84...
+2026-10-22 20:42:04,369 - INFO - Container sweb.eval.django__django-15863.mana-django-p4-15863-d97d215cbc84 stopped successfully.
+2026-10-22 20:42:04,370 - INFO - Attempting to remove container sweb.eval.django__django-15863.mana-django-p4-15863-d97d215cbc84...
+2026-10-22 20:42:04,415 - INFO - Container sweb.eval.django__django-15863.mana-django-p4-15863-d97d215cbc84 removed successfully.

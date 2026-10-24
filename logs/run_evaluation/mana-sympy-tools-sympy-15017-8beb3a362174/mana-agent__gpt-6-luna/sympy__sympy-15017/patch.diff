@@ -1,0 +1,27 @@
+diff --git a/sympy/tensor/array/ndim_array.py b/sympy/tensor/array/ndim_array.py
+index 099b291167..9fb37c4e3f 100644
+--- a/sympy/tensor/array/ndim_array.py
++++ b/sympy/tensor/array/ndim_array.py
+@@ -175,7 +175,7 @@ def __len__(self):
+         9
+ 
+         """
+-        return self._loop_size
++        return self._loop_size if self._rank else 1
+ 
+     @property
+     def shape(self):
+diff --git a/sympy/tensor/array/sparse_ndim_array.py b/sympy/tensor/array/sparse_ndim_array.py
+index 72b5d51299..d8a781fcad 100644
+--- a/sympy/tensor/array/sparse_ndim_array.py
++++ b/sympy/tensor/array/sparse_ndim_array.py
+@@ -111,6 +111,9 @@ def tomatrix(self):
+ 
+     def __iter__(self):
+         def iterator():
++            if self._rank == 0:
++                yield self[()]
++                return
+             for i in range(self._loop_size):
+                 yield self[i]
+         return iterator()

@@ -1,0 +1,58 @@
+2026-10-22 01:03:54,801 - INFO - Creating container for django__django-11095...
+2026-10-22 01:03:55,009 - INFO - Container for django__django-11095 created: 6df68738076ed1fc72f32f73e4dc511eda300238388429d49ff814c33593472b
+2026-10-22 01:03:55,056 - INFO - Container for django__django-11095 started: 6df68738076ed1fc72f32f73e4dc511eda300238388429d49ff814c33593472b
+2026-10-22 01:03:55,057 - INFO - Intermediate patch for django__django-11095 written to logs/run_evaluation/mana-django-11095-1a7c35004514/mana-agent__gpt-6-luna/django__django-11095/patch.diff, now applying to container...
+2026-10-22 01:03:55,141 - INFO - >>>>> Applied Patch:
+Checking patch django/contrib/admin/options.py...
+Applied patch django/contrib/admin/options.py cleanly.
+
+2026-10-22 01:03:55,535 - INFO - Git diff before:
+diff --git a/django/contrib/admin/options.py b/django/contrib/admin/options.py
+index 5e7b23f9a0..1592f6b778 100644
+--- a/django/contrib/admin/options.py
++++ b/django/contrib/admin/options.py
+@@ -580,9 +580,13 @@ class ModelAdmin(BaseModelAdmin):
+     def __str__(self):
+         return "%s.%s" % (self.model._meta.app_label, self.__class__.__name__)
+ 
++    def get_inlines(self, request, obj=None):
++        """Hook for specifying custom inlines based on the request or object."""
++        return self.inlines
++
+     def get_inline_instances(self, request, obj=None):
+         inline_instances = []
+-        for inline_class in self.inlines:
++        for inline_class in self.get_inlines(request, obj):
+             inline = inline_class(self.model, self.admin_site)
+             if request:
+                 if not (inline.has_view_or_change_permission(request, obj) or
+2026-10-22 01:03:55,536 - INFO - Eval script for django__django-11095 written to logs/run_evaluation/mana-django-11095-1a7c35004514/mana-agent__gpt-6-luna/django__django-11095/eval.sh; copying to container...
+2026-10-22 01:04:06,374 - INFO - Test runtime: 10.81 seconds
+2026-10-22 01:04:06,374 - INFO - Test output for django__django-11095 written to logs/run_evaluation/mana-django-11095-1a7c35004514/mana-agent__gpt-6-luna/django__django-11095/test_output.txt
+2026-10-22 01:04:06,445 - INFO - Git diff after:
+diff --git a/django/contrib/admin/options.py b/django/contrib/admin/options.py
+index 5e7b23f9a0..1592f6b778 100644
+--- a/django/contrib/admin/options.py
++++ b/django/contrib/admin/options.py
+@@ -580,9 +580,13 @@ class ModelAdmin(BaseModelAdmin):
+     def __str__(self):
+         return "%s.%s" % (self.model._meta.app_label, self.__class__.__name__)
+ 
++    def get_inlines(self, request, obj=None):
++        """Hook for specifying custom inlines based on the request or object."""
++        return self.inlines
++
+     def get_inline_instances(self, request, obj=None):
+         inline_instances = []
+-        for inline_class in self.inlines:
++        for inline_class in self.get_inlines(request, obj):
+             inline = inline_class(self.model, self.admin_site)
+             if request:
+                 if not (inline.has_view_or_change_permission(request, obj) or
+2026-10-22 01:04:06,445 - INFO - Grading answer for django__django-11095...
+2026-10-22 01:04:06,447 - INFO - report: {'django__django-11095': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': True, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': ['test_get_inline_instances_override_get_inlines (generic_inline_admin.tests.GenericInlineModelAdminTest)'], 'failure': []}, 'PASS_TO_PASS': {'success': ['test_no_deletion (generic_inline_admin.tests.NoInlineDeletionTest)', 'test_custom_form_meta_exclude (generic_inline_admin.tests.GenericInlineModelAdminTest)', 'test_custom_form_meta_exclude_with_readonly (generic_inline_admin.tests.GenericInlineModelAdminTest)', 'test_get_fieldsets (generic_inline_admin.tests.GenericInlineModelAdminTest)', 'test_get_formset_kwargs (generic_inline_admin.tests.GenericInlineModelAdminTest)', 'test_get_formsets_with_inlines_returns_tuples (generic_inline_admin.tests.GenericInlineModelAdminTest)', 'test_extra_param (generic_inline_admin.tests.GenericInlineAdminParametersTest)', 'test_get_extra (generic_inline_admin.tests.GenericInlineAdminParametersTest)', 'test_get_max_num (generic_inline_admin.tests.GenericInlineAdminParametersTest)', 'test_get_min_num (generic_inline_admin.tests.GenericInlineAdminParametersTest)', 'test_max_num_param (generic_inline_admin.tests.GenericInlineAdminParametersTest)', 'test_min_num_param (generic_inline_admin.tests.GenericInlineAdminParametersTest)', 'test_no_param (generic_inline_admin.tests.GenericInlineAdminParametersTest)', 'test_add (generic_inline_admin.tests.GenericInlineAdminWithUniqueTogetherTest)', 'test_delete (generic_inline_admin.tests.GenericInlineAdminWithUniqueTogetherTest)', 'test_basic_add_GET (generic_inline_admin.tests.GenericAdminViewTest)', 'test_basic_add_POST (generic_inline_admin.tests.GenericAdminViewTest)', 'test_basic_edit_GET (generic_inline_admin.tests.GenericAdminViewTest)', 'test_basic_edit_POST (generic_inline_admin.tests.GenericAdminViewTest)'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for django__django-11095: resolved: True
+2026-10-22 01:04:06,448 - INFO - Attempting to stop container sweb.eval.django__django-11095.mana-django-11095-1a7c35004514...
+2026-10-22 01:04:21,579 - INFO - Container sweb.eval.django__django-11095.mana-django-11095-1a7c35004514 stopped successfully.
+2026-10-22 01:04:21,580 - INFO - Attempting to remove container sweb.eval.django__django-11095.mana-django-11095-1a7c35004514...
+2026-10-22 01:04:21,650 - INFO - Container sweb.eval.django__django-11095.mana-django-11095-1a7c35004514 removed successfully.

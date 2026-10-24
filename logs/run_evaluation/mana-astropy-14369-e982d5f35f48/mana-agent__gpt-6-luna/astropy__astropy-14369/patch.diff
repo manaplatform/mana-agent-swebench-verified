@@ -1,0 +1,73 @@
+diff --git a/astropy/units/format/cds.py b/astropy/units/format/cds.py
+index 307e987ed..6eccf22e5 100644
+--- a/astropy/units/format/cds.py
++++ b/astropy/units/format/cds.py
+@@ -143,6 +143,16 @@ class CDS(Base):
+         """
+         tokens = cls._tokens
+ 
++        class _CDSUnit:
++            """Hold a division chain until its enclosing expression is parsed."""
++
++            def __init__(self, unit, division_terms):
++                self.unit = unit
++                self.division_terms = division_terms
++
++        def get_unit(value):
++            return value.unit if isinstance(value, _CDSUnit) else value
++
+         def p_main(p):
+             """
+             main : factor combined_units
+@@ -156,11 +166,11 @@ class CDS(Base):
+             from astropy.units.core import Unit
+ 
+             if len(p) == 3:
+-                p[0] = Unit(p[1] * p[2])
++                p[0] = Unit(get_unit(p[1]) * get_unit(p[2]))
+             elif len(p) == 4:
+-                p[0] = dex(p[2])
++                p[0] = dex(get_unit(p[2]))
+             else:
+-                p[0] = Unit(p[1])
++                p[0] = Unit(get_unit(p[1]))
+ 
+         def p_combined_units(p):
+             """
+@@ -175,7 +185,7 @@ class CDS(Base):
+                              | unit_expression
+             """
+             if len(p) == 4:
+-                p[0] = p[1] * p[3]
++                p[0] = p[1] * get_unit(p[3])
+             else:
+                 p[0] = p[1]
+ 
+@@ -185,9 +195,16 @@ class CDS(Base):
+                               | unit_expression DIVISION combined_units
+             """
+             if len(p) == 3:
+-                p[0] = p[2] ** -1
++                p[0] = _CDSUnit(p[2] ** -1, [p[2]])
+             else:
+-                p[0] = p[1] / p[3]
++                if isinstance(p[3], _CDSUnit):
++                    terms = [p[1], *p[3].division_terms]
++                else:
++                    terms = [p[1], p[3]]
++                unit = terms[0]
++                for term in terms[1:]:
++                    unit /= term
++                p[0] = _CDSUnit(unit, terms)
+ 
+         def p_unit_expression(p):
+             """
+@@ -197,7 +214,7 @@ class CDS(Base):
+             if len(p) == 2:
+                 p[0] = p[1]
+             else:
+-                p[0] = p[2]
++                p[0] = get_unit(p[2])
+ 
+         def p_factor(p):
+             """

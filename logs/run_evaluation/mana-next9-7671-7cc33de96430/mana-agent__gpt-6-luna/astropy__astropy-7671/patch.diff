@@ -1,0 +1,25 @@
+diff --git a/astropy/utils/introspection.py b/astropy/utils/introspection.py
+index 3e784f9fc..2a9cf4ce5 100644
+--- a/astropy/utils/introspection.py
++++ b/astropy/utils/introspection.py
+@@ -6,6 +6,7 @@
+ import inspect
+ import types
+ import importlib
++import re
+ from distutils.version import LooseVersion
+ 
+ 
+@@ -139,6 +140,12 @@ def minversion(module, version, inclusive=True, version_path='__version__'):
+     else:
+         have_version = resolve_name(module.__name__, version_path)
+ 
++    # LooseVersion can fail when corresponding components are integers in one
++    # version and strings in the other (e.g. '1.14.3' and '1.14dev'). Compare
++    # the numeric release portion, ignoring any suffix such as 'dev' or 'rc1'.
++    have_version = re.search(r'\d+(?:\.\d+)*', have_version).group()
++    version = re.search(r'\d+(?:\.\d+)*', version).group()
++
+     if inclusive:
+         return LooseVersion(have_version) >= LooseVersion(version)
+     else:

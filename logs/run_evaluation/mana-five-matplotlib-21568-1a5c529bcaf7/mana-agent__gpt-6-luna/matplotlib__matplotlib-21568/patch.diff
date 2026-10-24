@@ -1,0 +1,14 @@
+diff --git a/lib/matplotlib/dates.py b/lib/matplotlib/dates.py
+index 0766156d6..0b8d87177 100644
+--- a/lib/matplotlib/dates.py
++++ b/lib/matplotlib/dates.py
+@@ -592,6 +592,9 @@ def drange(dstart, dend, delta):
+ 
+ 
+ def _wrap_in_tex(text):
++    # TeX ignores spaces in math mode and treats colons as relation symbols.
++    # Preserve the spacing and punctuation of date strings explicitly.
++    text = text.replace(' ', r'\;').replace(':', '{:}')
+     p = r'([a-zA-Z]+)'
+     ret_text = re.sub(p, r'}$\1$\\mathdefault{', text)
+ 

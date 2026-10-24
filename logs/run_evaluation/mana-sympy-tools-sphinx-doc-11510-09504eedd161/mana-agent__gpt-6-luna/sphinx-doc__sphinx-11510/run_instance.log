@@ -1,0 +1,148 @@
+2026-10-23 23:49:12,733 - INFO - Creating container for sphinx-doc__sphinx-11510...
+2026-10-23 23:49:13,270 - INFO - Container for sphinx-doc__sphinx-11510 created: 0815f4333d74de76e6381fcb6235031641b2bf93611bd660f1d42fbb11d38305
+2026-10-23 23:49:13,415 - INFO - Container for sphinx-doc__sphinx-11510 started: 0815f4333d74de76e6381fcb6235031641b2bf93611bd660f1d42fbb11d38305
+2026-10-23 23:49:13,416 - INFO - Intermediate patch for sphinx-doc__sphinx-11510 written to logs/run_evaluation/mana-sympy-tools-sphinx-doc-11510-09504eedd161/mana-agent__gpt-6-luna/sphinx-doc__sphinx-11510/patch.diff, now applying to container...
+2026-10-23 23:49:13,598 - INFO - >>>>> Applied Patch:
+Checking patch sphinx/parsers.py...
+Applied patch sphinx/parsers.py cleanly.
+
+2026-10-23 23:49:14,278 - INFO - Git diff before:
+diff --git a/sphinx/parsers.py b/sphinx/parsers.py
+index 1269884ab..9fae55915 100644
+--- a/sphinx/parsers.py
++++ b/sphinx/parsers.py
+@@ -8,7 +8,7 @@ import docutils.parsers
+ import docutils.parsers.rst
+ from docutils import nodes
+ from docutils.parsers.rst import states
+-from docutils.statemachine import StringList
++from docutils.statemachine import StringList, string2lines
+ from docutils.transforms.universal import SmartQuotes
+ 
+ from sphinx.util.rst import append_epilog, prepend_prolog
+@@ -59,10 +59,26 @@ class RSTParser(docutils.parsers.rst.Parser, Parser):
+         transforms.remove(SmartQuotes)
+         return transforms
+ 
++    class StateMachine(states.RSTStateMachine):
++        def insert_input(self, input_lines: StringList, source: str) -> None:
++            # Included files are inserted directly into the state machine, so
++            # they do not pass through SphinxStandaloneReader.read_source().
++            if source:
++                arg = ['\n'.join(input_lines)]
++                env = self.document.settings.env
++                env.events.emit('source-read', source, arg)
++                input_lines = StringList(
++                    string2lines(arg[0], tab_width=self.document.settings.tab_width,
++                                 convert_whitespace=True),
++                    source=source,
++                )
++
++            super().insert_input(input_lines, source)
++
+     def parse(self, inputstring: str | StringList, document: nodes.document) -> None:
+         """Parse text and generate a document tree."""
+         self.setup_parse(inputstring, document)  # type: ignore[arg-type]
+-        self.statemachine = states.RSTStateMachine(
++        self.statemachine = self.StateMachine(
+             state_classes=self.state_classes,
+             initial_state=self.initial_state,
+             debug=document.reporter.debug_flag)
+2026-10-23 23:49:14,278 - INFO - Eval script for sphinx-doc__sphinx-11510 written to logs/run_evaluation/mana-sympy-tools-sphinx-doc-11510-09504eedd161/mana-agent__gpt-6-luna/sphinx-doc__sphinx-11510/eval.sh; copying to container...
+2026-10-23 23:49:23,984 - INFO - Test runtime: 9.61 seconds
+2026-10-23 23:49:23,984 - INFO - Test output for sphinx-doc__sphinx-11510 written to logs/run_evaluation/mana-sympy-tools-sphinx-doc-11510-09504eedd161/mana-agent__gpt-6-luna/sphinx-doc__sphinx-11510/test_output.txt
+2026-10-23 23:49:24,046 - INFO - Git diff after:
+diff --git a/sphinx/parsers.py b/sphinx/parsers.py
+index 1269884ab..9fae55915 100644
+--- a/sphinx/parsers.py
++++ b/sphinx/parsers.py
+@@ -8,7 +8,7 @@ import docutils.parsers
+ import docutils.parsers.rst
+ from docutils import nodes
+ from docutils.parsers.rst import states
+-from docutils.statemachine import StringList
++from docutils.statemachine import StringList, string2lines
+ from docutils.transforms.universal import SmartQuotes
+ 
+ from sphinx.util.rst import append_epilog, prepend_prolog
+@@ -59,10 +59,26 @@ class RSTParser(docutils.parsers.rst.Parser, Parser):
+         transforms.remove(SmartQuotes)
+         return transforms
+ 
++    class StateMachine(states.RSTStateMachine):
++        def insert_input(self, input_lines: StringList, source: str) -> None:
++            # Included files are inserted directly into the state machine, so
++            # they do not pass through SphinxStandaloneReader.read_source().
++            if source:
++                arg = ['\n'.join(input_lines)]
++                env = self.document.settings.env
++                env.events.emit('source-read', source, arg)
++                input_lines = StringList(
++                    string2lines(arg[0], tab_width=self.document.settings.tab_width,
++                                 convert_whitespace=True),
++                    source=source,
++                )
++
++            super().insert_input(input_lines, source)
++
+     def parse(self, inputstring: str | StringList, document: nodes.document) -> None:
+         """Parse text and generate a document tree."""
+         self.setup_parse(inputstring, document)  # type: ignore[arg-type]
+-        self.statemachine = states.RSTStateMachine(
++        self.statemachine = self.StateMachine(
+             state_classes=self.state_classes,
+             initial_state=self.initial_state,
+             debug=document.reporter.debug_flag)
+diff --git a/tests/test_directive_other.py b/tests/test_directive_other.py
+index f221db075..45bd03304 100644
+--- a/tests/test_directive_other.py
++++ b/tests/test_directive_other.py
+@@ -148,3 +148,40 @@ def test_toctree_twice(app):
+     assert_node(doctree[0][0],
+                 entries=[(None, 'foo'), (None, 'foo')],
+                 includefiles=['foo', 'foo'])
++
++
++@pytest.mark.sphinx(testroot='directive-include')
++def test_include_source_read_event(app):
++    sources_reported = {}
++
++    def source_read_handler(app, doc, source):
++        sources_reported[doc] = source[0]
++
++    app.connect("source-read", source_read_handler)
++    text = (".. include:: baz/baz.rst\n"
++            "   :start-line: 4\n\n"
++            ".. include:: text.txt\n"
++            "   :literal:    \n")
++    app.env.find_files(app.config, app.builder)
++    restructuredtext.parse(app, text, 'index')
++    assert "index" in sources_reported
++    assert "text.txt" not in sources_reported  # text was included as literal, no rst parsing
++    assert "baz/baz" in sources_reported
++    assert sources_reported["baz/baz"] == "\nBaz was here."
++
++
++@pytest.mark.sphinx(testroot='directive-include')
++def test_include_source_read_event_nested_includes(app):
++
++    def source_read_handler(app, doc, source):
++        text = source[0].replace("#magical", "amazing")
++        source[0] = text
++
++    app.connect("source-read", source_read_handler)
++    text = (".. include:: baz/baz.rst\n")
++    app.env.find_files(app.config, app.builder)
++    doctree = restructuredtext.parse(app, text, 'index')
++    assert_node(doctree, addnodes.document)
++    assert len(doctree.children) == 3
++    assert_node(doctree.children[1], nodes.paragraph)
++    assert doctree.children[1].rawsource == "The amazing foo."
+2026-10-23 23:49:24,046 - INFO - Git diff changed after running eval script
+2026-10-23 23:49:24,046 - INFO - Grading answer for sphinx-doc__sphinx-11510...
+2026-10-23 23:49:24,047 - INFO - report: {'sphinx-doc__sphinx-11510': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': False, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': [], 'failure': ['tests/test_directive_other.py::test_include_source_read_event', 'tests/test_directive_other.py::test_include_source_read_event_nested_includes']}, 'PASS_TO_PASS': {'success': ['tests/test_directive_other.py::test_toctree', 'tests/test_directive_other.py::test_relative_toctree', 'tests/test_directive_other.py::test_toctree_urls_and_titles', 'tests/test_directive_other.py::test_toctree_glob', 'tests/test_directive_other.py::test_toctree_glob_and_url', 'tests/test_directive_other.py::test_reversed_toctree', 'tests/test_directive_other.py::test_toctree_twice'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for sphinx-doc__sphinx-11510: resolved: False
+2026-10-23 23:49:24,047 - INFO - Attempting to stop container sweb.eval.sphinx-doc__sphinx-11510.mana-sympy-tools-sphinx-doc-11510-09504eedd161...
+2026-10-23 23:49:39,137 - INFO - Container sweb.eval.sphinx-doc__sphinx-11510.mana-sympy-tools-sphinx-doc-11510-09504eedd161 stopped successfully.
+2026-10-23 23:49:39,137 - INFO - Attempting to remove container sweb.eval.sphinx-doc__sphinx-11510.mana-sympy-tools-sphinx-doc-11510-09504eedd161...
+2026-10-23 23:49:39,163 - INFO - Container sweb.eval.sphinx-doc__sphinx-11510.mana-sympy-tools-sphinx-doc-11510-09504eedd161 removed successfully.

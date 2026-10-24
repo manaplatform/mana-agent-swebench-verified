@@ -1,0 +1,84 @@
+2026-10-22 15:17:52,192 - INFO - Creating container for django__django-12039...
+2026-10-22 15:17:52,415 - INFO - Container for django__django-12039 created: 632f1831f76c22c390fcef39b7b83f5143c39d01ffaddb0a6b5dac9829c99119
+2026-10-22 15:17:52,481 - INFO - Container for django__django-12039 started: 632f1831f76c22c390fcef39b7b83f5143c39d01ffaddb0a6b5dac9829c99119
+2026-10-22 15:17:52,481 - INFO - Intermediate patch for django__django-12039 written to logs/run_evaluation/mana-django-12039-12b692637fa3/mana-agent__gpt-6-luna/django__django-12039/patch.diff, now applying to container...
+2026-10-22 15:17:52,570 - INFO - >>>>> Applied Patch:
+Checking patch django/db/backends/ddl_references.py...
+Applied patch django/db/backends/ddl_references.py cleanly.
+
+2026-10-22 15:17:52,986 - INFO - Git diff before:
+diff --git a/django/db/backends/ddl_references.py b/django/db/backends/ddl_references.py
+index 44e49806f8..1956bc904b 100644
+--- a/django/db/backends/ddl_references.py
++++ b/django/db/backends/ddl_references.py
+@@ -84,9 +84,12 @@ class Columns(TableColumns):
+     def __str__(self):
+         def col_str(column, idx):
+             try:
+-                return self.quote_name(column) + self.col_suffixes[idx]
++                suffix = self.col_suffixes[idx]
+             except IndexError:
+                 return self.quote_name(column)
++            if suffix:
++                return '{} {}'.format(self.quote_name(column), suffix)
++            return self.quote_name(column)
+ 
+         return ', '.join(col_str(column, idx) for idx, column in enumerate(self.columns))
+ 
+@@ -114,9 +117,12 @@ class IndexColumns(Columns):
+             # length as self.columns.
+             col = '{} {}'.format(self.quote_name(column), self.opclasses[idx])
+             try:
+-                col = '{} {}'.format(col, self.col_suffixes[idx])
++                suffix = self.col_suffixes[idx]
+             except IndexError:
+                 pass
++            else:
++                if suffix:
++                    col = '{} {}'.format(col, suffix)
+             return col
+ 
+         return ', '.join(col_str(column, idx) for idx, column in enumerate(self.columns))
+2026-10-22 15:17:52,987 - INFO - Eval script for django__django-12039 written to logs/run_evaluation/mana-django-12039-12b692637fa3/mana-agent__gpt-6-luna/django__django-12039/eval.sh; copying to container...
+2026-10-22 15:18:04,114 - INFO - Test runtime: 11.09 seconds
+2026-10-22 15:18:04,114 - INFO - Test output for django__django-12039 written to logs/run_evaluation/mana-django-12039-12b692637fa3/mana-agent__gpt-6-luna/django__django-12039/test_output.txt
+2026-10-22 15:18:04,181 - INFO - Git diff after:
+diff --git a/django/db/backends/ddl_references.py b/django/db/backends/ddl_references.py
+index 44e49806f8..1956bc904b 100644
+--- a/django/db/backends/ddl_references.py
++++ b/django/db/backends/ddl_references.py
+@@ -84,9 +84,12 @@ class Columns(TableColumns):
+     def __str__(self):
+         def col_str(column, idx):
+             try:
+-                return self.quote_name(column) + self.col_suffixes[idx]
++                suffix = self.col_suffixes[idx]
+             except IndexError:
+                 return self.quote_name(column)
++            if suffix:
++                return '{} {}'.format(self.quote_name(column), suffix)
++            return self.quote_name(column)
+ 
+         return ', '.join(col_str(column, idx) for idx, column in enumerate(self.columns))
+ 
+@@ -114,9 +117,12 @@ class IndexColumns(Columns):
+             # length as self.columns.
+             col = '{} {}'.format(self.quote_name(column), self.opclasses[idx])
+             try:
+-                col = '{} {}'.format(col, self.col_suffixes[idx])
++                suffix = self.col_suffixes[idx]
+             except IndexError:
+                 pass
++            else:
++                if suffix:
++                    col = '{} {}'.format(col, suffix)
+             return col
+ 
+         return ', '.join(col_str(column, idx) for idx, column in enumerate(self.columns))
+2026-10-22 15:18:04,181 - INFO - Grading answer for django__django-12039...
+2026-10-22 15:18:04,182 - INFO - report: {'django__django-12039': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': True, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': ['test_descending_columns_list_sql (indexes.tests.SchemaIndexesTests)'], 'failure': []}, 'PASS_TO_PASS': {'success': ['test_columns_list_sql (indexes.tests.SchemaIndexesTests)', 'test_index_name (indexes.tests.SchemaIndexesTests)', 'test_index_name_hash (indexes.tests.SchemaIndexesTests)', 'test_index_together (indexes.tests.SchemaIndexesTests)', 'test_index_together_single_list (indexes.tests.SchemaIndexesTests)', 'test_create_index_ignores_opclasses (indexes.tests.SchemaIndexesNotPostgreSQLTests)', 'test_boolean_restriction_partial (indexes.tests.PartialIndexTests)', 'test_integer_restriction_partial (indexes.tests.PartialIndexTests)', 'test_is_null_condition (indexes.tests.PartialIndexTests)', 'test_multiple_conditions (indexes.tests.PartialIndexTests)', 'test_partial_index (indexes.tests.PartialIndexTests)'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for django__django-12039: resolved: True
+2026-10-22 15:18:04,182 - INFO - Attempting to stop container sweb.eval.django__django-12039.mana-django-12039-12b692637fa3...
+2026-10-22 15:18:19,294 - INFO - Container sweb.eval.django__django-12039.mana-django-12039-12b692637fa3 stopped successfully.
+2026-10-22 15:18:19,294 - INFO - Attempting to remove container sweb.eval.django__django-12039.mana-django-12039-12b692637fa3...
+2026-10-22 15:18:19,332 - INFO - Container sweb.eval.django__django-12039.mana-django-12039-12b692637fa3 removed successfully.

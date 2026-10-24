@@ -1,0 +1,60 @@
+diff --git a/pylint/pyreverse/inspector.py b/pylint/pyreverse/inspector.py
+index 8fa122022..8440d91d9 100644
+--- a/pylint/pyreverse/inspector.py
++++ b/pylint/pyreverse/inspector.py
+@@ -223,18 +223,52 @@ class Linker(IdGeneratorMixIn, utils.LocalsVisitor):
+         except astroid.InferenceError:
+             pass
+ 
++    @staticmethod
++    def _annotation_for_assignattr(node):
++        """Return the annotation associated with an instance attribute assignment."""
++        assignment = node.parent
++        if isinstance(assignment, astroid.AnnAssign):
++            return assignment.annotation
++        if not isinstance(assignment, astroid.Assign) or not isinstance(
++            assignment.value, astroid.Name
++        ):
++            return None
++
++        function = node.frame()
++        if not isinstance(function, astroid.FunctionDef):
++            return None
++        argument_name = assignment.value.name
++        arguments = function.args
++        annotated_arguments = (
++            (arguments.args, arguments.annotations),
++            (arguments.kwonlyargs, arguments.kwonlyargs_annotations),
++        )
++        for names, annotations in annotated_arguments:
++            for name, annotation in zip(names, annotations):
++                if name.name == argument_name:
++                    return annotation
++        return None
++
+     @staticmethod
+     def handle_assignattr_type(node, parent):
+         """handle an astroid.assignattr node
+ 
+         handle instance_attrs_type
+         """
++        values = set()
+         try:
+-            values = set(node.infer())
+-            current = set(parent.instance_attrs_type[node.attrname])
+-            parent.instance_attrs_type[node.attrname] = list(current | values)
++            values.update(node.infer())
+         except astroid.InferenceError:
+             pass
++        annotation = Linker._annotation_for_assignattr(node)
++        if annotation is not None:
++            try:
++                values.update(annotation.infer())
++            except astroid.InferenceError:
++                pass
++        if values:
++            current = set(parent.instance_attrs_type[node.attrname])
++            parent.instance_attrs_type[node.attrname] = list(current | values)
+ 
+     def visit_import(self, node):
+         """visit an astroid.Import node

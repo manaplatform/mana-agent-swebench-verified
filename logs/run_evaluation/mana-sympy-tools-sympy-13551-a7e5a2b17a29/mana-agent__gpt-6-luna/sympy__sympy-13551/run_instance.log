@@ -1,0 +1,78 @@
+2026-10-23 20:30:19,713 - INFO - Creating container for sympy__sympy-13551...
+2026-10-23 20:30:19,752 - INFO - Container for sympy__sympy-13551 created: bf4bb2b47ae6d1c93b331960e03fce5f928b6c66df38e0483b8b9ea0109ba824
+2026-10-23 20:30:19,889 - INFO - Container for sympy__sympy-13551 started: bf4bb2b47ae6d1c93b331960e03fce5f928b6c66df38e0483b8b9ea0109ba824
+2026-10-23 20:30:19,890 - INFO - Intermediate patch for sympy__sympy-13551 written to logs/run_evaluation/mana-sympy-tools-sympy-13551-a7e5a2b17a29/mana-agent__gpt-6-luna/sympy__sympy-13551/patch.diff, now applying to container...
+2026-10-23 20:30:20,147 - INFO - >>>>> Applied Patch:
+Checking patch sympy/concrete/products.py...
+Applied patch sympy/concrete/products.py cleanly.
+
+2026-10-23 20:30:20,674 - INFO - Git diff before:
+diff --git a/sympy/concrete/products.py b/sympy/concrete/products.py
+index 66aafde2d..668bcabec 100644
+--- a/sympy/concrete/products.py
++++ b/sympy/concrete/products.py
+@@ -276,17 +276,14 @@ def _eval_product(self, term, limits):
+ 
+         elif term.is_Add:
+             p, q = term.as_numer_denom()
+-            q = self._eval_product(q, (k, a, n))
+-            if q.is_Number:
+-
+-                # There is expression, which couldn't change by
+-                # as_numer_denom(). E.g. n**(2/3) + 1 --> (n**(2/3) + 1, 1).
+-                # We have to catch this case.
++            if p == term:
++                return None
+ 
+-                p = sum([self._eval_product(i, (k, a, n)) for i in p.as_coeff_Add()])
+-            else:
+-                p = self._eval_product(p, (k, a, n))
+-            return p / q
++            p = self._eval_product(p, (k, a, n))
++            q = self._eval_product(q, (k, a, n))
++            if p is not None and q is not None:
++                return p / q
++            return None
+ 
+         elif term.is_Mul:
+             exclude, include = [], []
+2026-10-23 20:30:20,675 - INFO - Eval script for sympy__sympy-13551 written to logs/run_evaluation/mana-sympy-tools-sympy-13551-a7e5a2b17a29/mana-agent__gpt-6-luna/sympy__sympy-13551/eval.sh; copying to container...
+2026-10-23 20:30:40,768 - INFO - Test runtime: 20.02 seconds
+2026-10-23 20:30:40,769 - INFO - Test output for sympy__sympy-13551 written to logs/run_evaluation/mana-sympy-tools-sympy-13551-a7e5a2b17a29/mana-agent__gpt-6-luna/sympy__sympy-13551/test_output.txt
+2026-10-23 20:30:40,842 - INFO - Git diff after:
+diff --git a/sympy/concrete/products.py b/sympy/concrete/products.py
+index 66aafde2d..668bcabec 100644
+--- a/sympy/concrete/products.py
++++ b/sympy/concrete/products.py
+@@ -276,17 +276,14 @@ def _eval_product(self, term, limits):
+ 
+         elif term.is_Add:
+             p, q = term.as_numer_denom()
+-            q = self._eval_product(q, (k, a, n))
+-            if q.is_Number:
+-
+-                # There is expression, which couldn't change by
+-                # as_numer_denom(). E.g. n**(2/3) + 1 --> (n**(2/3) + 1, 1).
+-                # We have to catch this case.
++            if p == term:
++                return None
+ 
+-                p = sum([self._eval_product(i, (k, a, n)) for i in p.as_coeff_Add()])
+-            else:
+-                p = self._eval_product(p, (k, a, n))
+-            return p / q
++            p = self._eval_product(p, (k, a, n))
++            q = self._eval_product(q, (k, a, n))
++            if p is not None and q is not None:
++                return p / q
++            return None
+ 
+         elif term.is_Mul:
+             exclude, include = [], []
+2026-10-23 20:30:40,843 - INFO - Grading answer for sympy__sympy-13551...
+2026-10-23 20:30:40,845 - INFO - report: {'sympy__sympy-13551': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': True, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': ['test_issue_13546'], 'failure': []}, 'PASS_TO_PASS': {'success': ['test_karr_convention', 'test_karr_proposition_2a', 'test_karr_proposition_2b', 'test_simple_products', 'test_multiple_products', 'test_rational_products', 'test_special_products', 'test__eval_product', 'test_product_pow', 'test_infinite_product', 'test_conjugate_transpose', 'test_simplify', 'test_change_index', 'test_reorder', 'test_Product_is_convergent', 'test_reverse_order', 'test_issue_9983'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for sympy__sympy-13551: resolved: True
+2026-10-23 20:30:40,845 - INFO - Attempting to stop container sweb.eval.sympy__sympy-13551.mana-sympy-tools-sympy-13551-a7e5a2b17a29...
+2026-10-23 20:30:55,918 - INFO - Container sweb.eval.sympy__sympy-13551.mana-sympy-tools-sympy-13551-a7e5a2b17a29 stopped successfully.
+2026-10-23 20:30:55,919 - INFO - Attempting to remove container sweb.eval.sympy__sympy-13551.mana-sympy-tools-sympy-13551-a7e5a2b17a29...
+2026-10-23 20:30:55,953 - INFO - Container sweb.eval.sympy__sympy-13551.mana-sympy-tools-sympy-13551-a7e5a2b17a29 removed successfully.

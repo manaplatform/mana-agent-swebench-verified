@@ -1,0 +1,48 @@
+diff --git a/lib/matplotlib/figure.py b/lib/matplotlib/figure.py
+index dab2bc4a5a..c47a650bf5 100644
+--- a/lib/matplotlib/figure.py
++++ b/lib/matplotlib/figure.py
+@@ -1585,6 +1585,7 @@ default: %(va)s
+                       wspace=wspace, hspace=hspace,
+                       width_ratios=width_ratios,
+                       height_ratios=height_ratios)
++        gs._subfigures = True
+ 
+         sfarr = np.empty((nrows, ncols), dtype=object)
+         for i in range(ncols):
+@@ -2276,10 +2277,31 @@ class SubFigure(FigureBase):
+         gs = self._subplotspec.get_gridspec()
+         wr = np.asarray(gs.get_width_ratios())
+         hr = np.asarray(gs.get_height_ratios())
+-        dx = wr[self._subplotspec.colspan].sum() / wr.sum()
+-        dy = hr[self._subplotspec.rowspan].sum() / hr.sum()
+-        x0 = wr[:self._subplotspec.colspan.start].sum() / wr.sum()
+-        y0 = 1 - hr[:self._subplotspec.rowspan.stop].sum() / hr.sum()
++        colspan = self._subplotspec.colspan
++        rowspan = self._subplotspec.rowspan
++        if getattr(gs, "_subfigures", False):
++            subplot_params = gs.get_subplot_params(self.figure)
++            wspace = subplot_params.wspace
++            hspace = subplot_params.hspace
++            cell_w = 1 / (gs.ncols + wspace * (gs.ncols - 1))
++            sep_w = wspace * cell_w
++            cell_h = 1 / (gs.nrows + hspace * (gs.nrows - 1))
++            sep_h = hspace * cell_h
++            width_ratios = wr * (cell_w * gs.ncols / wr.sum())
++            height_ratios = hr * (cell_h * gs.nrows / hr.sum())
++            dx = (width_ratios[colspan].sum()
++                  + sep_w * (colspan.stop - colspan.start - 1))
++            dy = (height_ratios[rowspan].sum()
++                  + sep_h * (rowspan.stop - rowspan.start - 1))
++            x0 = (width_ratios[:colspan.start].sum()
++                  + sep_w * colspan.start)
++            y0 = (1 - height_ratios[:rowspan.stop].sum()
++                  - sep_h * (rowspan.stop - 1))
++        else:
++            dx = wr[colspan].sum() / wr.sum()
++            dy = hr[rowspan].sum() / hr.sum()
++            x0 = wr[:colspan.start].sum() / wr.sum()
++            y0 = 1 - hr[:rowspan.stop].sum() / hr.sum()
+         if self.bbox_relative is None:
+             self.bbox_relative = Bbox.from_bounds(x0, y0, dx, dy)
+         else:

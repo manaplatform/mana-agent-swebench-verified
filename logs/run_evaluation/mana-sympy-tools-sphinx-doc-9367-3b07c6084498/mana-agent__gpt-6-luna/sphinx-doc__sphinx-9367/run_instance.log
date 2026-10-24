@@ -1,0 +1,50 @@
+2026-10-24 00:17:36,778 - INFO - Creating container for sphinx-doc__sphinx-9367...
+2026-10-24 00:17:36,843 - INFO - Container for sphinx-doc__sphinx-9367 created: fae2bc1f636e732b3b1aa0f62441f425367029324f715634e2c9091d554b61ef
+2026-10-24 00:17:36,964 - INFO - Container for sphinx-doc__sphinx-9367 started: fae2bc1f636e732b3b1aa0f62441f425367029324f715634e2c9091d554b61ef
+2026-10-24 00:17:36,965 - INFO - Intermediate patch for sphinx-doc__sphinx-9367 written to logs/run_evaluation/mana-sympy-tools-sphinx-doc-9367-3b07c6084498/mana-agent__gpt-6-luna/sphinx-doc__sphinx-9367/patch.diff, now applying to container...
+2026-10-24 00:17:37,135 - INFO - >>>>> Applied Patch:
+Checking patch sphinx/pycode/ast.py...
+Applied patch sphinx/pycode/ast.py cleanly.
+
+2026-10-24 00:17:37,589 - INFO - Git diff before:
+diff --git a/sphinx/pycode/ast.py b/sphinx/pycode/ast.py
+index f541ec0a9..7ced7baa2 100644
+--- a/sphinx/pycode/ast.py
++++ b/sphinx/pycode/ast.py
+@@ -214,7 +214,10 @@ class _UnparseVisitor(ast.NodeVisitor):
+ 
+     def visit_Tuple(self, node: ast.Tuple) -> str:
+         if node.elts:
+-            return "(" + ", ".join(self.visit(e) for e in node.elts) + ")"
++            elts = ", ".join(self.visit(e) for e in node.elts)
++            if len(node.elts) == 1:
++                elts += ","
++            return "(" + elts + ")"
+         else:
+             return "()"
+2026-10-24 00:17:37,589 - INFO - Eval script for sphinx-doc__sphinx-9367 written to logs/run_evaluation/mana-sympy-tools-sphinx-doc-9367-3b07c6084498/mana-agent__gpt-6-luna/sphinx-doc__sphinx-9367/eval.sh; copying to container...
+2026-10-24 00:17:45,643 - INFO - Test runtime: 8.00 seconds
+2026-10-24 00:17:45,643 - INFO - Test output for sphinx-doc__sphinx-9367 written to logs/run_evaluation/mana-sympy-tools-sphinx-doc-9367-3b07c6084498/mana-agent__gpt-6-luna/sphinx-doc__sphinx-9367/test_output.txt
+2026-10-24 00:17:45,791 - INFO - Git diff after:
+diff --git a/sphinx/pycode/ast.py b/sphinx/pycode/ast.py
+index f541ec0a9..7ced7baa2 100644
+--- a/sphinx/pycode/ast.py
++++ b/sphinx/pycode/ast.py
+@@ -214,7 +214,10 @@ class _UnparseVisitor(ast.NodeVisitor):
+ 
+     def visit_Tuple(self, node: ast.Tuple) -> str:
+         if node.elts:
+-            return "(" + ", ".join(self.visit(e) for e in node.elts) + ")"
++            elts = ", ".join(self.visit(e) for e in node.elts)
++            if len(node.elts) == 1:
++                elts += ","
++            return "(" + elts + ")"
+         else:
+             return "()"
+2026-10-24 00:17:45,791 - INFO - Grading answer for sphinx-doc__sphinx-9367...
+2026-10-24 00:17:45,793 - INFO - report: {'sphinx-doc__sphinx-9367': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': True, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': ['tests/test_pycode_ast.py::test_unparse[(1,)-(1,)]'], 'failure': []}, 'PASS_TO_PASS': {'success': ['tests/test_pycode_ast.py::test_unparse[a', 'tests/test_pycode_ast.py::test_unparse[os.path-os.path]', 'tests/test_pycode_ast.py::test_unparse[1', "tests/test_pycode_ast.py::test_unparse[b'bytes'-b'bytes']", 'tests/test_pycode_ast.py::test_unparse[object()-object()]', 'tests/test_pycode_ast.py::test_unparse[1234-1234_0]', "tests/test_pycode_ast.py::test_unparse[{'key1':", 'tests/test_pycode_ast.py::test_unparse[...-...]', 'tests/test_pycode_ast.py::test_unparse[Tuple[int,', 'tests/test_pycode_ast.py::test_unparse[~', 'tests/test_pycode_ast.py::test_unparse[lambda', 'tests/test_pycode_ast.py::test_unparse[[1,', 'tests/test_pycode_ast.py::test_unparse[sys-sys]', 'tests/test_pycode_ast.py::test_unparse[1234-1234_1]', 'tests/test_pycode_ast.py::test_unparse[not', 'tests/test_pycode_ast.py::test_unparse[{1,', "tests/test_pycode_ast.py::test_unparse['str'-'str']", 'tests/test_pycode_ast.py::test_unparse[+', 'tests/test_pycode_ast.py::test_unparse[-', 'tests/test_pycode_ast.py::test_unparse[(1,', 'tests/test_pycode_ast.py::test_unparse[()-()]', 'tests/test_pycode_ast.py::test_unparse_None', 'tests/test_pycode_ast.py::test_unparse_py38[lambda', 'tests/test_pycode_ast.py::test_unparse_py38[0x1234-0x1234]', 'tests/test_pycode_ast.py::test_unparse_py38[1_000_000-1_000_000]'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for sphinx-doc__sphinx-9367: resolved: True
+2026-10-24 00:17:45,794 - INFO - Attempting to stop container sweb.eval.sphinx-doc__sphinx-9367.mana-sympy-tools-sphinx-doc-9367-3b07c6084498...
+2026-10-24 00:18:00,914 - INFO - Container sweb.eval.sphinx-doc__sphinx-9367.mana-sympy-tools-sphinx-doc-9367-3b07c6084498 stopped successfully.
+2026-10-24 00:18:00,914 - INFO - Attempting to remove container sweb.eval.sphinx-doc__sphinx-9367.mana-sympy-tools-sphinx-doc-9367-3b07c6084498...
+2026-10-24 00:18:00,945 - INFO - Container sweb.eval.sphinx-doc__sphinx-9367.mana-sympy-tools-sphinx-doc-9367-3b07c6084498 removed successfully.

@@ -1,0 +1,48 @@
+2026-10-22 00:44:48,540 - INFO - Creating container for django__django-10554...
+2026-10-22 00:44:49,198 - INFO - Container for django__django-10554 created: 1d9b0aee53345375c6c0fd934c9c8d141ab41e245bae5fb6f5f6f9e470fea21b
+2026-10-22 00:44:49,284 - INFO - Container for django__django-10554 started: 1d9b0aee53345375c6c0fd934c9c8d141ab41e245bae5fb6f5f6f9e470fea21b
+2026-10-22 00:44:49,284 - INFO - Intermediate patch for django__django-10554 written to logs/run_evaluation/mana-next9-10554-05f66492bbc4/mana-agent__gpt-6-luna/django__django-10554/patch.diff, now applying to container...
+2026-10-22 00:44:49,372 - INFO - >>>>> Applied Patch:
+Checking patch django/db/models/sql/query.py...
+Applied patch django/db/models/sql/query.py cleanly.
+
+2026-10-22 00:44:49,817 - INFO - Git diff before:
+diff --git a/django/db/models/sql/query.py b/django/db/models/sql/query.py
+index 08d7faf194..32eee945b5 100644
+--- a/django/db/models/sql/query.py
++++ b/django/db/models/sql/query.py
+@@ -328,6 +328,9 @@ class Query(BaseExpression):
+             obj.subq_aliases = self.subq_aliases.copy()
+         obj.used_aliases = self.used_aliases.copy()
+         obj._filtered_relations = self._filtered_relations.copy()
++        if self.combinator:
++            # A combined query may be modified when compiling a clone.
++            obj.combined_queries = tuple(query.clone() for query in self.combined_queries)
+         # Clear the cached_property
+         try:
+             del obj.base_table
+2026-10-22 00:44:49,818 - INFO - Eval script for django__django-10554 written to logs/run_evaluation/mana-next9-10554-05f66492bbc4/mana-agent__gpt-6-luna/django__django-10554/eval.sh; copying to container...
+2026-10-22 00:45:01,571 - INFO - Test runtime: 11.72 seconds
+2026-10-22 00:45:01,572 - INFO - Test output for django__django-10554 written to logs/run_evaluation/mana-next9-10554-05f66492bbc4/mana-agent__gpt-6-luna/django__django-10554/test_output.txt
+2026-10-22 00:45:01,642 - INFO - Git diff after:
+diff --git a/django/db/models/sql/query.py b/django/db/models/sql/query.py
+index 08d7faf194..32eee945b5 100644
+--- a/django/db/models/sql/query.py
++++ b/django/db/models/sql/query.py
+@@ -328,6 +328,9 @@ class Query(BaseExpression):
+             obj.subq_aliases = self.subq_aliases.copy()
+         obj.used_aliases = self.used_aliases.copy()
+         obj._filtered_relations = self._filtered_relations.copy()
++        if self.combinator:
++            # A combined query may be modified when compiling a clone.
++            obj.combined_queries = tuple(query.clone() for query in self.combined_queries)
+         # Clear the cached_property
+         try:
+             del obj.base_table
+2026-10-22 00:45:01,642 - INFO - Grading answer for django__django-10554...
+2026-10-22 00:45:01,646 - INFO - report: {'django__django-10554': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': False, 'resolved': False, 'infra_failure': False}}
+Result for django__django-10554: resolved: False
+2026-10-22 00:45:01,647 - INFO - Attempting to stop container sweb.eval.django__django-10554.mana-next9-10554-05f66492bbc4...
+2026-10-22 00:45:16,796 - INFO - Container sweb.eval.django__django-10554.mana-next9-10554-05f66492bbc4 stopped successfully.
+2026-10-22 00:45:16,796 - INFO - Attempting to remove container sweb.eval.django__django-10554.mana-next9-10554-05f66492bbc4...
+2026-10-22 00:45:16,876 - INFO - Container sweb.eval.django__django-10554.mana-next9-10554-05f66492bbc4 removed successfully.

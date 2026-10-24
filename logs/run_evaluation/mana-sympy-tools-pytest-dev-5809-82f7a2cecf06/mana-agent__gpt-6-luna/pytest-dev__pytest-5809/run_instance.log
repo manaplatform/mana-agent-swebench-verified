@@ -1,0 +1,46 @@
+2026-10-23 22:07:03,489 - INFO - Creating container for pytest-dev__pytest-5809...
+2026-10-23 22:07:03,529 - INFO - Container for pytest-dev__pytest-5809 created: 15539671428b612c932c2ddc74702033d6621df064e781ba2e2cda8f720abf09
+2026-10-23 22:07:03,689 - INFO - Container for pytest-dev__pytest-5809 started: 15539671428b612c932c2ddc74702033d6621df064e781ba2e2cda8f720abf09
+2026-10-23 22:07:03,690 - INFO - Intermediate patch for pytest-dev__pytest-5809 written to logs/run_evaluation/mana-sympy-tools-pytest-dev-5809-82f7a2cecf06/mana-agent__gpt-6-luna/pytest-dev__pytest-5809/patch.diff, now applying to container...
+2026-10-23 22:07:03,850 - INFO - >>>>> Applied Patch:
+Checking patch src/_pytest/pastebin.py...
+Applied patch src/_pytest/pastebin.py cleanly.
+
+2026-10-23 22:07:04,061 - INFO - Git diff before:
+diff --git a/src/_pytest/pastebin.py b/src/_pytest/pastebin.py
+index 41576a615..79b0d9d40 100644
+--- a/src/_pytest/pastebin.py
++++ b/src/_pytest/pastebin.py
+@@ -79,7 +79,7 @@ def create_new_paste(contents):
+ 
+     params = {
+         "code": contents,
+-        "lexer": "python3" if sys.version_info[0] >= 3 else "python",
++        "lexer": "text",
+         "expiry": "1week",
+     }
+     url = "https://bpaste.net"
+2026-10-23 22:07:04,061 - INFO - Eval script for pytest-dev__pytest-5809 written to logs/run_evaluation/mana-sympy-tools-pytest-dev-5809-82f7a2cecf06/mana-agent__gpt-6-luna/pytest-dev__pytest-5809/eval.sh; copying to container...
+2026-10-23 22:07:22,959 - INFO - Test runtime: 18.85 seconds
+2026-10-23 22:07:22,959 - INFO - Test output for pytest-dev__pytest-5809 written to logs/run_evaluation/mana-sympy-tools-pytest-dev-5809-82f7a2cecf06/mana-agent__gpt-6-luna/pytest-dev__pytest-5809/test_output.txt
+2026-10-23 22:07:23,036 - INFO - Git diff after:
+diff --git a/src/_pytest/pastebin.py b/src/_pytest/pastebin.py
+index 41576a615..79b0d9d40 100644
+--- a/src/_pytest/pastebin.py
++++ b/src/_pytest/pastebin.py
+@@ -79,7 +79,7 @@ def create_new_paste(contents):
+ 
+     params = {
+         "code": contents,
+-        "lexer": "python3" if sys.version_info[0] >= 3 else "python",
++        "lexer": "text",
+         "expiry": "1week",
+     }
+     url = "https://bpaste.net"
+2026-10-23 22:07:23,036 - INFO - Grading answer for pytest-dev__pytest-5809...
+2026-10-23 22:07:23,036 - INFO - report: {'pytest-dev__pytest-5809': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': True, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': ['testing/test_pastebin.py::TestPaste::test_create_new_paste'], 'failure': []}, 'PASS_TO_PASS': {'success': ['testing/test_pastebin.py::TestPasteCapture::test_failed', 'testing/test_pastebin.py::TestPasteCapture::test_all', 'testing/test_pastebin.py::TestPasteCapture::test_non_ascii_paste_text'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for pytest-dev__pytest-5809: resolved: True
+2026-10-23 22:07:23,036 - INFO - Attempting to stop container sweb.eval.pytest-dev__pytest-5809.mana-sympy-tools-pytest-dev-5809-82f7a2cecf06...
+2026-10-23 22:07:38,141 - INFO - Container sweb.eval.pytest-dev__pytest-5809.mana-sympy-tools-pytest-dev-5809-82f7a2cecf06 stopped successfully.
+2026-10-23 22:07:38,141 - INFO - Attempting to remove container sweb.eval.pytest-dev__pytest-5809.mana-sympy-tools-pytest-dev-5809-82f7a2cecf06...
+2026-10-23 22:07:38,175 - INFO - Container sweb.eval.pytest-dev__pytest-5809.mana-sympy-tools-pytest-dev-5809-82f7a2cecf06 removed successfully.

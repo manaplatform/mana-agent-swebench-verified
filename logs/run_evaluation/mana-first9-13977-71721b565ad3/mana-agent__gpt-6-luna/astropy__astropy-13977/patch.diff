@@ -1,0 +1,35 @@
+diff --git a/astropy/units/quantity.py b/astropy/units/quantity.py
+index b98abfafb..3c8f8aff8 100644
+--- a/astropy/units/quantity.py
++++ b/astropy/units/quantity.py
+@@ -636,13 +636,29 @@ class Quantity(np.ndarray):
+         result : `~astropy.units.Quantity`
+             Results of the ufunc, with the unit set properly.
+         """
++        # ``converters_and_unit`` uses the ``unit`` attribute to identify
++        # quantities.  A different array type may also define that attribute,
++        # though, and should get a chance to handle the operation itself.
++        # Quantity and Column are ndarray subclasses, so this still lets us
++        # handle all array inputs with units.
++        out = kwargs.get("out")
++        if out is not None:
++            inputs_and_out = (*inputs, *out)
++        else:
++            inputs_and_out = inputs
++        if any(
++            getattr(value, "unit", None) is not None
++            and not isinstance(value, np.ndarray)
++            for value in inputs_and_out
++        ):
++            return NotImplemented
++
+         # Determine required conversion functions -- to bring the unit of the
+         # input to that expected (e.g., radian for np.sin), or to get
+         # consistent units between two inputs (e.g., in np.add) --
+         # and the unit of the result (or tuple of units for nout > 1).
+         converters, unit = converters_and_unit(function, method, *inputs)
+ 
+-        out = kwargs.get("out", None)
+         # Avoid loop back by turning any Quantity output into array views.
+         if out is not None:
+             # If pre-allocated output is used, check it is suitable.

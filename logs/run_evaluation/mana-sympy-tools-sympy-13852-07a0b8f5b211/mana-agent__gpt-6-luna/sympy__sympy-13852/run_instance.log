@@ -1,0 +1,76 @@
+2026-10-23 20:35:06,720 - INFO - Creating container for sympy__sympy-13852...
+2026-10-23 20:35:06,883 - INFO - Container for sympy__sympy-13852 created: b5028f1af14b6e009c65abf037a79587b28b16dca4ea1d487173c56560f024af
+2026-10-23 20:35:07,010 - INFO - Container for sympy__sympy-13852 started: b5028f1af14b6e009c65abf037a79587b28b16dca4ea1d487173c56560f024af
+2026-10-23 20:35:07,010 - INFO - Intermediate patch for sympy__sympy-13852 written to logs/run_evaluation/mana-sympy-tools-sympy-13852-07a0b8f5b211/mana-agent__gpt-6-luna/sympy__sympy-13852/patch.diff, now applying to container...
+2026-10-23 20:35:07,209 - INFO - >>>>> Applied Patch:
+Checking patch sympy/functions/special/zeta_functions.py...
+Applied patch sympy/functions/special/zeta_functions.py cleanly.
+
+2026-10-23 20:35:07,831 - INFO - Git diff before:
+diff --git a/sympy/functions/special/zeta_functions.py b/sympy/functions/special/zeta_functions.py
+index b8e2b6619..50046b35c 100644
+--- a/sympy/functions/special/zeta_functions.py
++++ b/sympy/functions/special/zeta_functions.py
+@@ -271,7 +271,9 @@ class polylog(Function):
+ 
+     @classmethod
+     def eval(cls, s, z):
+-        if z == 1:
++        if s == 2 and z == S.Half:
++            return pi**2/12 - log(2)**2/2
++        elif z == 1:
+             return zeta(s)
+         elif z == -1:
+             return -dirichlet_eta(s)
+@@ -288,10 +290,10 @@ def _eval_rewrite_as_lerchphi(self, s, z):
+         return z*lerchphi(z, s, 1)
+ 
+     def _eval_expand_func(self, **hints):
+-        from sympy import log, expand_mul, Dummy, exp_polar, I
++        from sympy import log, expand_mul, Dummy
+         s, z = self.args
+         if s == 1:
+-            return -log(1 + exp_polar(-I*pi)*z)
++            return -log(1 - z)
+         if s.is_Integer and s <= 0:
+             u = Dummy('u')
+             start = u/(1 - u)
+2026-10-23 20:35:07,832 - INFO - Eval script for sympy__sympy-13852 written to logs/run_evaluation/mana-sympy-tools-sympy-13852-07a0b8f5b211/mana-agent__gpt-6-luna/sympy__sympy-13852/eval.sh; copying to container...
+2026-10-23 20:35:17,797 - INFO - Test runtime: 9.90 seconds
+2026-10-23 20:35:17,798 - INFO - Test output for sympy__sympy-13852 written to logs/run_evaluation/mana-sympy-tools-sympy-13852-07a0b8f5b211/mana-agent__gpt-6-luna/sympy__sympy-13852/test_output.txt
+2026-10-23 20:35:17,931 - INFO - Git diff after:
+diff --git a/sympy/functions/special/zeta_functions.py b/sympy/functions/special/zeta_functions.py
+index b8e2b6619..50046b35c 100644
+--- a/sympy/functions/special/zeta_functions.py
++++ b/sympy/functions/special/zeta_functions.py
+@@ -271,7 +271,9 @@ class polylog(Function):
+ 
+     @classmethod
+     def eval(cls, s, z):
+-        if z == 1:
++        if s == 2 and z == S.Half:
++            return pi**2/12 - log(2)**2/2
++        elif z == 1:
+             return zeta(s)
+         elif z == -1:
+             return -dirichlet_eta(s)
+@@ -288,10 +290,10 @@ def _eval_rewrite_as_lerchphi(self, s, z):
+         return z*lerchphi(z, s, 1)
+ 
+     def _eval_expand_func(self, **hints):
+-        from sympy import log, expand_mul, Dummy, exp_polar, I
++        from sympy import log, expand_mul, Dummy
+         s, z = self.args
+         if s == 1:
+-            return -log(1 + exp_polar(-I*pi)*z)
++            return -log(1 - z)
+         if s.is_Integer and s <= 0:
+             u = Dummy('u')
+             start = u/(1 - u)
+2026-10-23 20:35:17,931 - INFO - Grading answer for sympy__sympy-13852...
+2026-10-23 20:35:17,934 - INFO - report: {'sympy__sympy-13852': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': False, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': [], 'failure': ['test_polylog_values']}, 'PASS_TO_PASS': {'success': ['test_zeta_eval', 'test_dirichlet_eta_eval', 'test_stieltjes', 'test_stieltjes_evalf'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for sympy__sympy-13852: resolved: False
+2026-10-23 20:35:17,935 - INFO - Attempting to stop container sweb.eval.sympy__sympy-13852.mana-sympy-tools-sympy-13852-07a0b8f5b211...
+2026-10-23 20:35:33,078 - INFO - Container sweb.eval.sympy__sympy-13852.mana-sympy-tools-sympy-13852-07a0b8f5b211 stopped successfully.
+2026-10-23 20:35:33,079 - INFO - Attempting to remove container sweb.eval.sympy__sympy-13852.mana-sympy-tools-sympy-13852-07a0b8f5b211...
+2026-10-23 20:35:33,111 - INFO - Container sweb.eval.sympy__sympy-13852.mana-sympy-tools-sympy-13852-07a0b8f5b211 removed successfully.

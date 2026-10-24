@@ -1,0 +1,136 @@
+2026-10-23 22:12:17,619 - INFO - Creating container for pytest-dev__pytest-7324...
+2026-10-23 22:12:17,725 - INFO - Container for pytest-dev__pytest-7324 created: 33438c2e135ae847d43ce817007b12cdbae35eca53f65387181fad4323987a3c
+2026-10-23 22:12:17,860 - INFO - Container for pytest-dev__pytest-7324 started: 33438c2e135ae847d43ce817007b12cdbae35eca53f65387181fad4323987a3c
+2026-10-23 22:12:17,861 - INFO - Intermediate patch for pytest-dev__pytest-7324 written to logs/run_evaluation/mana-sympy-tools-pytest-dev-7324-2d82780b580b/mana-agent__gpt-6-luna/pytest-dev__pytest-7324/patch.diff, now applying to container...
+2026-10-23 22:12:18,121 - INFO - >>>>> Applied Patch:
+Checking patch src/_pytest/compat.py...
+Checking patch src/_pytest/mark/expression.py...
+Applied patch src/_pytest/compat.py cleanly.
+Applied patch src/_pytest/mark/expression.py cleanly.
+
+2026-10-23 22:12:18,410 - INFO - Git diff before:
+diff --git a/src/_pytest/compat.py b/src/_pytest/compat.py
+index 84f9609a7..95c440638 100644
+--- a/src/_pytest/compat.py
++++ b/src/_pytest/compat.py
+@@ -1,6 +1,7 @@
+ """
+ python version compatibility code
+ """
++import ast
+ import enum
+ import functools
+ import inspect
+@@ -60,6 +61,16 @@ else:
+     import importlib_metadata  # noqa: F401
+ 
+ 
++def _ident_to_name(name: str) -> ast.expr:
++    """Convert an identifier to an AST node, handling Python constants."""
++    if name in ("True", "False", "None"):
++        value = ast.literal_eval(name)
++        if sys.version_info >= (3, 8):
++            return ast.Constant(value)
++        return ast.NameConstant(value)
++    return ast.Name(name, ast.Load())
++
++
+ def _format_args(func: Callable[..., Any]) -> str:
+     return str(signature(func))
+ 
+diff --git a/src/_pytest/mark/expression.py b/src/_pytest/mark/expression.py
+index 04c73411a..58ff49d76 100644
+--- a/src/_pytest/mark/expression.py
++++ b/src/_pytest/mark/expression.py
+@@ -28,6 +28,7 @@ from typing import Sequence
+ import attr
+ 
+ from _pytest.compat import TYPE_CHECKING
++from _pytest.compat import _ident_to_name
+ 
+ if TYPE_CHECKING:
+     from typing import NoReturn
+@@ -129,7 +130,7 @@ class Scanner:
+ 
+ def expression(s: Scanner) -> ast.Expression:
+     if s.accept(TokenType.EOF):
+-        ret = ast.NameConstant(False)  # type: ast.expr
++        ret = _ident_to_name("False")
+     else:
+         ret = expr(s)
+         s.accept(TokenType.EOF, reject=True)
+@@ -161,7 +162,7 @@ def not_expr(s: Scanner) -> ast.expr:
+         return ret
+     ident = s.accept(TokenType.IDENT)
+     if ident:
+-        return ast.Name(ident.value, ast.Load())
++        return _ident_to_name(ident.value)
+     s.reject((TokenType.NOT, TokenType.LPAREN, TokenType.IDENT))
+2026-10-23 22:12:18,410 - INFO - Eval script for pytest-dev__pytest-7324 written to logs/run_evaluation/mana-sympy-tools-pytest-dev-7324-2d82780b580b/mana-agent__gpt-6-luna/pytest-dev__pytest-7324/eval.sh; copying to container...
+2026-10-23 22:12:33,941 - INFO - Test runtime: 15.49 seconds
+2026-10-23 22:12:33,941 - INFO - Test output for pytest-dev__pytest-7324 written to logs/run_evaluation/mana-sympy-tools-pytest-dev-7324-2d82780b580b/mana-agent__gpt-6-luna/pytest-dev__pytest-7324/test_output.txt
+2026-10-23 22:12:34,069 - INFO - Git diff after:
+diff --git a/src/_pytest/compat.py b/src/_pytest/compat.py
+index 84f9609a7..95c440638 100644
+--- a/src/_pytest/compat.py
++++ b/src/_pytest/compat.py
+@@ -1,6 +1,7 @@
+ """
+ python version compatibility code
+ """
++import ast
+ import enum
+ import functools
+ import inspect
+@@ -60,6 +61,16 @@ else:
+     import importlib_metadata  # noqa: F401
+ 
+ 
++def _ident_to_name(name: str) -> ast.expr:
++    """Convert an identifier to an AST node, handling Python constants."""
++    if name in ("True", "False", "None"):
++        value = ast.literal_eval(name)
++        if sys.version_info >= (3, 8):
++            return ast.Constant(value)
++        return ast.NameConstant(value)
++    return ast.Name(name, ast.Load())
++
++
+ def _format_args(func: Callable[..., Any]) -> str:
+     return str(signature(func))
+ 
+diff --git a/src/_pytest/mark/expression.py b/src/_pytest/mark/expression.py
+index 04c73411a..58ff49d76 100644
+--- a/src/_pytest/mark/expression.py
++++ b/src/_pytest/mark/expression.py
+@@ -28,6 +28,7 @@ from typing import Sequence
+ import attr
+ 
+ from _pytest.compat import TYPE_CHECKING
++from _pytest.compat import _ident_to_name
+ 
+ if TYPE_CHECKING:
+     from typing import NoReturn
+@@ -129,7 +130,7 @@ class Scanner:
+ 
+ def expression(s: Scanner) -> ast.Expression:
+     if s.accept(TokenType.EOF):
+-        ret = ast.NameConstant(False)  # type: ast.expr
++        ret = _ident_to_name("False")
+     else:
+         ret = expr(s)
+         s.accept(TokenType.EOF, reject=True)
+@@ -161,7 +162,7 @@ def not_expr(s: Scanner) -> ast.expr:
+         return ret
+     ident = s.accept(TokenType.IDENT)
+     if ident:
+-        return ast.Name(ident.value, ast.Load())
++        return _ident_to_name(ident.value)
+     s.reject((TokenType.NOT, TokenType.LPAREN, TokenType.IDENT))
+2026-10-23 22:12:34,069 - INFO - Grading answer for pytest-dev__pytest-7324...
+2026-10-23 22:12:34,071 - INFO - report: {'pytest-dev__pytest-7324': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': False, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': ['testing/test_mark_expression.py::test_valid_idents[True]'], 'failure': ['testing/test_mark_expression.py::test_valid_idents[False]', 'testing/test_mark_expression.py::test_valid_idents[None]']}, 'PASS_TO_PASS': {'success': ['testing/test_mark_expression.py::test_empty_is_false', 'testing/test_mark_expression.py::test_basic[true-True0]', 'testing/test_mark_expression.py::test_basic[true-True1]', 'testing/test_mark_expression.py::test_basic[false-False]', 'testing/test_mark_expression.py::test_basic[not', 'testing/test_mark_expression.py::test_basic[true', 'testing/test_mark_expression.py::test_basic[false', 'testing/test_mark_expression.py::test_basic[(not', 'testing/test_mark_expression.py::test_syntax_oddeties[', 'testing/test_mark_expression.py::test_syntax_oddeties[(', 'testing/test_mark_expression.py::test_syntax_oddeties[not', 'testing/test_mark_expression.py::test_syntax_errors[(-2-expected', 'testing/test_mark_expression.py::test_syntax_errors[', 'testing/test_mark_expression.py::test_syntax_errors[)-1-expected', 'testing/test_mark_expression.py::test_syntax_errors[)', 'testing/test_mark_expression.py::test_syntax_errors[not-4-expected', 'testing/test_mark_expression.py::test_syntax_errors[not', 'testing/test_mark_expression.py::test_syntax_errors[(not)-5-expected', 'testing/test_mark_expression.py::test_syntax_errors[and-1-expected', 'testing/test_mark_expression.py::test_syntax_errors[ident', 'testing/test_mark_expression.py::test_valid_idents[.]', 'testing/test_mark_expression.py::test_valid_idents[...]', 'testing/test_mark_expression.py::test_valid_idents[:::]', 'testing/test_mark_expression.py::test_valid_idents[a:::c]', 'testing/test_mark_expression.py::test_valid_idents[a+-b]', 'testing/test_mark_expression.py::test_valid_idents[\\u05d0\\u05d1\\u05d2\\u05d3]', 'testing/test_mark_expression.py::test_valid_idents[aa\\u05d0\\u05d1\\u05d2\\u05d3cc]', 'testing/test_mark_expression.py::test_valid_idents[a[bcd]]', 'testing/test_mark_expression.py::test_valid_idents[1234]', 'testing/test_mark_expression.py::test_valid_idents[1234abcd]', 'testing/test_mark_expression.py::test_valid_idents[1234and]', 'testing/test_mark_expression.py::test_valid_idents[notandor]', 'testing/test_mark_expression.py::test_valid_idents[not_and_or]', 'testing/test_mark_expression.py::test_valid_idents[not[and]or]', 'testing/test_mark_expression.py::test_valid_idents[1234+5678]', 'testing/test_mark_expression.py::test_valid_idents[123.232]', 'testing/test_mark_expression.py::test_valid_idents[if]', 'testing/test_mark_expression.py::test_valid_idents[else]', 'testing/test_mark_expression.py::test_valid_idents[while]', 'testing/test_mark_expression.py::test_invalid_idents[/]', 'testing/test_mark_expression.py::test_invalid_idents[\\\\]', 'testing/test_mark_expression.py::test_invalid_idents[^]', 'testing/test_mark_expression.py::test_invalid_idents[*]', 'testing/test_mark_expression.py::test_invalid_idents[=]', 'testing/test_mark_expression.py::test_invalid_idents[&]', 'testing/test_mark_expression.py::test_invalid_idents[%]', 'testing/test_mark_expression.py::test_invalid_idents[$]', 'testing/test_mark_expression.py::test_invalid_idents[#]', 'testing/test_mark_expression.py::test_invalid_idents[@]', 'testing/test_mark_expression.py::test_invalid_idents[!]', 'testing/test_mark_expression.py::test_invalid_idents[~]', 'testing/test_mark_expression.py::test_invalid_idents[{]', 'testing/test_mark_expression.py::test_invalid_idents[}]', 'testing/test_mark_expression.py::test_invalid_idents["]', "testing/test_mark_expression.py::test_invalid_idents[']", 'testing/test_mark_expression.py::test_invalid_idents[|]', 'testing/test_mark_expression.py::test_invalid_idents[;]', 'testing/test_mark_expression.py::test_invalid_idents[\\u2190]'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for pytest-dev__pytest-7324: resolved: False
+2026-10-23 22:12:34,071 - INFO - Attempting to stop container sweb.eval.pytest-dev__pytest-7324.mana-sympy-tools-pytest-dev-7324-2d82780b580b...
+2026-10-23 22:12:49,188 - INFO - Container sweb.eval.pytest-dev__pytest-7324.mana-sympy-tools-pytest-dev-7324-2d82780b580b stopped successfully.
+2026-10-23 22:12:49,188 - INFO - Attempting to remove container sweb.eval.pytest-dev__pytest-7324.mana-sympy-tools-pytest-dev-7324-2d82780b580b...
+2026-10-23 22:12:49,227 - INFO - Container sweb.eval.pytest-dev__pytest-7324.mana-sympy-tools-pytest-dev-7324-2d82780b580b removed successfully.

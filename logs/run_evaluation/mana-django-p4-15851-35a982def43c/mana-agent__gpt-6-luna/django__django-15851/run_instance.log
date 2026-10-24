@@ -1,0 +1,51 @@
+2026-10-22 20:37:29,587 - INFO - Creating container for django__django-15851...
+2026-10-22 20:37:29,753 - INFO - Container for django__django-15851 created: 46ef843bfb7ab498f7896d15b275f99b1db58e9e3b8cbd8cc4424fa5302b7260
+2026-10-22 20:37:29,811 - INFO - Container for django__django-15851 started: 46ef843bfb7ab498f7896d15b275f99b1db58e9e3b8cbd8cc4424fa5302b7260
+2026-10-22 20:37:29,811 - INFO - Intermediate patch for django__django-15851 written to logs/run_evaluation/mana-django-p4-15851-35a982def43c/mana-agent__gpt-6-luna/django__django-15851/patch.diff, now applying to container...
+2026-10-22 20:37:29,892 - INFO - >>>>> Applied Patch:
+Checking patch django/db/backends/postgresql/client.py...
+warning: django/db/backends/postgresql/client.py has type 100755, expected 100644
+Applied patch django/db/backends/postgresql/client.py cleanly.
+
+2026-10-22 20:37:30,371 - INFO - Git diff before:
+diff --git a/django/db/backends/postgresql/client.py b/django/db/backends/postgresql/client.py
+index 4c9bd63546..3b5ddafaca 100755
+--- a/django/db/backends/postgresql/client.py
++++ b/django/db/backends/postgresql/client.py
+@@ -32,9 +32,9 @@ class DatabaseClient(BaseDatabaseClient):
+             args += ["-h", host]
+         if port:
+             args += ["-p", str(port)]
++        args.extend(parameters)
+         if dbname:
+             args += [dbname]
+-        args.extend(parameters)
+ 
+         env = {}
+         if passwd:
+2026-10-22 20:37:30,371 - INFO - Eval script for django__django-15851 written to logs/run_evaluation/mana-django-p4-15851-35a982def43c/mana-agent__gpt-6-luna/django__django-15851/eval.sh; copying to container...
+2026-10-22 20:37:39,359 - INFO - Test runtime: 8.96 seconds
+2026-10-22 20:37:39,361 - INFO - Test output for django__django-15851 written to logs/run_evaluation/mana-django-p4-15851-35a982def43c/mana-agent__gpt-6-luna/django__django-15851/test_output.txt
+2026-10-22 20:37:39,427 - INFO - Git diff after:
+diff --git a/django/db/backends/postgresql/client.py b/django/db/backends/postgresql/client.py
+index 4c9bd63546..3b5ddafaca 100755
+--- a/django/db/backends/postgresql/client.py
++++ b/django/db/backends/postgresql/client.py
+@@ -32,9 +32,9 @@ class DatabaseClient(BaseDatabaseClient):
+             args += ["-h", host]
+         if port:
+             args += ["-p", str(port)]
++        args.extend(parameters)
+         if dbname:
+             args += [dbname]
+-        args.extend(parameters)
+ 
+         env = {}
+         if passwd:
+2026-10-22 20:37:39,427 - INFO - Grading answer for django__django-15851...
+2026-10-22 20:37:39,436 - INFO - report: {'django__django-15851': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': True, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': ['test_parameters (dbshell.test_postgresql.PostgreSqlDbshellCommandTestCase)'], 'failure': []}, 'PASS_TO_PASS': {'success': ['test_accent (dbshell.test_postgresql.PostgreSqlDbshellCommandTestCase)', 'test_basic (dbshell.test_postgresql.PostgreSqlDbshellCommandTestCase)', 'test_column (dbshell.test_postgresql.PostgreSqlDbshellCommandTestCase)', 'test_crash_password_does_not_leak (dbshell.test_postgresql.PostgreSqlDbshellCommandTestCase)', 'test_nopass (dbshell.test_postgresql.PostgreSqlDbshellCommandTestCase)', 'test_passfile (dbshell.test_postgresql.PostgreSqlDbshellCommandTestCase)', 'test_service (dbshell.test_postgresql.PostgreSqlDbshellCommandTestCase)', 'test_ssl_certificate (dbshell.test_postgresql.PostgreSqlDbshellCommandTestCase)'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for django__django-15851: resolved: True
+2026-10-22 20:37:39,437 - INFO - Attempting to stop container sweb.eval.django__django-15851.mana-django-p4-15851-35a982def43c...
+2026-10-22 20:37:54,568 - INFO - Container sweb.eval.django__django-15851.mana-django-p4-15851-35a982def43c stopped successfully.
+2026-10-22 20:37:54,568 - INFO - Attempting to remove container sweb.eval.django__django-15851.mana-django-p4-15851-35a982def43c...
+2026-10-22 20:37:54,598 - INFO - Container sweb.eval.django__django-15851.mana-django-p4-15851-35a982def43c removed successfully.

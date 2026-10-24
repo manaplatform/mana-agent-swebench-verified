@@ -1,0 +1,39 @@
+diff --git a/django/db/migrations/autodetector.py b/django/db/migrations/autodetector.py
+index 30616c0172..0183904958 100644
+--- a/django/db/migrations/autodetector.py
++++ b/django/db/migrations/autodetector.py
+@@ -563,6 +563,34 @@ class MigrationAutodetector:
+                 if isinstance(base, str) and "." in base:
+                     base_app_label, base_name = base.split(".", 1)
+                     dependencies.append((base_app_label, base_name, None, True))
++                    # If a field is moved from a base to this model, the
++                    # base's field must be removed before the model is
++                    # created. Otherwise rendering the intermediate state
++                    # would cause the fields to clash.
++                    base_keys = [(base_app_label, base_name.lower())]
++                    seen_base_keys = set()
++                    while base_keys:
++                        base_key = base_keys.pop()
++                        if base_key in seen_base_keys:
++                            continue
++                        seen_base_keys.add(base_key)
++                        old_base_state = self.from_state.models.get(base_key)
++                        if old_base_state is None:
++                            continue
++                        new_base_state = self.to_state.models.get(base_key)
++                        for field_name in model_state.fields:
++                            if (
++                                field_name in old_base_state.fields and
++                                new_base_state is not None and
++                                field_name not in new_base_state.fields
++                            ):
++                                dependencies.append((
++                                    base_key[0], base_key[1], field_name, False,
++                                ))
++                        for old_base in old_base_state.bases:
++                            if isinstance(old_base, str) and "." in old_base:
++                                old_base_app_label, old_base_name = old_base.split(".", 1)
++                                base_keys.append((old_base_app_label, old_base_name.lower()))
+             # Depend on the other end of the primary key if it's a relation
+             if primary_key_rel:
+                 dependencies.append((

@@ -1,0 +1,32 @@
+diff --git a/django/core/management/__init__.py b/django/core/management/__init__.py
+index 5f2e64761e..f0a650e70c 100644
+--- a/django/core/management/__init__.py
++++ b/django/core/management/__init__.py
+@@ -120,8 +120,13 @@ def call_command(command_name, *args, **options):
+     arg_options = {opt_mapping.get(key, key): value for key, value in options.items()}
+     parse_args = [str(a) for a in args]
+ 
++    required_actions = set()
++
+     def get_actions(parser):
+         # Parser actions and actions from sub-parser choices.
++        for group in parser._mutually_exclusive_groups:
++            if group.required:
++                required_actions.update(group._group_actions)
+         for opt in parser._actions:
+             if isinstance(opt, _SubParsersAction):
+                 for sub_opt in opt.choices.values():
+@@ -130,11 +135,12 @@ def call_command(command_name, *args, **options):
+                 yield opt
+ 
+     parser_actions = list(get_actions(parser))
++    required_actions.update(opt for opt in parser_actions if opt.required)
+     # Any required arguments which are passed in via **options must be passed
+     # to parse_args().
+     parse_args += [
+         '{}={}'.format(min(opt.option_strings), arg_options[opt.dest])
+-        for opt in parser_actions if opt.required and opt.dest in options
++        for opt in parser_actions if opt in required_actions and opt.dest in options
+     ]
+     defaults = parser.parse_args(args=parse_args)
+     defaults = dict(defaults._get_kwargs(), **arg_options)

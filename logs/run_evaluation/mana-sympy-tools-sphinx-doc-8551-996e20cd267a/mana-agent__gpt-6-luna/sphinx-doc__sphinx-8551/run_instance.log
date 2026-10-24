@@ -1,0 +1,48 @@
+2026-10-24 00:01:25,927 - INFO - Creating container for sphinx-doc__sphinx-8551...
+2026-10-24 00:01:26,058 - INFO - Container for sphinx-doc__sphinx-8551 created: b3f9ed10be0f27483cb2e1b2ba98692ae19becd754cc588abec394a964c64786
+2026-10-24 00:01:26,294 - INFO - Container for sphinx-doc__sphinx-8551 started: b3f9ed10be0f27483cb2e1b2ba98692ae19becd754cc588abec394a964c64786
+2026-10-24 00:01:26,294 - INFO - Intermediate patch for sphinx-doc__sphinx-8551 written to logs/run_evaluation/mana-sympy-tools-sphinx-doc-8551-996e20cd267a/mana-agent__gpt-6-luna/sphinx-doc__sphinx-8551/patch.diff, now applying to container...
+2026-10-24 00:01:26,502 - INFO - >>>>> Applied Patch:
+Checking patch sphinx/domains/python.py...
+Applied patch sphinx/domains/python.py cleanly.
+
+2026-10-24 00:01:26,803 - INFO - Git diff before:
+diff --git a/sphinx/domains/python.py b/sphinx/domains/python.py
+index 79d7e4f46..10882f486 100644
+--- a/sphinx/domains/python.py
++++ b/sphinx/domains/python.py
+@@ -1216,6 +1216,9 @@ class PythonDomain(Domain):
+         self.modules[name] = ModuleEntry(self.env.docname, node_id,
+                                          synopsis, platform, deprecated)
+ 
++    def process_field_xref(self, pnode: pending_xref) -> None:
++        pnode.attributes.update(self.env.ref_context)
++
+     def clear_doc(self, docname: str) -> None:
+         for fullname, obj in list(self.objects.items()):
+             if obj.docname == docname:
+2026-10-24 00:01:26,803 - INFO - Eval script for sphinx-doc__sphinx-8551 written to logs/run_evaluation/mana-sympy-tools-sphinx-doc-8551-996e20cd267a/mana-agent__gpt-6-luna/sphinx-doc__sphinx-8551/eval.sh; copying to container...
+2026-10-24 00:01:35,369 - INFO - Test runtime: 8.50 seconds
+2026-10-24 00:01:35,370 - INFO - Test output for sphinx-doc__sphinx-8551 written to logs/run_evaluation/mana-sympy-tools-sphinx-doc-8551-996e20cd267a/mana-agent__gpt-6-luna/sphinx-doc__sphinx-8551/test_output.txt
+2026-10-24 00:01:35,448 - INFO - Git diff after:
+diff --git a/sphinx/domains/python.py b/sphinx/domains/python.py
+index 79d7e4f46..10882f486 100644
+--- a/sphinx/domains/python.py
++++ b/sphinx/domains/python.py
+@@ -1216,6 +1216,9 @@ class PythonDomain(Domain):
+         self.modules[name] = ModuleEntry(self.env.docname, node_id,
+                                          synopsis, platform, deprecated)
+ 
++    def process_field_xref(self, pnode: pending_xref) -> None:
++        pnode.attributes.update(self.env.ref_context)
++
+     def clear_doc(self, docname: str) -> None:
+         for fullname, obj in list(self.objects.items()):
+             if obj.docname == docname:
+2026-10-24 00:01:35,448 - INFO - Grading answer for sphinx-doc__sphinx-8551...
+2026-10-24 00:01:35,458 - INFO - report: {'sphinx-doc__sphinx-8551': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': True, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': ['tests/test_domain_py.py::test_info_field_list'], 'failure': []}, 'PASS_TO_PASS': {'success': ['tests/test_domain_py.py::test_function_signatures', 'tests/test_domain_py.py::test_domain_py_xrefs', 'tests/test_domain_py.py::test_domain_py_objects', 'tests/test_domain_py.py::test_resolve_xref_for_properties', 'tests/test_domain_py.py::test_domain_py_find_obj', 'tests/test_domain_py.py::test_get_full_qualified_name', 'tests/test_domain_py.py::test_parse_annotation', 'tests/test_domain_py.py::test_pyfunction_signature', 'tests/test_domain_py.py::test_pyfunction_signature_full', 'tests/test_domain_py.py::test_pyfunction_signature_full_py38', 'tests/test_domain_py.py::test_pyfunction_with_number_literals', 'tests/test_domain_py.py::test_optional_pyfunction_signature', 'tests/test_domain_py.py::test_pyexception_signature', 'tests/test_domain_py.py::test_exceptions_module_is_ignored', 'tests/test_domain_py.py::test_pydata_signature', 'tests/test_domain_py.py::test_pydata_signature_old', 'tests/test_domain_py.py::test_pyobject_prefix', 'tests/test_domain_py.py::test_pydata', 'tests/test_domain_py.py::test_pyfunction', 'tests/test_domain_py.py::test_pyclass_options', 'tests/test_domain_py.py::test_pymethod_options', 'tests/test_domain_py.py::test_pyclassmethod', 'tests/test_domain_py.py::test_pystaticmethod', 'tests/test_domain_py.py::test_pyattribute', 'tests/test_domain_py.py::test_pydecorator_signature', 'tests/test_domain_py.py::test_pydecoratormethod_signature', 'tests/test_domain_py.py::test_module_index', 'tests/test_domain_py.py::test_module_index_submodule', 'tests/test_domain_py.py::test_module_index_not_collapsed', 'tests/test_domain_py.py::test_modindex_common_prefix', 'tests/test_domain_py.py::test_noindexentry', 'tests/test_domain_py.py::test_warn_missing_reference'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for sphinx-doc__sphinx-8551: resolved: True
+2026-10-24 00:01:35,458 - INFO - Attempting to stop container sweb.eval.sphinx-doc__sphinx-8551.mana-sympy-tools-sphinx-doc-8551-996e20cd267a...
+2026-10-24 00:01:50,541 - INFO - Container sweb.eval.sphinx-doc__sphinx-8551.mana-sympy-tools-sphinx-doc-8551-996e20cd267a stopped successfully.
+2026-10-24 00:01:50,541 - INFO - Attempting to remove container sweb.eval.sphinx-doc__sphinx-8551.mana-sympy-tools-sphinx-doc-8551-996e20cd267a...
+2026-10-24 00:01:50,568 - INFO - Container sweb.eval.sphinx-doc__sphinx-8551.mana-sympy-tools-sphinx-doc-8551-996e20cd267a removed successfully.

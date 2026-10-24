@@ -1,0 +1,49 @@
+diff --git a/sympy/polys/polytools.py b/sympy/polys/polytools.py
+index c9e77a901f..94c420e11f 100644
+--- a/sympy/polys/polytools.py
++++ b/sympy/polys/polytools.py
+@@ -5950,6 +5950,24 @@ def _symbolic_factor_list(expr, opt, method):
+ 
+                 factors.append((_factors_product(other), exp))
+ 
++    if method == 'sqf':
++        combined = {}
++        result = []
++        for f, k in factors:
++            # Group factors only when they belong to the same univariate ring.
++            if f.is_Poly and len(f.gens) == 1:
++                key = (f.gens, k)
++                if key in combined:
++                    index = combined[key]
++                    g, _ = result[index]
++                    result[index] = (g*f, k)
++                else:
++                    combined[key] = len(result)
++                    result.append((f, k))
++            else:
++                result.append((f, k))
++        factors = result
++
+     return coeff, factors
+ 
+ 
+@@ -6205,6 +6223,9 @@ def sqf_list(f, *gens, **args):
+     """
+     Compute a list of square-free factors of ``f``.
+ 
++    This function is intended for univariate polynomials. If ``gens`` is
++    omitted, the generator is inferred from ``f`` when possible.
++
+     Examples
+     ========
+ 
+@@ -6223,6 +6244,9 @@ def sqf(f, *gens, **args):
+     """
+     Compute square-free factorization of ``f``.
+ 
++    This function is intended for univariate polynomials. If ``gens`` is
++    omitted, the generator is inferred from ``f`` when possible.
++
+     Examples
+     ========
+ 

@@ -1,0 +1,46 @@
+2026-10-23 21:53:23,193 - INFO - Creating container for pylint-dev__pylint-4970...
+2026-10-23 21:53:23,312 - INFO - Container for pylint-dev__pylint-4970 created: 336dce73c74613ca996f5bdbd7e2bdcaddf29797ed856c1fb2420256fe866fa5
+2026-10-23 21:53:23,447 - INFO - Container for pylint-dev__pylint-4970 started: 336dce73c74613ca996f5bdbd7e2bdcaddf29797ed856c1fb2420256fe866fa5
+2026-10-23 21:53:23,448 - INFO - Intermediate patch for pylint-dev__pylint-4970 written to logs/run_evaluation/mana-sympy-tools-pylint-dev-4970-c6272b65d9bd/mana-agent__gpt-6-luna/pylint-dev__pylint-4970/patch.diff, now applying to container...
+2026-10-23 21:53:23,648 - INFO - >>>>> Applied Patch:
+Checking patch pylint/checkers/similar.py...
+Applied patch pylint/checkers/similar.py cleanly.
+
+2026-10-23 21:53:24,081 - INFO - Git diff before:
+diff --git a/pylint/checkers/similar.py b/pylint/checkers/similar.py
+index c65b1c89..ba65b2a1 100644
+--- a/pylint/checkers/similar.py
++++ b/pylint/checkers/similar.py
+@@ -531,6 +531,8 @@ class Similar:
+         """iterate on similarities among all files, by making a cartesian
+         product
+         """
++        if self.min_lines == 0:
++            return
+         for idx, lineset in enumerate(self.linesets[:-1]):
+             for lineset2 in self.linesets[idx + 1 :]:
+                 yield from self._find_common(lineset, lineset2)
+2026-10-23 21:53:24,081 - INFO - Eval script for pylint-dev__pylint-4970 written to logs/run_evaluation/mana-sympy-tools-pylint-dev-4970-c6272b65d9bd/mana-agent__gpt-6-luna/pylint-dev__pylint-4970/eval.sh; copying to container...
+2026-10-23 21:53:32,163 - INFO - Test runtime: 8.02 seconds
+2026-10-23 21:53:32,163 - INFO - Test output for pylint-dev__pylint-4970 written to logs/run_evaluation/mana-sympy-tools-pylint-dev-4970-c6272b65d9bd/mana-agent__gpt-6-luna/pylint-dev__pylint-4970/test_output.txt
+2026-10-23 21:53:32,251 - INFO - Git diff after:
+diff --git a/pylint/checkers/similar.py b/pylint/checkers/similar.py
+index c65b1c89..ba65b2a1 100644
+--- a/pylint/checkers/similar.py
++++ b/pylint/checkers/similar.py
+@@ -531,6 +531,8 @@ class Similar:
+         """iterate on similarities among all files, by making a cartesian
+         product
+         """
++        if self.min_lines == 0:
++            return
+         for idx, lineset in enumerate(self.linesets[:-1]):
+             for lineset2 in self.linesets[idx + 1 :]:
+                 yield from self._find_common(lineset, lineset2)
+2026-10-23 21:53:32,251 - INFO - Grading answer for pylint-dev__pylint-4970...
+2026-10-23 21:53:32,254 - INFO - report: {'pylint-dev__pylint-4970': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': False, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': [], 'failure': ['tests/checkers/unittest_similar.py::test_set_duplicate_lines_to_zero']}, 'PASS_TO_PASS': {'success': ['tests/checkers/unittest_similar.py::test_ignore_comments', 'tests/checkers/unittest_similar.py::test_ignore_docstrings', 'tests/checkers/unittest_similar.py::test_ignore_imports', 'tests/checkers/unittest_similar.py::test_multiline_imports', 'tests/checkers/unittest_similar.py::test_ignore_multiline_imports', 'tests/checkers/unittest_similar.py::test_ignore_signatures_fail', 'tests/checkers/unittest_similar.py::test_ignore_signatures_pass', 'tests/checkers/unittest_similar.py::test_ignore_signatures_class_methods_fail', 'tests/checkers/unittest_similar.py::test_ignore_signatures_class_methods_pass', 'tests/checkers/unittest_similar.py::test_ignore_signatures_empty_functions_fail', 'tests/checkers/unittest_similar.py::test_ignore_signatures_empty_functions_pass', 'tests/checkers/unittest_similar.py::test_no_hide_code_with_imports', 'tests/checkers/unittest_similar.py::test_ignore_nothing', 'tests/checkers/unittest_similar.py::test_lines_without_meaningful_content_do_not_trigger_similarity', 'tests/checkers/unittest_similar.py::test_help', 'tests/checkers/unittest_similar.py::test_no_args', 'tests/checkers/unittest_similar.py::test_get_map_data'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for pylint-dev__pylint-4970: resolved: False
+2026-10-23 21:53:32,254 - INFO - Attempting to stop container sweb.eval.pylint-dev__pylint-4970.mana-sympy-tools-pylint-dev-4970-c6272b65d9bd...
+2026-10-23 21:53:47,361 - INFO - Container sweb.eval.pylint-dev__pylint-4970.mana-sympy-tools-pylint-dev-4970-c6272b65d9bd stopped successfully.
+2026-10-23 21:53:47,361 - INFO - Attempting to remove container sweb.eval.pylint-dev__pylint-4970.mana-sympy-tools-pylint-dev-4970-c6272b65d9bd...
+2026-10-23 21:53:47,397 - INFO - Container sweb.eval.pylint-dev__pylint-4970.mana-sympy-tools-pylint-dev-4970-c6272b65d9bd removed successfully.

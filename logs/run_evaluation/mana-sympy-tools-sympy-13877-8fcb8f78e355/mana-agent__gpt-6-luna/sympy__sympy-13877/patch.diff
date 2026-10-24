@@ -1,0 +1,12 @@
+diff --git a/sympy/matrices/matrices.py b/sympy/matrices/matrices.py
+index 97cde62e26..50dd491fdd 100644
+--- a/sympy/matrices/matrices.py
++++ b/sympy/matrices/matrices.py
+@@ -177,6 +177,7 @@ def _eval_det_bareiss(self):
+         # XXX included as a workaround for issue #12362.  Should use `_find_reasonable_pivot` instead
+         def _find_pivot(l):
+             for pos,val in enumerate(l):
++                val = val.expand()
+                 if val:
+                     return (pos, val, None, None)
+             return (None, None, None, None)

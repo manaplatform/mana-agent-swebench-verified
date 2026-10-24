@@ -1,0 +1,44 @@
+diff --git a/src/_pytest/mark/structures.py b/src/_pytest/mark/structures.py
+index 800a25c92..9e525e248 100644
+--- a/src/_pytest/mark/structures.py
++++ b/src/_pytest/mark/structures.py
+@@ -357,10 +357,18 @@ class MarkDecorator:
+ 
+ def get_unpacked_marks(obj: object) -> Iterable[Mark]:
+     """Obtain the unpacked marks that are stored on an object."""
+-    mark_list = getattr(obj, "pytestmark", [])
+-    if not isinstance(mark_list, list):
+-        mark_list = [mark_list]
+-    return normalize_mark_list(mark_list)
++    if isinstance(obj, type):
++        # A class inherits ``pytestmark`` using normal attribute lookup, which
++        # only returns the value from the first matching class in the MRO.
++        # Read each class's own marks to include marks from all base classes.
++        mark_lists = (parent.__dict__.get("pytestmark", []) for parent in obj.__mro__)
++    else:
++        mark_lists = (getattr(obj, "pytestmark", []),)
++
++    for mark_list in mark_lists:
++        if not isinstance(mark_list, list):
++            mark_list = [mark_list]
++        yield from normalize_mark_list(mark_list)
+ 
+ 
+ def normalize_mark_list(
+@@ -388,7 +396,15 @@ def store_mark(obj, mark: Mark) -> None:
+     assert isinstance(mark, Mark), mark
+     # Always reassign name to avoid updating pytestmark in a reference that
+     # was only borrowed.
+-    obj.pytestmark = [*get_unpacked_marks(obj), mark]
++    if isinstance(obj, type):
++        # Store only marks declared on this class. Inherited marks are picked
++        # up by get_unpacked_marks when the class is collected.
++        mark_list = obj.__dict__.get("pytestmark", [])
++        if not isinstance(mark_list, list):
++            mark_list = [mark_list]
++        obj.pytestmark = [*normalize_mark_list(mark_list), mark]
++    else:
++        obj.pytestmark = [*get_unpacked_marks(obj), mark]
+ 
+ 
+ # Typing for builtin pytest marks. This is cheating; it gives builtin marks

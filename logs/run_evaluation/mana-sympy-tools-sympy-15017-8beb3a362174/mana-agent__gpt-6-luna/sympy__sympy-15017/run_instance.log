@@ -1,0 +1,76 @@
+2026-10-23 20:42:49,966 - INFO - Creating container for sympy__sympy-15017...
+2026-10-23 20:42:50,289 - INFO - Container for sympy__sympy-15017 created: fc7051c1ccf39ce8ad344009260a90bd157717e3c91851f40218d322c8f8a92b
+2026-10-23 20:42:50,386 - INFO - Container for sympy__sympy-15017 started: fc7051c1ccf39ce8ad344009260a90bd157717e3c91851f40218d322c8f8a92b
+2026-10-23 20:42:50,386 - INFO - Intermediate patch for sympy__sympy-15017 written to logs/run_evaluation/mana-sympy-tools-sympy-15017-8beb3a362174/mana-agent__gpt-6-luna/sympy__sympy-15017/patch.diff, now applying to container...
+2026-10-23 20:42:50,613 - INFO - >>>>> Applied Patch:
+Checking patch sympy/tensor/array/ndim_array.py...
+Checking patch sympy/tensor/array/sparse_ndim_array.py...
+Applied patch sympy/tensor/array/ndim_array.py cleanly.
+Applied patch sympy/tensor/array/sparse_ndim_array.py cleanly.
+
+2026-10-23 20:42:51,105 - INFO - Git diff before:
+diff --git a/sympy/tensor/array/ndim_array.py b/sympy/tensor/array/ndim_array.py
+index 099b29116..9fb37c4e3 100644
+--- a/sympy/tensor/array/ndim_array.py
++++ b/sympy/tensor/array/ndim_array.py
+@@ -175,7 +175,7 @@ def __len__(self):
+         9
+ 
+         """
+-        return self._loop_size
++        return self._loop_size if self._rank else 1
+ 
+     @property
+     def shape(self):
+diff --git a/sympy/tensor/array/sparse_ndim_array.py b/sympy/tensor/array/sparse_ndim_array.py
+index 72b5d5129..d8a781fca 100644
+--- a/sympy/tensor/array/sparse_ndim_array.py
++++ b/sympy/tensor/array/sparse_ndim_array.py
+@@ -111,6 +111,9 @@ def tomatrix(self):
+ 
+     def __iter__(self):
+         def iterator():
++            if self._rank == 0:
++                yield self[()]
++                return
+             for i in range(self._loop_size):
+                 yield self[i]
+         return iterator()
+2026-10-23 20:42:51,105 - INFO - Eval script for sympy__sympy-15017 written to logs/run_evaluation/mana-sympy-tools-sympy-15017-8beb3a362174/mana-agent__gpt-6-luna/sympy__sympy-15017/eval.sh; copying to container...
+2026-10-23 20:42:59,256 - INFO - Test runtime: 8.08 seconds
+2026-10-23 20:42:59,256 - INFO - Test output for sympy__sympy-15017 written to logs/run_evaluation/mana-sympy-tools-sympy-15017-8beb3a362174/mana-agent__gpt-6-luna/sympy__sympy-15017/test_output.txt
+2026-10-23 20:42:59,428 - INFO - Git diff after:
+diff --git a/sympy/tensor/array/ndim_array.py b/sympy/tensor/array/ndim_array.py
+index 099b29116..9fb37c4e3 100644
+--- a/sympy/tensor/array/ndim_array.py
++++ b/sympy/tensor/array/ndim_array.py
+@@ -175,7 +175,7 @@ def __len__(self):
+         9
+ 
+         """
+-        return self._loop_size
++        return self._loop_size if self._rank else 1
+ 
+     @property
+     def shape(self):
+diff --git a/sympy/tensor/array/sparse_ndim_array.py b/sympy/tensor/array/sparse_ndim_array.py
+index 72b5d5129..d8a781fca 100644
+--- a/sympy/tensor/array/sparse_ndim_array.py
++++ b/sympy/tensor/array/sparse_ndim_array.py
+@@ -111,6 +111,9 @@ def tomatrix(self):
+ 
+     def __iter__(self):
+         def iterator():
++            if self._rank == 0:
++                yield self[()]
++                return
+             for i in range(self._loop_size):
+                 yield self[i]
+         return iterator()
+2026-10-23 20:42:59,428 - INFO - Grading answer for sympy__sympy-15017...
+2026-10-23 20:42:59,428 - INFO - report: {'sympy__sympy-15017': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': False, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': [], 'failure': ['test_ndim_array_initiation']}, 'PASS_TO_PASS': {'success': ['test_reshape', 'test_iterator', 'test_sparse', 'test_calculation', 'test_ndim_array_converting', 'test_converting_functions', 'test_equality', 'test_arithmetic', 'test_higher_dimenions', 'test_rebuild_immutable_arrays', 'test_slices', 'test_diff_and_applyfunc', 'test_op_priority', 'test_symbolic_indexing'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for sympy__sympy-15017: resolved: False
+2026-10-23 20:42:59,429 - INFO - Attempting to stop container sweb.eval.sympy__sympy-15017.mana-sympy-tools-sympy-15017-8beb3a362174...
+2026-10-23 20:43:14,588 - INFO - Container sweb.eval.sympy__sympy-15017.mana-sympy-tools-sympy-15017-8beb3a362174 stopped successfully.
+2026-10-23 20:43:14,588 - INFO - Attempting to remove container sweb.eval.sympy__sympy-15017.mana-sympy-tools-sympy-15017-8beb3a362174...
+2026-10-23 20:43:14,619 - INFO - Container sweb.eval.sympy__sympy-15017.mana-sympy-tools-sympy-15017-8beb3a362174 removed successfully.

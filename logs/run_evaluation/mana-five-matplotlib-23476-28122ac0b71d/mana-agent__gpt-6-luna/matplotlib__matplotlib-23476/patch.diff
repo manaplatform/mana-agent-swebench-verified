@@ -1,0 +1,16 @@
+diff --git a/lib/matplotlib/figure.py b/lib/matplotlib/figure.py
+index c55864243..912326726 100644
+--- a/lib/matplotlib/figure.py
++++ b/lib/matplotlib/figure.py
+@@ -3023,6 +3023,11 @@ class Figure(FigureBase):
+         # Set cached renderer to None -- it can't be pickled.
+         state["_cachedRenderer"] = None
+ 
++        # The canvas may have scaled the figure DPI for a high-DPI screen.
++        # Save the original DPI so that the scale is only applied once when
++        # the figure is unpickled and attached to a new canvas.
++        state["_dpi"] = state.get("_original_dpi", self.dpi)
++
+         # add version information to the state
+         state['__mpl_version__'] = mpl.__version__
+ 

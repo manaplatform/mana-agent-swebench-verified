@@ -1,0 +1,108 @@
+2026-10-22 01:39:45,157 - INFO - Creating container for django__django-11206...
+2026-10-22 01:39:45,623 - INFO - Container for django__django-11206 created: c6ce32fcd3a45532eaf542c645df5199d0e57b9b0a6a7eda512ad76fc34c63f3
+2026-10-22 01:39:45,717 - INFO - Container for django__django-11206 started: c6ce32fcd3a45532eaf542c645df5199d0e57b9b0a6a7eda512ad76fc34c63f3
+2026-10-22 01:39:45,718 - INFO - Intermediate patch for django__django-11206 written to logs/run_evaluation/mana-django-11206-d77fc287a4de/mana-agent__gpt-6-luna/django__django-11206/patch.diff, now applying to container...
+2026-10-22 01:39:45,813 - INFO - >>>>> Applied Patch:
+Checking patch django/utils/numberformat.py...
+Applied patch django/utils/numberformat.py cleanly.
+
+2026-10-22 01:39:46,234 - INFO - Git diff before:
+diff --git a/django/utils/numberformat.py b/django/utils/numberformat.py
+index 88b35fc435..6e162f14bb 100644
+--- a/django/utils/numberformat.py
++++ b/django/utils/numberformat.py
+@@ -27,20 +27,26 @@ def format(number, decimal_sep, decimal_pos=None, grouping=0, thousand_sep='',
+     # sign
+     sign = ''
+     if isinstance(number, Decimal):
+-        # Format values with more than 200 digits (an arbitrary cutoff) using
+-        # scientific notation to avoid high memory usage in {:f}'.format().
+-        _, digits, exponent = number.as_tuple()
+-        if abs(exponent) + len(digits) > 200:
+-            number = '{:e}'.format(number)
+-            coefficient, exponent = number.split('e')
+-            # Format the coefficient.
+-            coefficient = format(
+-                coefficient, decimal_sep, decimal_pos, grouping,
+-                thousand_sep, force_grouping, use_l10n,
+-            )
+-            return '{}e{}'.format(coefficient, exponent)
++        if decimal_pos is not None and decimal_pos >= 0 and (
++            number.is_zero() or number.adjusted() < -decimal_pos
++        ):
++            str_number = '-0' if number.is_signed() else '0'
+         else:
+-            str_number = '{:f}'.format(number)
++            # Format values with more than 200 digits (an arbitrary cutoff)
++            # using scientific notation to avoid high memory usage in
++            # {:f}'.format().
++            _, digits, exponent = number.as_tuple()
++            if abs(exponent) + len(digits) > 200:
++                number = '{:e}'.format(number)
++                coefficient, exponent = number.split('e')
++                # Format the coefficient.
++                coefficient = format(
++                    coefficient, decimal_sep, decimal_pos, grouping,
++                    thousand_sep, force_grouping, use_l10n,
++                )
++                return '{}e{}'.format(coefficient, exponent)
++            else:
++                str_number = '{:f}'.format(number)
+     else:
+         str_number = str(number)
+     if str_number[0] == '-':
+2026-10-22 01:39:46,235 - INFO - Eval script for django__django-11206 written to logs/run_evaluation/mana-django-11206-d77fc287a4de/mana-agent__gpt-6-luna/django__django-11206/eval.sh; copying to container...
+2026-10-22 01:39:56,949 - INFO - Test runtime: 10.68 seconds
+2026-10-22 01:39:56,950 - INFO - Test output for django__django-11206 written to logs/run_evaluation/mana-django-11206-d77fc287a4de/mana-agent__gpt-6-luna/django__django-11206/test_output.txt
+2026-10-22 01:39:57,016 - INFO - Git diff after:
+diff --git a/django/utils/numberformat.py b/django/utils/numberformat.py
+index 88b35fc435..6e162f14bb 100644
+--- a/django/utils/numberformat.py
++++ b/django/utils/numberformat.py
+@@ -27,20 +27,26 @@ def format(number, decimal_sep, decimal_pos=None, grouping=0, thousand_sep='',
+     # sign
+     sign = ''
+     if isinstance(number, Decimal):
+-        # Format values with more than 200 digits (an arbitrary cutoff) using
+-        # scientific notation to avoid high memory usage in {:f}'.format().
+-        _, digits, exponent = number.as_tuple()
+-        if abs(exponent) + len(digits) > 200:
+-            number = '{:e}'.format(number)
+-            coefficient, exponent = number.split('e')
+-            # Format the coefficient.
+-            coefficient = format(
+-                coefficient, decimal_sep, decimal_pos, grouping,
+-                thousand_sep, force_grouping, use_l10n,
+-            )
+-            return '{}e{}'.format(coefficient, exponent)
++        if decimal_pos is not None and decimal_pos >= 0 and (
++            number.is_zero() or number.adjusted() < -decimal_pos
++        ):
++            str_number = '-0' if number.is_signed() else '0'
+         else:
+-            str_number = '{:f}'.format(number)
++            # Format values with more than 200 digits (an arbitrary cutoff)
++            # using scientific notation to avoid high memory usage in
++            # {:f}'.format().
++            _, digits, exponent = number.as_tuple()
++            if abs(exponent) + len(digits) > 200:
++                number = '{:e}'.format(number)
++                coefficient, exponent = number.split('e')
++                # Format the coefficient.
++                coefficient = format(
++                    coefficient, decimal_sep, decimal_pos, grouping,
++                    thousand_sep, force_grouping, use_l10n,
++                )
++                return '{}e{}'.format(coefficient, exponent)
++            else:
++                str_number = '{:f}'.format(number)
+     else:
+         str_number = str(number)
+     if str_number[0] == '-':
+2026-10-22 01:39:57,016 - INFO - Grading answer for django__django-11206...
+2026-10-22 01:39:57,017 - INFO - report: {'django__django-11206': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': True, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': ['test_decimal_numbers (utils_tests.test_numberformat.TestNumberFormat)', 'test_decimal_subclass (utils_tests.test_numberformat.TestNumberFormat)'], 'failure': []}, 'PASS_TO_PASS': {'success': ['test_float_numbers (utils_tests.test_numberformat.TestNumberFormat)', 'test_format_number (utils_tests.test_numberformat.TestNumberFormat)', 'test_format_string (utils_tests.test_numberformat.TestNumberFormat)', 'test_large_number (utils_tests.test_numberformat.TestNumberFormat)'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for django__django-11206: resolved: True
+2026-10-22 01:39:57,018 - INFO - Attempting to stop container sweb.eval.django__django-11206.mana-django-11206-d77fc287a4de...
+2026-10-22 01:40:12,143 - INFO - Container sweb.eval.django__django-11206.mana-django-11206-d77fc287a4de stopped successfully.
+2026-10-22 01:40:12,143 - INFO - Attempting to remove container sweb.eval.django__django-11206.mana-django-11206-d77fc287a4de...
+2026-10-22 01:40:12,176 - INFO - Container sweb.eval.django__django-11206.mana-django-11206-d77fc287a4de removed successfully.

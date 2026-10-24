@@ -1,0 +1,243 @@
+# Mana-Agent trajectory: django__django-15930
+
+
+## Original task and instructions
+
+You are solving a single SWE-bench issue inside an isolated git checkout.
+Repository: django/django
+Instance ID: django__django-15930
+Working directory (repository root): /Users/ah/Documents/mana-agent/.swe-bench/worktrees/django__django-15930
+
+Task:
+- Read the issue carefully.
+- Inspect only the files needed to implement a minimal correct fix.
+- Prefer reading source files and applying edits over running the package.
+- The repository is a source checkout and may not be installed or importable;
+  do not spend the turn diagnosing import/runtime environment failures.
+- If you run Python, always use `python3` (never bare `python`, which may be 2.x).
+- Apply the fix directly in this repository (edit production source files only).
+- Do not add, edit, delete, or rename test files or test helpers.
+- Do not modify tests solely to make them pass.
+- Official evaluation tests are applied separately; test changes cause harness failures.
+- Do not commit, push, rebase, or rewrite git history.
+- Do not interact with the user; complete the coding task in one pass.
+- Success means production-source edits left as uncommitted working-tree changes.
+- Do not finish with only analysis or chat text when a code fix is required.
+
+Issue / problem statement:
+Case() crashes with ~Q(pk__in=[]).
+Description
+	
+The following code generates a syntax error. 
+User.objects.annotate(
+	_a=Case(
+		When(~Q(pk__in=[]), then=Value(True)),
+		default=Value(False),
+		output_field=BooleanField(),
+	)
+).order_by("-a").values("pk")
+The error is: 
+ProgrammingError: syntax error at or near "THEN"
+LINE 1: ..._user"."id" FROM "users_user" ORDER BY CASE WHEN THEN true ...
+The generated SQL is: 
+SELECT "users_user"."id" FROM "users_user" ORDER BY CASE WHEN THEN True ELSE False END ASC
+I expected behavior to annotate all rows with the value True since they all match.
+Relevant because ~Q(pkin=[]) is a sentinel value that is sometimes returned by application code.
+
+Hints:
+Thanks for the report (similar to the #33374 and #26517).
+
+
+## Agent execution output
+
+Mana-Agent v0.5.2  repo: django__django-15930  branch: detached/unknown
+model gpt-6-luna   mode chat   tools auto   memory off   skills not found
+cwd /Users/ah/Documents/mana-agent/.swe-bench/worktrees/django__django-15930
+auto tools  44 available · search×3
+Quiet startup (MANA_CHAT_QUIET); full tool catalog omitted.
+mana ❯ You are solving a single SWE-bench issue inside an isolated git checkout.
+Repository: django/django
+Instance ID: django__django-15930
+Working directory (repository root): 
+/Users/ah/Documents/mana-agent/.swe-bench/worktrees/django__django-15930
+
+Task:
+- Read the issue carefully.
+- Inspect only the files needed to implement a minimal correct fix.
+- Prefer reading source files and applying edits over running the package.
+- The repository is a source checkout and may not be installed or importable;
+  do not spend the turn diagnosing import/runtime environment failures.
+- If you run Python, always use `python3` (never bare `python`, which may be 
+2.x).
+- Apply the fix directly in this repository (edit production source files only).
+- Do not add, edit, delete, or rename test files or test helpers.
+- Do not modify tests solely to make them pass.
+- Official evaluation tests are applied separately; test changes cause harness 
+failures.
+- Do not commit, push, rebase, or rewrite git history.
+- Do not interact with the user; complete the coding task in one pass.
+- Success means production-source edits left as uncommitted working-tree 
+changes.
+- Do not finish with only analysis or chat text when a code fix is required.
+
+Issue / problem statement:
+Case() crashes with ~Q(pk__in=[]).
+Description
+        
+The following code generates a syntax error. 
+User.objects.annotate(
+        _a=Case(
+                When(~Q(pk__in=[]), then=Value(True)),
+                default=Value(False),
+                output_field=BooleanField(),
+        )
+).order_by("-a").values("pk")
+The error is: 
+ProgrammingError: syntax error at or near "THEN"
+LINE 1: ..._user"."id" FROM "users_user" ORDER BY CASE WHEN THEN true ...
+The generated SQL is: 
+SELECT "users_user"."id" FROM "users_user" ORDER BY CASE WHEN THEN True ELSE 
+False END ASC
+I expected behavior to annotate all rows with the value True since they all 
+match.
+Relevant because ~Q(pkin=[]) is a sentinel value that is sometimes returned by 
+application code.
+
+Hints:
+Thanks for the report (similar to the #33374 and #26517).
+
+◌ decision routing
+✓ decision routing Completed.
+
+Answer ─────────────────────────────────────────────────────────────────────────
+Codex completed the repository mutation. Changed files:                         
+
+ • django/db/models/expressions.py Commands run: /bin/zsh -lc "rg -n "class     
+   (When|Case)|EmptyResultSet|FullResultSet|In\(" django/db/models", /bin/zsh   
+   -lc "sed -n '1,180p' django/db/models/sql/where.py && sed -n '1230,1425p'    
+   django/db/models/expressions.py && sed -n '400,465p'                         
+   django/db/models/lookups.py", /bin/zsh -lc 'rg -n                            
+   "WHEN.*THEN|EmptyResultSet|empty.*condition|condition_sql"                   
+   django/db/models/expressions.py django/db/models/sql                         
+   django/db/models/lookups.py', /bin/zsh -lc "sed -n '160,205p'                
+   django/db/models/lookups.py && sed -n '210,265p'                             
+   django/db/models/sql/where.py && sed -n '915,955p'                           
+   django/db/models/expressions.py && sed -n '1470,1525p'                       
+   django/db/models/expressions.py && git status --short", /bin/zsh -lc 'git    
+   diff --check && git diff -- django/db/models/expressions.py && git status    
+   --short' Updated When.as_sql() in expressions.py to compile an empty,        
+   always-true condition as 1=1. This prevents ~Q(pk__in=[]) from generating    
+   WHEN THEN.                                                                   
+
+Verification: git diff --check passed. No tests were run. The production change 
+is uncommitted.                                                                 
+
+Exiting chat (single-shot).
+
+
+## Agent execution summary
+
+returncode=0 elapsed=167.5s timed_out=False
+--- stdout (tail) ---
+ols auto   memory off   skills not found
+cwd /Users/ah/Documents/mana-agent/.swe-bench/worktrees/django__django-15930
+auto tools  44 available · search×3
+Quiet startup (MANA_CHAT_QUIET); full tool catalog omitted.
+mana ❯ You are solving a single SWE-bench issue inside an isolated git checkout.
+Repository: django/django
+Instance ID: django__django-15930
+Working directory (repository root): 
+/Users/ah/Documents/mana-agent/.swe-bench/worktrees/django__django-15930
+
+Task:
+- Read the issue carefully.
+- Inspect only the files needed to implement a minimal correct fix.
+- Prefer reading source files and applying edits over running the package.
+- The repository is a source checkout and may not be installed or importable;
+  do not spend the turn diagnosing import/runtime environment failures.
+- If you run Python, always use `python3` (never bare `python`, which may be 
+2.x).
+- Apply the fix directly in this repository (edit production source files only).
+- Do not add, edit, delete, or rename test files or test helpers.
+- Do not modify tests solely to make them pass.
+- Official evaluation tests are applied separately; test changes cause harness 
+failures.
+- Do not commit, push, rebase, or rewrite git history.
+- Do not interact with the user; complete the coding task in one pass.
+- Success means production-source edits left as uncommitted working-tree 
+changes.
+- Do not finish with only analysis or chat text when a code fix is required.
+
+Issue / problem statement:
+Case() crashes with ~Q(pk__in=[]).
+Description
+        
+The following code generates a syntax error. 
+User.objects.annotate(
+        _a=Case(
+                When(~Q(pk__in=[]), then=Value(True)),
+                default=Value(False),
+                output_field=BooleanField(),
+        )
+).order_by("-a").values("pk")
+The error is: 
+ProgrammingError: syntax error at or near "THEN"
+LINE 1: ..._user"."id" FROM "users_user" ORDER BY CASE WHEN THEN true ...
+The generated SQL is: 
+SELECT "users_user"."id" FROM "users_user" ORDER BY CASE WHEN THEN True ELSE 
+False END ASC
+I expected behavior to annotate all rows with the value True since they all 
+match.
+Relevant because ~Q(pkin=[]) is a sentinel value that is sometimes returned by 
+application code.
+
+Hints:
+Thanks for the report (similar to the #33374 and #26517).
+
+◌ decision routing
+✓ decision routing Completed.
+
+Answer ─────────────────────────────────────────────────────────────────────────
+Codex completed the repository mutation. Changed files:                         
+
+ • django/db/models/expressions.py Commands run: /bin/zsh -lc "rg -n "class     
+   (When|Case)|EmptyResultSet|FullResultSet|In\(" django/db/models", /bin/zsh   
+   -lc "sed -n '1,180p' django/db/models/sql/where.py && sed -n '1230,1425p'    
+   django/db/models/expressions.py && sed -n '400,465p'                         
+   django/db/models/lookups.py", /bin/zsh -lc 'rg -n                            
+   "WHEN.*THEN|EmptyResultSet|empty.*condition|condition_sql"                   
+   django/db/models/expressions.py django/db/models/sql                         
+   django/db/models/lookups.py', /bin/zsh -lc "sed -n '160,205p'                
+   django/db/models/lookups.py && sed -n '210,265p'                             
+   django/db/models/sql/where.py && sed -n '915,955p'                           
+   django/db/models/expressions.py && sed -n '1470,1525p'                       
+   django/db/models/expressions.py && git status --short", /bin/zsh -lc 'git    
+   diff --check && git diff -- django/db/models/expressions.py && git status    
+   --short' Updated When.as_sql() in expressions.py to compile an empty,        
+   always-true condition as 1=1. This prevents ~Q(pk__in=[]) from generating    
+   WHEN THEN.                                                                   
+
+Verification: git diff --check passed. No tests were run. The production change 
+is uncommitted.                                                                 
+
+Exiting chat (single-shot).
+
+--- stderr (tail) ---
+
+
+
+## Execution metadata
+
+{
+  "instance_id": "django__django-15930",
+  "status": "ok",
+  "error": "",
+  "duration_seconds": 172.49370358302258,
+  "empty_patch": false,
+  "patch_chars": 611,
+  "worktree": "/Users/ah/Documents/mana-agent/.swe-bench/worktrees/django__django-15930",
+  "agent_name": "mana-agent",
+  "agent_provider": "openai",
+  "agent_model": "gpt-6-luna",
+  "model_name_or_path": "mana-agent__gpt-6-luna"
+}

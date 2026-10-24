@@ -1,0 +1,60 @@
+2026-10-22 17:26:42,563 - INFO - Creating container for django__django-13568...
+2026-10-22 17:26:42,684 - INFO - Container for django__django-13568 created: 1db35aad6c713c698c0acb960d67086b976801ee10f7c26af28ba54a7e7b67e8
+2026-10-22 17:26:42,737 - INFO - Container for django__django-13568 started: 1db35aad6c713c698c0acb960d67086b976801ee10f7c26af28ba54a7e7b67e8
+2026-10-22 17:26:42,737 - INFO - Intermediate patch for django__django-13568 written to logs/run_evaluation/mana-django-p4-13568-abf1bbb85817/mana-agent__gpt-6-luna/django__django-13568/patch.diff, now applying to container...
+2026-10-22 17:26:42,840 - INFO - >>>>> Applied Patch:
+Checking patch django/contrib/auth/checks.py...
+Applied patch django/contrib/auth/checks.py cleanly.
+
+2026-10-22 17:26:43,307 - INFO - Git diff before:
+diff --git a/django/contrib/auth/checks.py b/django/contrib/auth/checks.py
+index 65fc266f7e..ccdc848e3f 100644
+--- a/django/contrib/auth/checks.py
++++ b/django/contrib/auth/checks.py
+@@ -52,7 +52,14 @@ def check_user_model(app_configs=None, **kwargs):
+         )
+ 
+     # Check that the username field is unique
+-    if not cls._meta.get_field(cls.USERNAME_FIELD).unique:
++    username_field_is_unique = (
++        cls._meta.get_field(cls.USERNAME_FIELD).unique or
++        any(
++            len(constraint.fields) == 1 and constraint.fields[0] == cls.USERNAME_FIELD
++            for constraint in cls._meta.total_unique_constraints
++        )
++    )
++    if not username_field_is_unique:
+         if (settings.AUTHENTICATION_BACKENDS ==
+                 ['django.contrib.auth.backends.ModelBackend']):
+             errors.append(
+2026-10-22 17:26:43,308 - INFO - Eval script for django__django-13568 written to logs/run_evaluation/mana-django-p4-13568-abf1bbb85817/mana-agent__gpt-6-luna/django__django-13568/eval.sh; copying to container...
+2026-10-22 17:26:57,603 - INFO - Test runtime: 14.26 seconds
+2026-10-22 17:26:57,604 - INFO - Test output for django__django-13568 written to logs/run_evaluation/mana-django-p4-13568-abf1bbb85817/mana-agent__gpt-6-luna/django__django-13568/test_output.txt
+2026-10-22 17:26:57,692 - INFO - Git diff after:
+diff --git a/django/contrib/auth/checks.py b/django/contrib/auth/checks.py
+index 65fc266f7e..ccdc848e3f 100644
+--- a/django/contrib/auth/checks.py
++++ b/django/contrib/auth/checks.py
+@@ -52,7 +52,14 @@ def check_user_model(app_configs=None, **kwargs):
+         )
+ 
+     # Check that the username field is unique
+-    if not cls._meta.get_field(cls.USERNAME_FIELD).unique:
++    username_field_is_unique = (
++        cls._meta.get_field(cls.USERNAME_FIELD).unique or
++        any(
++            len(constraint.fields) == 1 and constraint.fields[0] == cls.USERNAME_FIELD
++            for constraint in cls._meta.total_unique_constraints
++        )
++    )
++    if not username_field_is_unique:
+         if (settings.AUTHENTICATION_BACKENDS ==
+                 ['django.contrib.auth.backends.ModelBackend']):
+             errors.append(
+2026-10-22 17:26:57,692 - INFO - Grading answer for django__django-13568...
+2026-10-22 17:26:57,693 - INFO - report: {'django__django-13568': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': True, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': ['test_username_unique_with_model_constraint (auth_tests.test_checks.UserModelChecksTests)'], 'failure': []}, 'PASS_TO_PASS': {'success': ['test_clashing_custom_permissions (auth_tests.test_checks.ModelsPermissionsChecksTests)', 'test_clashing_default_permissions (auth_tests.test_checks.ModelsPermissionsChecksTests)', 'test_custom_permission_codename_max_length (auth_tests.test_checks.ModelsPermissionsChecksTests)', 'test_custom_permission_name_max_length (auth_tests.test_checks.ModelsPermissionsChecksTests)', 'test_empty_default_permissions (auth_tests.test_checks.ModelsPermissionsChecksTests)', 'test_model_name_max_length (auth_tests.test_checks.ModelsPermissionsChecksTests)', 'test_non_clashing_custom_permissions (auth_tests.test_checks.ModelsPermissionsChecksTests)', 'test_verbose_name_max_length (auth_tests.test_checks.ModelsPermissionsChecksTests)', 'test_is_anonymous_authenticated_methods (auth_tests.test_checks.UserModelChecksTests)', 'REQUIRED_FIELDS should be a list.', 'test_username_non_unique (auth_tests.test_checks.UserModelChecksTests)', 'USERNAME_FIELD should not appear in REQUIRED_FIELDS.', 'test_username_partially_unique (auth_tests.test_checks.UserModelChecksTests)'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for django__django-13568: resolved: True
+2026-10-22 17:26:57,694 - INFO - Attempting to stop container sweb.eval.django__django-13568.mana-django-p4-13568-abf1bbb85817...
+2026-10-22 17:27:12,852 - INFO - Container sweb.eval.django__django-13568.mana-django-p4-13568-abf1bbb85817 stopped successfully.
+2026-10-22 17:27:12,852 - INFO - Attempting to remove container sweb.eval.django__django-13568.mana-django-p4-13568-abf1bbb85817...
+2026-10-22 17:27:12,892 - INFO - Container sweb.eval.django__django-13568.mana-django-p4-13568-abf1bbb85817 removed successfully.

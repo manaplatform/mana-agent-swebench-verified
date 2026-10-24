@@ -1,0 +1,120 @@
+2026-10-23 18:37:45,628 - INFO - Creating container for pydata__xarray-3677...
+2026-10-23 18:37:45,748 - INFO - Container for pydata__xarray-3677 created: 28c5cb9530d44e9ce5c6751298770d22c40c93747db04437e9b35e7c4c891ea4
+2026-10-23 18:37:45,841 - INFO - Container for pydata__xarray-3677 started: 28c5cb9530d44e9ce5c6751298770d22c40c93747db04437e9b35e7c4c891ea4
+2026-10-23 18:37:45,841 - INFO - Intermediate patch for pydata__xarray-3677 written to logs/run_evaluation/mana-five-pydata-3677-f204b6c827f1/mana-agent__gpt-6-luna/pydata__xarray-3677/patch.diff, now applying to container...
+2026-10-23 18:37:46,139 - INFO - >>>>> Applied Patch:
+Checking patch xarray/core/dataset.py...
+Checking patch xarray/core/merge.py...
+Applied patch xarray/core/dataset.py cleanly.
+Applied patch xarray/core/merge.py cleanly.
+
+2026-10-23 18:37:46,387 - INFO - Git diff before:
+diff --git a/xarray/core/dataset.py b/xarray/core/dataset.py
+index ac0a923d..ae02c21c 100644
+--- a/xarray/core/dataset.py
++++ b/xarray/core/dataset.py
+@@ -3547,7 +3547,7 @@ class Dataset(Mapping, ImplementsDatasetReduce, DataWithCoords):
+ 
+     def merge(
+         self,
+-        other: "CoercibleMapping",
++        other: Union["DataArray", "CoercibleMapping"],
+         inplace: bool = None,
+         overwrite_vars: Union[Hashable, Iterable[Hashable]] = frozenset(),
+         compat: str = "no_conflicts",
+@@ -3563,8 +3563,8 @@ class Dataset(Mapping, ImplementsDatasetReduce, DataWithCoords):
+ 
+         Parameters
+         ----------
+-        other : Dataset or castable to Dataset
+-            Dataset or variables to merge with this dataset.
++        other : Dataset, DataArray, or castable to Dataset
++            Dataset, DataArray, or variables to merge with this dataset.
+         overwrite_vars : Hashable or iterable of Hashable, optional
+             If provided, update variables of these name(s) without checking for
+             conflicts in this dataset.
+diff --git a/xarray/core/merge.py b/xarray/core/merge.py
+index 10c7804d..e12212be 100644
+--- a/xarray/core/merge.py
++++ b/xarray/core/merge.py
+@@ -797,7 +797,7 @@ def merge(
+ 
+ def dataset_merge_method(
+     dataset: "Dataset",
+-    other: "CoercibleMapping",
++    other: Union["DataArray", "CoercibleMapping"],
+     overwrite_vars: Union[Hashable, Iterable[Hashable]],
+     compat: str,
+     join: str,
+@@ -809,6 +809,11 @@ def dataset_merge_method(
+     # method due for backwards compatibility
+     # TODO: consider deprecating it?
+ 
++    from .dataarray import DataArray
++
++    if isinstance(other, DataArray):
++        other = other.to_dataset()
++
+     if isinstance(overwrite_vars, Iterable) and not isinstance(overwrite_vars, str):
+         overwrite_vars = set(overwrite_vars)
+     else:
+2026-10-23 18:37:46,387 - INFO - Eval script for pydata__xarray-3677 written to logs/run_evaluation/mana-five-pydata-3677-f204b6c827f1/mana-agent__gpt-6-luna/pydata__xarray-3677/eval.sh; copying to container...
+2026-10-23 18:38:01,508 - INFO - Test runtime: 15.07 seconds
+2026-10-23 18:38:01,509 - INFO - Test output for pydata__xarray-3677 written to logs/run_evaluation/mana-five-pydata-3677-f204b6c827f1/mana-agent__gpt-6-luna/pydata__xarray-3677/test_output.txt
+2026-10-23 18:38:01,633 - INFO - Git diff after:
+diff --git a/xarray/core/dataset.py b/xarray/core/dataset.py
+index ac0a923d..ae02c21c 100644
+--- a/xarray/core/dataset.py
++++ b/xarray/core/dataset.py
+@@ -3547,7 +3547,7 @@ class Dataset(Mapping, ImplementsDatasetReduce, DataWithCoords):
+ 
+     def merge(
+         self,
+-        other: "CoercibleMapping",
++        other: Union["DataArray", "CoercibleMapping"],
+         inplace: bool = None,
+         overwrite_vars: Union[Hashable, Iterable[Hashable]] = frozenset(),
+         compat: str = "no_conflicts",
+@@ -3563,8 +3563,8 @@ class Dataset(Mapping, ImplementsDatasetReduce, DataWithCoords):
+ 
+         Parameters
+         ----------
+-        other : Dataset or castable to Dataset
+-            Dataset or variables to merge with this dataset.
++        other : Dataset, DataArray, or castable to Dataset
++            Dataset, DataArray, or variables to merge with this dataset.
+         overwrite_vars : Hashable or iterable of Hashable, optional
+             If provided, update variables of these name(s) without checking for
+             conflicts in this dataset.
+diff --git a/xarray/core/merge.py b/xarray/core/merge.py
+index 10c7804d..e12212be 100644
+--- a/xarray/core/merge.py
++++ b/xarray/core/merge.py
+@@ -797,7 +797,7 @@ def merge(
+ 
+ def dataset_merge_method(
+     dataset: "Dataset",
+-    other: "CoercibleMapping",
++    other: Union["DataArray", "CoercibleMapping"],
+     overwrite_vars: Union[Hashable, Iterable[Hashable]],
+     compat: str,
+     join: str,
+@@ -809,6 +809,11 @@ def dataset_merge_method(
+     # method due for backwards compatibility
+     # TODO: consider deprecating it?
+ 
++    from .dataarray import DataArray
++
++    if isinstance(other, DataArray):
++        other = other.to_dataset()
++
+     if isinstance(overwrite_vars, Iterable) and not isinstance(overwrite_vars, str):
+         overwrite_vars = set(overwrite_vars)
+     else:
+2026-10-23 18:38:01,633 - INFO - Grading answer for pydata__xarray-3677...
+2026-10-23 18:38:01,634 - INFO - report: {'pydata__xarray-3677': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': True, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': ['xarray/tests/test_merge.py::TestMergeMethod::test_merge_dataarray'], 'failure': []}, 'PASS_TO_PASS': {'success': ['xarray/tests/test_merge.py::TestMergeInternals::test_broadcast_dimension_size', 'xarray/tests/test_merge.py::TestMergeFunction::test_merge_arrays', 'xarray/tests/test_merge.py::TestMergeFunction::test_merge_datasets', 'xarray/tests/test_merge.py::TestMergeFunction::test_merge_dataarray_unnamed', 'xarray/tests/test_merge.py::TestMergeFunction::test_merge_dicts_simple', 'xarray/tests/test_merge.py::TestMergeFunction::test_merge_dicts_dims', 'xarray/tests/test_merge.py::TestMergeFunction::test_merge_error', 'xarray/tests/test_merge.py::TestMergeFunction::test_merge_alignment_error', 'xarray/tests/test_merge.py::TestMergeFunction::test_merge_wrong_input_error', 'xarray/tests/test_merge.py::TestMergeFunction::test_merge_no_conflicts_single_var', 'xarray/tests/test_merge.py::TestMergeFunction::test_merge_no_conflicts_multi_var', 'xarray/tests/test_merge.py::TestMergeFunction::test_merge_no_conflicts_preserve_attrs', 'xarray/tests/test_merge.py::TestMergeFunction::test_merge_no_conflicts_broadcast', 'xarray/tests/test_merge.py::TestMergeMethod::test_merge', 'xarray/tests/test_merge.py::TestMergeMethod::test_merge_broadcast_equals', 'xarray/tests/test_merge.py::TestMergeMethod::test_merge_compat', 'xarray/tests/test_merge.py::TestMergeMethod::test_merge_auto_align', 'xarray/tests/test_merge.py::TestMergeMethod::test_merge_fill_value[fill_value0]', 'xarray/tests/test_merge.py::TestMergeMethod::test_merge_fill_value[2]', 'xarray/tests/test_merge.py::TestMergeMethod::test_merge_fill_value[2.0]', 'xarray/tests/test_merge.py::TestMergeMethod::test_merge_no_conflicts'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for pydata__xarray-3677: resolved: True
+2026-10-23 18:38:01,634 - INFO - Attempting to stop container sweb.eval.pydata__xarray-3677.mana-five-pydata-3677-f204b6c827f1...
+2026-10-23 18:38:16,774 - INFO - Container sweb.eval.pydata__xarray-3677.mana-five-pydata-3677-f204b6c827f1 stopped successfully.
+2026-10-23 18:38:16,774 - INFO - Attempting to remove container sweb.eval.pydata__xarray-3677.mana-five-pydata-3677-f204b6c827f1...
+2026-10-23 18:38:16,826 - INFO - Container sweb.eval.pydata__xarray-3677.mana-five-pydata-3677-f204b6c827f1 removed successfully.

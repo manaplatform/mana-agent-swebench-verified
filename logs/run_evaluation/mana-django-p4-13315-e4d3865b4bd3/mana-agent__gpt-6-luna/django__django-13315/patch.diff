@@ -1,0 +1,47 @@
+diff --git a/django/forms/models.py b/django/forms/models.py
+index 5d115458a1..d718424eed 100644
+--- a/django/forms/models.py
++++ b/django/forms/models.py
+@@ -1154,18 +1154,23 @@ class ModelChoiceIterator:
+     def __iter__(self):
+         if self.field.empty_label is not None:
+             yield ("", self.field.empty_label)
++        for obj in self._iter_queryset():
++            yield self.choice(obj)
++
++    def __len__(self):
++        return sum(1 for _ in self._iter_queryset()) + (1 if self.field.empty_label is not None else 0)
++
++    def _iter_queryset(self):
+         queryset = self.queryset
+-        # Can't use iterator() when queryset uses prefetch_related()
++        # Can't use iterator() when queryset uses prefetch_related().
+         if not queryset._prefetch_related_lookups:
+             queryset = queryset.iterator()
++        seen = set()
+         for obj in queryset:
+-            yield self.choice(obj)
+-
+-    def __len__(self):
+-        # count() adds a query but uses less memory since the QuerySet results
+-        # won't be cached. In most cases, the choices will only be iterated on,
+-        # and __len__() won't be called.
+-        return self.queryset.count() + (1 if self.field.empty_label is not None else 0)
++            if obj.pk in seen:
++                continue
++            seen.add(obj.pk)
++            yield obj
+ 
+     def __bool__(self):
+         return self.field.empty_label is not None or self.queryset.exists()
+@@ -1276,7 +1281,9 @@ class ModelChoiceField(ChoiceField):
+             key = self.to_field_name or 'pk'
+             if isinstance(value, self.queryset.model):
+                 value = getattr(value, key)
+-            value = self.queryset.get(**{key: value})
++            value = next(iter(self.queryset.filter(**{key: value}).order_by()[:1]), None)
++            if value is None:
++                raise self.queryset.model.DoesNotExist
+         except (ValueError, TypeError, self.queryset.model.DoesNotExist):
+             raise ValidationError(self.error_messages['invalid_choice'], code='invalid_choice')
+         return value

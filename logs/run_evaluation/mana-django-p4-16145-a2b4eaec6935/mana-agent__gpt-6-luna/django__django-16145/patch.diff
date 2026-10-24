@@ -1,0 +1,25 @@
+diff --git a/django/core/management/commands/runserver.py b/django/core/management/commands/runserver.py
+index 3c39f57e4d..dfdb664ab4 100644
+--- a/django/core/management/commands/runserver.py
++++ b/django/core/management/commands/runserver.py
+@@ -136,6 +136,11 @@ class Command(BaseCommand):
+         # requires_migrations_check attribute.
+         self.check_migrations()
+         now = datetime.now().strftime("%B %d, %Y - %X")
++        addr = self.addr
++        if self._raw_ipv6:
++            addr = "[%s]" % addr
++        elif addr == "0":
++            addr = "0.0.0.0"
+         self.stdout.write(now)
+         self.stdout.write(
+             (
+@@ -147,7 +152,7 @@ class Command(BaseCommand):
+                 "version": self.get_version(),
+                 "settings": settings.SETTINGS_MODULE,
+                 "protocol": self.protocol,
+-                "addr": "[%s]" % self.addr if self._raw_ipv6 else self.addr,
++                "addr": addr,
+                 "port": self.port,
+                 "quit_command": quit_command,
+             }

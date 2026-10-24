@@ -1,0 +1,15 @@
+diff --git a/xarray/core/weighted.py b/xarray/core/weighted.py
+index 996d2e4c..9e1f0875 100644
+--- a/xarray/core/weighted.py
++++ b/xarray/core/weighted.py
+@@ -140,7 +140,9 @@ class Weighted:
+         """ Calculate the sum of weights, accounting for missing values """
+ 
+         # we need to mask data values that are nan; else the weights are wrong
+-        mask = da.notnull()
++        # Ensure the dot product is numeric when weights are boolean. Otherwise
++        # summing boolean products returns a boolean result instead of a count.
++        mask = da.notnull().astype(int)
+ 
+         sum_of_weights = self._reduce(mask, self.weights, dim=dim, skipna=False)
+ 

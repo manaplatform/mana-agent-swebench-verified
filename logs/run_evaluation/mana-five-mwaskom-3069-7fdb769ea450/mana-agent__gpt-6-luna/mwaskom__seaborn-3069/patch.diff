@@ -1,0 +1,32 @@
+diff --git a/seaborn/_core/plot.py b/seaborn/_core/plot.py
+index 4f0290a..5638c7e 100644
+--- a/seaborn/_core/plot.py
++++ b/seaborn/_core/plot.py
+@@ -25,7 +25,7 @@ from seaborn._marks.base import Mark
+ from seaborn._stats.base import Stat
+ from seaborn._core.data import PlotData
+ from seaborn._core.moves import Move
+-from seaborn._core.scales import Scale
++from seaborn._core.scales import Scale, Nominal
+ from seaborn._core.subplots import Subplots
+ from seaborn._core.groupby import GroupBy
+ from seaborn._core.properties import PROPERTIES, Property
+@@ -1632,6 +1632,18 @@ class Plotter:
+             for axis in "xy":
+                 axis_key = sub[axis]
+ 
++                # Nominal coordinates use the same fixed spacing as categorical
++                # plots, with half a step of padding at either end.
++                scale = self._scales.get(axis_key)
++                if isinstance(scale, Nominal):
++                    axis_obj = getattr(ax, f"{axis}axis")
++                    ticks = axis_obj.get_majorticklocs()
++                    if len(ticks):
++                        lo, hi = min(ticks) - .5, max(ticks) + .5
++                        limits = (lo, hi) if axis == "x" else (hi, lo)
++                        getattr(ax, f"set_{axis}lim")(*limits, auto=None)
++                    axis_obj.grid(False)
++
+                 # Axis limits
+                 if axis_key in p._limits:
+                     convert_units = getattr(ax, f"{axis}axis").convert_units

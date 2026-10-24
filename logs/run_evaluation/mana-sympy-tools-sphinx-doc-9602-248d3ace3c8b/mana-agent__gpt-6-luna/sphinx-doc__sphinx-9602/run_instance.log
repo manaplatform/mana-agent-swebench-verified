@@ -1,0 +1,220 @@
+2026-10-24 00:21:44,715 - INFO - Creating container for sphinx-doc__sphinx-9602...
+2026-10-24 00:21:45,004 - INFO - Container for sphinx-doc__sphinx-9602 created: 7c45259f166827146c2f4439942acccbd52a35825ea5989817005d25fa309f6a
+2026-10-24 00:21:45,109 - INFO - Container for sphinx-doc__sphinx-9602 started: 7c45259f166827146c2f4439942acccbd52a35825ea5989817005d25fa309f6a
+2026-10-24 00:21:45,110 - INFO - Intermediate patch for sphinx-doc__sphinx-9602 written to logs/run_evaluation/mana-sympy-tools-sphinx-doc-9602-248d3ace3c8b/mana-agent__gpt-6-luna/sphinx-doc__sphinx-9602/patch.diff, now applying to container...
+2026-10-24 00:21:45,271 - INFO - >>>>> Applied Patch:
+Checking patch sphinx/domains/python.py...
+Applied patch sphinx/domains/python.py cleanly.
+
+2026-10-24 00:21:45,728 - INFO - Git diff before:
+diff --git a/sphinx/domains/python.py b/sphinx/domains/python.py
+index 9875a9f4b..ec625cd34 100644
+--- a/sphinx/domains/python.py
++++ b/sphinx/domains/python.py
+@@ -109,13 +109,21 @@ def type_to_xref(text: str, env: BuildEnvironment = None) -> addnodes.pending_xr
+ 
+ def _parse_annotation(annotation: str, env: BuildEnvironment = None) -> List[Node]:
+     """Parse type annotation."""
+-    def unparse(node: ast.AST) -> List[Node]:
++    def unparse(node: ast.AST, xref: bool = True) -> List[Node]:
++        def text(value: Any) -> Node:
++            value = str(value)
++            if xref and value.strip():
++                return type_to_xref(value, env)
++            else:
++                return nodes.Text(value)
++
+         if isinstance(node, ast.Attribute):
+-            return [nodes.Text("%s.%s" % (unparse(node.value)[0], node.attr))]
++            value = unparse(node.value, xref=False)[0].astext()
++            return [text("%s.%s" % (value, node.attr))]
+         elif isinstance(node, ast.BinOp):
+-            result: List[Node] = unparse(node.left)
++            result: List[Node] = unparse(node.left, xref)
+             result.extend(unparse(node.op))
+-            result.extend(unparse(node.right))
++            result.extend(unparse(node.right, xref))
+             return result
+         elif isinstance(node, ast.BitOr):
+             return [nodes.Text(' '), addnodes.desc_sig_punctuation('', '|'), nodes.Text(' ')]
+@@ -123,11 +131,11 @@ def _parse_annotation(annotation: str, env: BuildEnvironment = None) -> List[Nod
+             if node.value is Ellipsis:
+                 return [addnodes.desc_sig_punctuation('', "...")]
+             else:
+-                return [nodes.Text(node.value)]
++                return [text(node.value)]
+         elif isinstance(node, ast.Expr):
+-            return unparse(node.value)
++            return unparse(node.value, xref)
+         elif isinstance(node, ast.Index):
+-            return unparse(node.value)
++            return unparse(node.value, xref)
+         elif isinstance(node, ast.List):
+             result = [addnodes.desc_sig_punctuation('', '[')]
+             if node.elts:
+@@ -135,26 +143,29 @@ def _parse_annotation(annotation: str, env: BuildEnvironment = None) -> List[Nod
+                 # last element of result if the for-loop was run at least
+                 # once
+                 for elem in node.elts:
+-                    result.extend(unparse(elem))
++                    result.extend(unparse(elem, xref))
+                     result.append(addnodes.desc_sig_punctuation('', ', '))
+                 result.pop()
+             result.append(addnodes.desc_sig_punctuation('', ']'))
+             return result
+         elif isinstance(node, ast.Module):
+-            return sum((unparse(e) for e in node.body), [])
++            return sum((unparse(e, xref) for e in node.body), [])
+         elif isinstance(node, ast.Name):
+-            return [nodes.Text(node.id)]
++            return [text(node.id)]
+         elif isinstance(node, ast.Subscript):
+-            result = unparse(node.value)
++            result = unparse(node.value, xref)
+             result.append(addnodes.desc_sig_punctuation('', '['))
+-            result.extend(unparse(node.slice))
++            is_literal = ((isinstance(node.value, ast.Name) and node.value.id == 'Literal') or
++                          (isinstance(node.value, ast.Attribute) and
++                           node.value.attr == 'Literal'))
++            result.extend(unparse(node.slice, xref and not is_literal))
+             result.append(addnodes.desc_sig_punctuation('', ']'))
+             return result
+         elif isinstance(node, ast.Tuple):
+             if node.elts:
+                 result = []
+                 for elem in node.elts:
+-                    result.extend(unparse(elem))
++                    result.extend(unparse(elem, xref))
+                     result.append(addnodes.desc_sig_punctuation('', ', '))
+                 result.pop()
+             else:
+@@ -167,7 +178,7 @@ def _parse_annotation(annotation: str, env: BuildEnvironment = None) -> List[Nod
+                 if isinstance(node, ast.Ellipsis):
+                     return [addnodes.desc_sig_punctuation('', "...")]
+                 elif isinstance(node, ast.NameConstant):
+-                    return [nodes.Text(node.value)]
++                    return [text(node.value)]
+ 
+             raise SyntaxError  # unsupported syntax
+ 
+@@ -178,9 +189,6 @@ def _parse_annotation(annotation: str, env: BuildEnvironment = None) -> List[Nod
+     try:
+         tree = ast_parse(annotation)
+         result = unparse(tree)
+-        for i, node in enumerate(result):
+-            if isinstance(node, nodes.Text) and node.strip():
+-                result[i] = type_to_xref(str(node), env)
+         return result
+     except SyntaxError:
+         return [type_to_xref(annotation, env)]
+2026-10-24 00:21:45,728 - INFO - Eval script for sphinx-doc__sphinx-9602 written to logs/run_evaluation/mana-sympy-tools-sphinx-doc-9602-248d3ace3c8b/mana-agent__gpt-6-luna/sphinx-doc__sphinx-9602/eval.sh; copying to container...
+2026-10-24 00:21:56,300 - INFO - Test runtime: 10.51 seconds
+2026-10-24 00:21:56,301 - INFO - Test output for sphinx-doc__sphinx-9602 written to logs/run_evaluation/mana-sympy-tools-sphinx-doc-9602-248d3ace3c8b/mana-agent__gpt-6-luna/sphinx-doc__sphinx-9602/test_output.txt
+2026-10-24 00:21:56,379 - INFO - Git diff after:
+diff --git a/sphinx/domains/python.py b/sphinx/domains/python.py
+index 9875a9f4b..ec625cd34 100644
+--- a/sphinx/domains/python.py
++++ b/sphinx/domains/python.py
+@@ -109,13 +109,21 @@ def type_to_xref(text: str, env: BuildEnvironment = None) -> addnodes.pending_xr
+ 
+ def _parse_annotation(annotation: str, env: BuildEnvironment = None) -> List[Node]:
+     """Parse type annotation."""
+-    def unparse(node: ast.AST) -> List[Node]:
++    def unparse(node: ast.AST, xref: bool = True) -> List[Node]:
++        def text(value: Any) -> Node:
++            value = str(value)
++            if xref and value.strip():
++                return type_to_xref(value, env)
++            else:
++                return nodes.Text(value)
++
+         if isinstance(node, ast.Attribute):
+-            return [nodes.Text("%s.%s" % (unparse(node.value)[0], node.attr))]
++            value = unparse(node.value, xref=False)[0].astext()
++            return [text("%s.%s" % (value, node.attr))]
+         elif isinstance(node, ast.BinOp):
+-            result: List[Node] = unparse(node.left)
++            result: List[Node] = unparse(node.left, xref)
+             result.extend(unparse(node.op))
+-            result.extend(unparse(node.right))
++            result.extend(unparse(node.right, xref))
+             return result
+         elif isinstance(node, ast.BitOr):
+             return [nodes.Text(' '), addnodes.desc_sig_punctuation('', '|'), nodes.Text(' ')]
+@@ -123,11 +131,11 @@ def _parse_annotation(annotation: str, env: BuildEnvironment = None) -> List[Nod
+             if node.value is Ellipsis:
+                 return [addnodes.desc_sig_punctuation('', "...")]
+             else:
+-                return [nodes.Text(node.value)]
++                return [text(node.value)]
+         elif isinstance(node, ast.Expr):
+-            return unparse(node.value)
++            return unparse(node.value, xref)
+         elif isinstance(node, ast.Index):
+-            return unparse(node.value)
++            return unparse(node.value, xref)
+         elif isinstance(node, ast.List):
+             result = [addnodes.desc_sig_punctuation('', '[')]
+             if node.elts:
+@@ -135,26 +143,29 @@ def _parse_annotation(annotation: str, env: BuildEnvironment = None) -> List[Nod
+                 # last element of result if the for-loop was run at least
+                 # once
+                 for elem in node.elts:
+-                    result.extend(unparse(elem))
++                    result.extend(unparse(elem, xref))
+                     result.append(addnodes.desc_sig_punctuation('', ', '))
+                 result.pop()
+             result.append(addnodes.desc_sig_punctuation('', ']'))
+             return result
+         elif isinstance(node, ast.Module):
+-            return sum((unparse(e) for e in node.body), [])
++            return sum((unparse(e, xref) for e in node.body), [])
+         elif isinstance(node, ast.Name):
+-            return [nodes.Text(node.id)]
++            return [text(node.id)]
+         elif isinstance(node, ast.Subscript):
+-            result = unparse(node.value)
++            result = unparse(node.value, xref)
+             result.append(addnodes.desc_sig_punctuation('', '['))
+-            result.extend(unparse(node.slice))
++            is_literal = ((isinstance(node.value, ast.Name) and node.value.id == 'Literal') or
++                          (isinstance(node.value, ast.Attribute) and
++                           node.value.attr == 'Literal'))
++            result.extend(unparse(node.slice, xref and not is_literal))
+             result.append(addnodes.desc_sig_punctuation('', ']'))
+             return result
+         elif isinstance(node, ast.Tuple):
+             if node.elts:
+                 result = []
+                 for elem in node.elts:
+-                    result.extend(unparse(elem))
++                    result.extend(unparse(elem, xref))
+                     result.append(addnodes.desc_sig_punctuation('', ', '))
+                 result.pop()
+             else:
+@@ -167,7 +178,7 @@ def _parse_annotation(annotation: str, env: BuildEnvironment = None) -> List[Nod
+                 if isinstance(node, ast.Ellipsis):
+                     return [addnodes.desc_sig_punctuation('', "...")]
+                 elif isinstance(node, ast.NameConstant):
+-                    return [nodes.Text(node.value)]
++                    return [text(node.value)]
+ 
+             raise SyntaxError  # unsupported syntax
+ 
+@@ -178,9 +189,6 @@ def _parse_annotation(annotation: str, env: BuildEnvironment = None) -> List[Nod
+     try:
+         tree = ast_parse(annotation)
+         result = unparse(tree)
+-        for i, node in enumerate(result):
+-            if isinstance(node, nodes.Text) and node.strip():
+-                result[i] = type_to_xref(str(node), env)
+         return result
+     except SyntaxError:
+         return [type_to_xref(annotation, env)]
+2026-10-24 00:21:56,379 - INFO - Grading answer for sphinx-doc__sphinx-9602...
+2026-10-24 00:21:56,388 - INFO - report: {'sphinx-doc__sphinx-9602': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': False, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': [], 'failure': ['tests/test_domain_py.py::test_parse_annotation_Literal']}, 'PASS_TO_PASS': {'success': ['tests/test_domain_py.py::test_function_signatures', 'tests/test_domain_py.py::test_domain_py_xrefs', 'tests/test_domain_py.py::test_domain_py_xrefs_abbreviations', 'tests/test_domain_py.py::test_domain_py_objects', 'tests/test_domain_py.py::test_resolve_xref_for_properties', 'tests/test_domain_py.py::test_domain_py_find_obj', 'tests/test_domain_py.py::test_domain_py_canonical', 'tests/test_domain_py.py::test_get_full_qualified_name', 'tests/test_domain_py.py::test_parse_annotation', 'tests/test_domain_py.py::test_pyfunction_signature', 'tests/test_domain_py.py::test_pyfunction_signature_full', 'tests/test_domain_py.py::test_pyfunction_signature_full_py38', 'tests/test_domain_py.py::test_pyfunction_with_number_literals', 'tests/test_domain_py.py::test_pyfunction_with_union_type_operator', 'tests/test_domain_py.py::test_optional_pyfunction_signature', 'tests/test_domain_py.py::test_pyexception_signature', 'tests/test_domain_py.py::test_pydata_signature', 'tests/test_domain_py.py::test_pydata_signature_old', 'tests/test_domain_py.py::test_pydata_with_union_type_operator', 'tests/test_domain_py.py::test_pyobject_prefix', 'tests/test_domain_py.py::test_pydata', 'tests/test_domain_py.py::test_pyfunction', 'tests/test_domain_py.py::test_pyclass_options', 'tests/test_domain_py.py::test_pymethod_options', 'tests/test_domain_py.py::test_pyclassmethod', 'tests/test_domain_py.py::test_pystaticmethod', 'tests/test_domain_py.py::test_pyattribute', 'tests/test_domain_py.py::test_pyproperty', 'tests/test_domain_py.py::test_pydecorator_signature', 'tests/test_domain_py.py::test_pydecoratormethod_signature', 'tests/test_domain_py.py::test_canonical', 'tests/test_domain_py.py::test_canonical_definition_overrides', 'tests/test_domain_py.py::test_canonical_definition_skip', 'tests/test_domain_py.py::test_canonical_duplicated', 'tests/test_domain_py.py::test_info_field_list', 'tests/test_domain_py.py::test_info_field_list_piped_type', 'tests/test_domain_py.py::test_info_field_list_var', 'tests/test_domain_py.py::test_module_index', 'tests/test_domain_py.py::test_module_index_submodule', 'tests/test_domain_py.py::test_module_index_not_collapsed', 'tests/test_domain_py.py::test_modindex_common_prefix', 'tests/test_domain_py.py::test_noindexentry', 'tests/test_domain_py.py::test_python_python_use_unqualified_type_names', 'tests/test_domain_py.py::test_python_python_use_unqualified_type_names_disabled', 'tests/test_domain_py.py::test_warn_missing_reference'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for sphinx-doc__sphinx-9602: resolved: False
+2026-10-24 00:21:56,389 - INFO - Attempting to stop container sweb.eval.sphinx-doc__sphinx-9602.mana-sympy-tools-sphinx-doc-9602-248d3ace3c8b...
+2026-10-24 00:22:11,494 - INFO - Container sweb.eval.sphinx-doc__sphinx-9602.mana-sympy-tools-sphinx-doc-9602-248d3ace3c8b stopped successfully.
+2026-10-24 00:22:11,494 - INFO - Attempting to remove container sweb.eval.sphinx-doc__sphinx-9602.mana-sympy-tools-sphinx-doc-9602-248d3ace3c8b...
+2026-10-24 00:22:11,531 - INFO - Container sweb.eval.sphinx-doc__sphinx-9602.mana-sympy-tools-sphinx-doc-9602-248d3ace3c8b removed successfully.

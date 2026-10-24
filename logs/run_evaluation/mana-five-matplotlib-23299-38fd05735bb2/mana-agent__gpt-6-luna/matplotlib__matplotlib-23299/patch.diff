@@ -1,0 +1,18 @@
+diff --git a/lib/matplotlib/pyplot.py b/lib/matplotlib/pyplot.py
+index e3c66ea67..deeb02a05 100644
+--- a/lib/matplotlib/pyplot.py
++++ b/lib/matplotlib/pyplot.py
+@@ -222,6 +222,13 @@ def switch_backend(newbackend):
+     global _backend_mod
+     # make sure the init is pulled up so we can assign to it later
+     import matplotlib.backends
++    if (newbackend is rcsetup._auto_backend_sentinel
++            and _backend_mod is not None):
++        # The auto backend may have been resolved inside an rc_context, which
++        # then restored the sentinel.  Keep using the already selected backend
++        # instead of closing figures and selecting it again.
++        rcParams['backend'] = matplotlib.backends.backend
++        return
+     close("all")
+ 
+     if newbackend is rcsetup._auto_backend_sentinel:

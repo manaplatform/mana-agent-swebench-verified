@@ -1,0 +1,41 @@
+diff --git a/django/db/models/deletion.py b/django/db/models/deletion.py
+index 3a462f1c4c..179433165c 100644
+--- a/django/db/models/deletion.py
++++ b/django/db/models/deletion.py
+@@ -188,6 +188,36 @@ class Collector:
+         if self.can_fast_delete(objs):
+             self.fast_deletes.append(objs)
+             return
++
++        # Fetch only the fields needed to collect and delete these objects.
++        # Signal handlers receive model instances and may rely on any field,
++        # so keep the full rows in that case.
++        if hasattr(objs, 'model'):
++            model = objs.model
++            if not (signals.pre_delete.has_listeners(model) or
++                    signals.post_delete.has_listeners(model) or
++                    signals.m2m_changed.has_listeners(model)):
++                opts = model._meta
++                required_fields = {opts.pk.name}
++                # These target fields are used to find objects that reference
++                # the objects being collected. This also handles ForeignKeys
++                # that target a non-primary key field.
++                required_fields.update(
++                    related.field.target_field.name
++                    for related in get_candidate_relations_to_delete(opts)
++                    if related.field.remote_field.on_delete is not DO_NOTHING
++                )
++                # Parent objects are collected through their parent link.
++                required_fields.update(
++                    ptr.name for ptr in opts.parents.values() if ptr is not None
++                )
++                fields = [opts.pk.name]
++                fields.extend(
++                    field.name for field in opts.concrete_fields
++                    if field.name in required_fields and field.name not in fields
++                )
++                objs = objs.only(*fields)
++
+         new_objs = self.add(objs, source, nullable,
+                             reverse_dependency=reverse_dependency)
+         if not new_objs:

@@ -1,0 +1,48 @@
+2026-10-22 18:57:17,797 - INFO - Creating container for django__django-14500...
+2026-10-22 18:57:17,974 - INFO - Container for django__django-14500 created: bfce0e7f4d087a763810d1cb4658c930a3aac9ef5308b5ba74cb5ced0d46ffd5
+2026-10-22 18:57:18,033 - INFO - Container for django__django-14500 started: bfce0e7f4d087a763810d1cb4658c930a3aac9ef5308b5ba74cb5ced0d46ffd5
+2026-10-22 18:57:18,033 - INFO - Intermediate patch for django__django-14500 written to logs/run_evaluation/mana-django-p4-14500-ffad22c3b75e/mana-agent__gpt-6-luna/django__django-14500/patch.diff, now applying to container...
+2026-10-22 18:57:18,116 - INFO - >>>>> Applied Patch:
+Checking patch django/db/migrations/executor.py...
+Applied patch django/db/migrations/executor.py cleanly.
+
+2026-10-22 18:57:18,611 - INFO - Git diff before:
+diff --git a/django/db/migrations/executor.py b/django/db/migrations/executor.py
+index 57042a8690..a366cb43d9 100644
+--- a/django/db/migrations/executor.py
++++ b/django/db/migrations/executor.py
+@@ -254,8 +254,7 @@ class MigrationExecutor:
+         if migration.replaces:
+             for app_label, name in migration.replaces:
+                 self.recorder.record_unapplied(app_label, name)
+-        else:
+-            self.recorder.record_unapplied(migration.app_label, migration.name)
++        self.recorder.record_unapplied(migration.app_label, migration.name)
+         # Report progress
+         if self.progress_callback:
+             self.progress_callback("unapply_success", migration, fake)
+2026-10-22 18:57:18,612 - INFO - Eval script for django__django-14500 written to logs/run_evaluation/mana-django-p4-14500-ffad22c3b75e/mana-agent__gpt-6-luna/django__django-14500/eval.sh; copying to container...
+2026-10-22 18:57:31,070 - INFO - Test runtime: 12.42 seconds
+2026-10-22 18:57:31,071 - INFO - Test output for django__django-14500 written to logs/run_evaluation/mana-django-p4-14500-ffad22c3b75e/mana-agent__gpt-6-luna/django__django-14500/test_output.txt
+2026-10-22 18:57:31,141 - INFO - Git diff after:
+diff --git a/django/db/migrations/executor.py b/django/db/migrations/executor.py
+index 57042a8690..a366cb43d9 100644
+--- a/django/db/migrations/executor.py
++++ b/django/db/migrations/executor.py
+@@ -254,8 +254,7 @@ class MigrationExecutor:
+         if migration.replaces:
+             for app_label, name in migration.replaces:
+                 self.recorder.record_unapplied(app_label, name)
+-        else:
+-            self.recorder.record_unapplied(migration.app_label, migration.name)
++        self.recorder.record_unapplied(migration.app_label, migration.name)
+         # Report progress
+         if self.progress_callback:
+             self.progress_callback("unapply_success", migration, fake)
+2026-10-22 18:57:31,141 - INFO - Grading answer for django__django-14500...
+2026-10-22 18:57:31,143 - INFO - report: {'django__django-14500': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': True, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': ['test_migrate_marks_replacement_unapplied (migrations.test_executor.ExecutorTests)'], 'failure': []}, 'PASS_TO_PASS': {'success': ['If the current state satisfies the given target, do nothing.', 'Minimize unnecessary rollbacks in connected apps.', 'Minimize rollbacks when target has multiple in-app children.', 'test_alter_id_type_with_fk (migrations.test_executor.ExecutorTests)', 'Applying all replaced migrations marks replacement as applied (#24628).', 'An atomic operation is properly rolled back inside a non-atomic', 'Regression test for #22325 - references to a custom user model defined in the', 'executor.detect_soft_applied() detects ManyToManyField tables from an', "Re-planning a full migration of a fully-migrated set doesn't", 'A new squash migration will be marked as applied even if all its', 'Migrations are applied and recorded atomically.', 'Migrations are not recorded if deferred SQL application fails.', 'Although the MigrationExecutor interfaces allows for mixed migration', 'Applying a non-atomic migration works as expected.', '#24129 - Tests callback process', 'Tests running a simple set of migrations.', 'Tests running a squashed migration from zero (should ignore what it replaces)', 'Tests detection of initial migrations already having been applied.', '#26647 - Unrelated applied migrations should be part of the final', '#24123 - All models of apps being unapplied which are', '#24123 - All models of apps already applied which are'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for django__django-14500: resolved: True
+2026-10-22 18:57:31,144 - INFO - Attempting to stop container sweb.eval.django__django-14500.mana-django-p4-14500-ffad22c3b75e...
+2026-10-22 18:57:46,302 - INFO - Container sweb.eval.django__django-14500.mana-django-p4-14500-ffad22c3b75e stopped successfully.
+2026-10-22 18:57:46,302 - INFO - Attempting to remove container sweb.eval.django__django-14500.mana-django-p4-14500-ffad22c3b75e...
+2026-10-22 18:57:46,338 - INFO - Container sweb.eval.django__django-14500.mana-django-p4-14500-ffad22c3b75e removed successfully.

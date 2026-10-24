@@ -1,0 +1,82 @@
+2026-10-23 21:39:32,532 - INFO - Creating container for sympy__sympy-23950...
+2026-10-23 21:39:32,586 - INFO - Container for sympy__sympy-23950 created: a935f8659423c959b239ee72a81bf3db881bf05b73351755147d317e583c0378
+2026-10-23 21:39:32,654 - INFO - Container for sympy__sympy-23950 started: a935f8659423c959b239ee72a81bf3db881bf05b73351755147d317e583c0378
+2026-10-23 21:39:32,655 - INFO - Intermediate patch for sympy__sympy-23950 written to logs/run_evaluation/mana-sympy-tools-sympy-23950-4a551bb46f1a/mana-agent__gpt-6-luna/sympy__sympy-23950/patch.diff, now applying to container...
+2026-10-23 21:39:32,835 - INFO - >>>>> Applied Patch:
+Checking patch sympy/logic/boolalg.py...
+Checking patch sympy/sets/contains.py...
+Applied patch sympy/logic/boolalg.py cleanly.
+Applied patch sympy/sets/contains.py cleanly.
+
+2026-10-23 21:39:33,630 - INFO - Git diff before:
+diff --git a/sympy/logic/boolalg.py b/sympy/logic/boolalg.py
+index a375580f6f..ee0d680ef7 100644
+--- a/sympy/logic/boolalg.py
++++ b/sympy/logic/boolalg.py
+@@ -175,7 +175,11 @@ def as_set(self):
+                 else:
+                     return new._eval_as_set()
+ 
+-            return self._eval_as_set()
++            if hasattr(self, '_eval_as_set'):
++                return self._eval_as_set()
++
++            from sympy.sets.conditionset import ConditionSet
++            return ConditionSet(x, self)
+         else:
+             raise NotImplementedError("Sorry, as_set has not yet been"
+                                       " implemented for multivariate"
+diff --git a/sympy/sets/contains.py b/sympy/sets/contains.py
+index b2d4268d12..57266d48ba 100644
+--- a/sympy/sets/contains.py
++++ b/sympy/sets/contains.py
+@@ -45,4 +45,7 @@ def binary_symbols(self):
+             isinstance(i, (Eq, Ne))])
+ 
+     def as_set(self):
+-        raise NotImplementedError()
++        x, s = self.args
++        if x.is_Symbol:
++            return s
++        return super().as_set()
+2026-10-23 21:39:33,630 - INFO - Eval script for sympy__sympy-23950 written to logs/run_evaluation/mana-sympy-tools-sympy-23950-4a551bb46f1a/mana-agent__gpt-6-luna/sympy__sympy-23950/eval.sh; copying to container...
+2026-10-23 21:39:41,241 - INFO - Test runtime: 7.53 seconds
+2026-10-23 21:39:41,241 - INFO - Test output for sympy__sympy-23950 written to logs/run_evaluation/mana-sympy-tools-sympy-23950-4a551bb46f1a/mana-agent__gpt-6-luna/sympy__sympy-23950/test_output.txt
+2026-10-23 21:39:41,441 - INFO - Git diff after:
+diff --git a/sympy/logic/boolalg.py b/sympy/logic/boolalg.py
+index a375580f6f..ee0d680ef7 100644
+--- a/sympy/logic/boolalg.py
++++ b/sympy/logic/boolalg.py
+@@ -175,7 +175,11 @@ def as_set(self):
+                 else:
+                     return new._eval_as_set()
+ 
+-            return self._eval_as_set()
++            if hasattr(self, '_eval_as_set'):
++                return self._eval_as_set()
++
++            from sympy.sets.conditionset import ConditionSet
++            return ConditionSet(x, self)
+         else:
+             raise NotImplementedError("Sorry, as_set has not yet been"
+                                       " implemented for multivariate"
+diff --git a/sympy/sets/contains.py b/sympy/sets/contains.py
+index b2d4268d12..57266d48ba 100644
+--- a/sympy/sets/contains.py
++++ b/sympy/sets/contains.py
+@@ -45,4 +45,7 @@ def binary_symbols(self):
+             isinstance(i, (Eq, Ne))])
+ 
+     def as_set(self):
+-        raise NotImplementedError()
++        x, s = self.args
++        if x.is_Symbol:
++            return s
++        return super().as_set()
+2026-10-23 21:39:41,441 - INFO - Grading answer for sympy__sympy-23950...
+2026-10-23 21:39:41,442 - INFO - report: {'sympy__sympy-23950': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': True, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': ['test_as_set'], 'failure': []}, 'PASS_TO_PASS': {'success': ['test_contains_basic', 'test_issue_6194', 'test_issue_10326', 'test_binary_symbols'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for sympy__sympy-23950: resolved: True
+2026-10-23 21:39:41,443 - INFO - Attempting to stop container sweb.eval.sympy__sympy-23950.mana-sympy-tools-sympy-23950-4a551bb46f1a...
+2026-10-23 21:39:56,590 - INFO - Container sweb.eval.sympy__sympy-23950.mana-sympy-tools-sympy-23950-4a551bb46f1a stopped successfully.
+2026-10-23 21:39:56,590 - INFO - Attempting to remove container sweb.eval.sympy__sympy-23950.mana-sympy-tools-sympy-23950-4a551bb46f1a...
+2026-10-23 21:39:56,631 - INFO - Container sweb.eval.sympy__sympy-23950.mana-sympy-tools-sympy-23950-4a551bb46f1a removed successfully.

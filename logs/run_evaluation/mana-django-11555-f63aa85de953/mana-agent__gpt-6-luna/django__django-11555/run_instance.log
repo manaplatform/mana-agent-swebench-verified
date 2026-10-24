@@ -1,0 +1,62 @@
+2026-10-22 14:02:17,737 - INFO - Creating container for django__django-11555...
+2026-10-22 14:02:17,865 - INFO - Container for django__django-11555 created: ea41c507314bbe6d9aefe9dca0c345b24e88c94b90780e54a6b1874cfdb02801
+2026-10-22 14:02:17,939 - INFO - Container for django__django-11555 started: ea41c507314bbe6d9aefe9dca0c345b24e88c94b90780e54a6b1874cfdb02801
+2026-10-22 14:02:17,940 - INFO - Intermediate patch for django__django-11555 written to logs/run_evaluation/mana-django-11555-f63aa85de953/mana-agent__gpt-6-luna/django__django-11555/patch.diff, now applying to container...
+2026-10-22 14:02:18,042 - INFO - >>>>> Applied Patch:
+Checking patch django/db/models/sql/compiler.py...
+Applied patch django/db/models/sql/compiler.py cleanly.
+
+2026-10-22 14:02:18,444 - INFO - Git diff before:
+diff --git a/django/db/models/sql/compiler.py b/django/db/models/sql/compiler.py
+index eaccc96d7d..6a94f240c3 100644
+--- a/django/db/models/sql/compiler.py
++++ b/django/db/models/sql/compiler.py
+@@ -704,6 +704,16 @@ class SQLCompiler:
+         not be) and column name for ordering by the given 'name' parameter.
+         The 'name' is of the form 'field1__field2__...__fieldN'.
+         """
++        if hasattr(name, 'resolve_expression'):
++            if isinstance(name, Value):
++                # output_field must be resolved for constants.
++                name = Cast(name, name.output_field)
++            if not isinstance(name, OrderBy):
++                name = name.asc()
++            if default_order == 'DESC':
++                name = name.copy()
++                name.reverse_ordering()
++            return [(name, False)]
+         name, order = get_order_dir(name, default_order)
+         descending = order == 'DESC'
+         pieces = name.split(LOOKUP_SEP)
+2026-10-22 14:02:18,445 - INFO - Eval script for django__django-11555 written to logs/run_evaluation/mana-django-11555-f63aa85de953/mana-agent__gpt-6-luna/django__django-11555/eval.sh; copying to container...
+2026-10-22 14:02:30,420 - INFO - Test runtime: 11.94 seconds
+2026-10-22 14:02:30,421 - INFO - Test output for django__django-11555 written to logs/run_evaluation/mana-django-11555-f63aa85de953/mana-agent__gpt-6-luna/django__django-11555/test_output.txt
+2026-10-22 14:02:30,488 - INFO - Git diff after:
+diff --git a/django/db/models/sql/compiler.py b/django/db/models/sql/compiler.py
+index eaccc96d7d..6a94f240c3 100644
+--- a/django/db/models/sql/compiler.py
++++ b/django/db/models/sql/compiler.py
+@@ -704,6 +704,16 @@ class SQLCompiler:
+         not be) and column name for ordering by the given 'name' parameter.
+         The 'name' is of the form 'field1__field2__...__fieldN'.
+         """
++        if hasattr(name, 'resolve_expression'):
++            if isinstance(name, Value):
++                # output_field must be resolved for constants.
++                name = Cast(name, name.output_field)
++            if not isinstance(name, OrderBy):
++                name = name.asc()
++            if default_order == 'DESC':
++                name = name.copy()
++                name.reverse_ordering()
++            return [(name, False)]
+         name, order = get_order_dir(name, default_order)
+         descending = order == 'DESC'
+         pieces = name.split(LOOKUP_SEP)
+2026-10-22 14:02:30,488 - INFO - Grading answer for django__django-11555...
+2026-10-22 14:02:30,489 - INFO - report: {'django__django-11555': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': True, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': ['test_order_by_ptr_field_with_default_ordering_by_expression (ordering.tests.OrderingTests)'], 'failure': []}, 'PASS_TO_PASS': {'success': ['test_default_ordering (ordering.tests.OrderingTests)', 'F expressions can be used in Meta.ordering.', 'test_default_ordering_override (ordering.tests.OrderingTests)', 'test_deprecated_values_annotate (ordering.tests.OrderingTests)', 'test_extra_ordering (ordering.tests.OrderingTests)', 'test_extra_ordering_quoting (ordering.tests.OrderingTests)', 'test_extra_ordering_with_table_name (ordering.tests.OrderingTests)', 'test_no_reordering_after_slicing (ordering.tests.OrderingTests)', 'test_order_by_constant_value (ordering.tests.OrderingTests)', 'test_order_by_constant_value_without_output_field (ordering.tests.OrderingTests)', 'test_order_by_f_expression (ordering.tests.OrderingTests)', 'test_order_by_f_expression_duplicates (ordering.tests.OrderingTests)', 'test_order_by_fk_attname (ordering.tests.OrderingTests)', 'test_order_by_nulls_first (ordering.tests.OrderingTests)', 'test_order_by_nulls_first_and_last (ordering.tests.OrderingTests)', 'test_order_by_nulls_last (ordering.tests.OrderingTests)', 'test_order_by_override (ordering.tests.OrderingTests)', 'test_order_by_pk (ordering.tests.OrderingTests)', 'test_orders_nulls_first_on_filtered_subquery (ordering.tests.OrderingTests)', 'test_random_ordering (ordering.tests.OrderingTests)', 'test_related_ordering_duplicate_table_reference (ordering.tests.OrderingTests)', 'test_reverse_meta_ordering_pure (ordering.tests.OrderingTests)', 'test_reverse_ordering_pure (ordering.tests.OrderingTests)', 'test_reversed_ordering (ordering.tests.OrderingTests)', 'test_stop_slicing (ordering.tests.OrderingTests)', 'test_stop_start_slicing (ordering.tests.OrderingTests)'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for django__django-11555: resolved: True
+2026-10-22 14:02:30,490 - INFO - Attempting to stop container sweb.eval.django__django-11555.mana-django-11555-f63aa85de953...
+2026-10-22 14:02:45,609 - INFO - Container sweb.eval.django__django-11555.mana-django-11555-f63aa85de953 stopped successfully.
+2026-10-22 14:02:45,609 - INFO - Attempting to remove container sweb.eval.django__django-11555.mana-django-11555-f63aa85de953...
+2026-10-22 14:02:45,652 - INFO - Container sweb.eval.django__django-11555.mana-django-11555-f63aa85de953 removed successfully.

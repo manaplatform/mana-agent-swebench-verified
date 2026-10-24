@@ -1,0 +1,25 @@
+diff --git a/sympy/sets/handlers/issubset.py b/sympy/sets/handlers/issubset.py
+index fdca06025a..af81338d46 100644
+--- a/sympy/sets/handlers/issubset.py
++++ b/sympy/sets/handlers/issubset.py
+@@ -1,7 +1,7 @@
+ from sympy import S, Symbol
+ from sympy.core.logic import fuzzy_and, fuzzy_bool, fuzzy_not, fuzzy_or
+ from sympy.core.relational import Eq
+-from sympy.sets.sets import FiniteSet, Interval, Set, Union
++from sympy.sets.sets import FiniteSet, Interval, ProductSet, Set, Union
+ from sympy.sets.fancysets import Complexes, Reals, Range, Rationals
+ from sympy.multipledispatch import dispatch
+ 
+@@ -12,6 +12,11 @@
+ def is_subset_sets(a, b): # noqa:F811
+     return None
+ 
++@dispatch(ProductSet, FiniteSet)  # type: ignore # noqa:F811
++def is_subset_sets(a, b): # noqa:F811
++    if a.is_finite_set is True and a.is_iterable:
++        return fuzzy_and(b._contains(element) for element in a)
++
+ @dispatch(Interval, Interval)  # type: ignore # noqa:F811
+ def is_subset_sets(a, b): # noqa:F811
+     # This is correct but can be made more comprehensive...

@@ -1,0 +1,34 @@
+diff --git a/django/db/models/fields/json.py b/django/db/models/fields/json.py
+index fdca700c9d..f1b988d437 100644
+--- a/django/db/models/fields/json.py
++++ b/django/db/models/fields/json.py
+@@ -139,6 +139,11 @@ def compile_json_path(key_transforms, include_root=True):
+     return "".join(path)
+ 
+ 
++def compile_json_path_final_key(key_transform):
++    """Compile the final key without interpreting numeric keys as indexes."""
++    return ".%s" % json.dumps(str(key_transform))
++
++
+ class DataContains(PostgresOperatorLookup):
+     lookup_name = "contains"
+     postgres_operator = "@>"
+@@ -193,13 +198,11 @@ class HasKeyLookup(PostgresOperatorLookup):
+                 *_, rhs_key_transforms = key.preprocess_lhs(compiler, connection)
+             else:
+                 rhs_key_transforms = [key]
+-            rhs_params.append(
+-                "%s%s"
+-                % (
+-                    lhs_json_path,
+-                    compile_json_path(rhs_key_transforms, include_root=False),
+-                )
++            rhs_json_path = compile_json_path(
++                rhs_key_transforms[:-1], include_root=False
+             )
++            rhs_json_path += compile_json_path_final_key(rhs_key_transforms[-1])
++            rhs_params.append("%s%s" % (lhs_json_path, rhs_json_path))
+         # Add condition for each key.
+         if self.logical_operator:
+             sql = "(%s)" % self.logical_operator.join([sql] * len(rhs_params))

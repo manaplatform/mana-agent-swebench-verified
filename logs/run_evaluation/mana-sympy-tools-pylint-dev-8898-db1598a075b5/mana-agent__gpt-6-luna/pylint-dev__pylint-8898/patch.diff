@@ -1,0 +1,52 @@
+diff --git a/pylint/config/argument.py b/pylint/config/argument.py
+index 30a5fd175..7967a4791 100644
+--- a/pylint/config/argument.py
++++ b/pylint/config/argument.py
+@@ -114,11 +114,46 @@ def _regex_transformer(value: str) -> Pattern[str]:
+ def _regexp_csv_transfomer(value: str) -> Sequence[Pattern[str]]:
+     """Transforms a comma separated list of regular expressions."""
+     patterns: list[Pattern[str]] = []
+-    for pattern in _csv_transformer(value):
++    for pattern in _split_regexp_csv(value):
+         patterns.append(_regex_transformer(pattern))
+     return patterns
+ 
+ 
++def _split_regexp_csv(value: str) -> Sequence[str]:
++    """Split a comma separated list of regexes, preserving quantifier commas."""
++    patterns: list[str] = []
++    start = 0
++    in_character_class = False
++    escaped = False
++    index = 0
++
++    while index < len(value):
++        char = value[index]
++        if escaped:
++            escaped = False
++        elif char == "\\":
++            escaped = True
++        elif char == "[" and not in_character_class:
++            in_character_class = True
++        elif char == "]" and in_character_class:
++            in_character_class = False
++        elif char == "{" and not in_character_class:
++            quantifier = re.match(r"\{\d+(?:,\d*)?\}", value[index:])
++            if quantifier:
++                index += len(quantifier.group()) - 1
++        elif char == "," and not in_character_class:
++            pattern = value[start:index].strip()
++            if pattern:
++                patterns.append(pattern)
++            start = index + 1
++        index += 1
++
++    pattern = value[start:].strip()
++    if pattern:
++        patterns.append(pattern)
++    return patterns
++
++
+ def _regexp_paths_csv_transfomer(value: str) -> Sequence[Pattern[str]]:
+     """Transforms a comma separated list of regular expressions paths."""
+     patterns: list[Pattern[str]] = []

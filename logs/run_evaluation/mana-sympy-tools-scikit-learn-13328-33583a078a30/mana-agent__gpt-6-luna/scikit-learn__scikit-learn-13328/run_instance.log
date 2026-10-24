@@ -1,0 +1,48 @@
+2026-10-23 22:56:11,549 - INFO - Creating container for scikit-learn__scikit-learn-13328...
+2026-10-23 22:56:11,591 - INFO - Container for scikit-learn__scikit-learn-13328 created: 4abc7af164bb178295be815f805a6d053f1c120e1fe3e72b4d0ab130775c5996
+2026-10-23 22:56:11,680 - INFO - Container for scikit-learn__scikit-learn-13328 started: 4abc7af164bb178295be815f805a6d053f1c120e1fe3e72b4d0ab130775c5996
+2026-10-23 22:56:11,680 - INFO - Intermediate patch for scikit-learn__scikit-learn-13328 written to logs/run_evaluation/mana-sympy-tools-scikit-learn-13328-33583a078a30/mana-agent__gpt-6-luna/scikit-learn__scikit-learn-13328/patch.diff, now applying to container...
+2026-10-23 22:56:11,868 - INFO - >>>>> Applied Patch:
+Checking patch sklearn/linear_model/huber.py...
+Applied patch sklearn/linear_model/huber.py cleanly.
+
+2026-10-23 22:56:12,380 - INFO - Git diff before:
+diff --git a/sklearn/linear_model/huber.py b/sklearn/linear_model/huber.py
+index 65c686400..7f0f2320d 100644
+--- a/sklearn/linear_model/huber.py
++++ b/sklearn/linear_model/huber.py
+@@ -251,7 +251,8 @@ class HuberRegressor(LinearModel, RegressorMixin, BaseEstimator):
+         self : object
+         """
+         X, y = check_X_y(
+-            X, y, copy=False, accept_sparse=['csr'], y_numeric=True)
++            X, y, copy=False, accept_sparse=['csr'],
++            dtype=[np.float64, np.float32], y_numeric=True)
+         if sample_weight is not None:
+             sample_weight = np.array(sample_weight)
+             check_consistent_length(y, sample_weight)
+2026-10-23 22:56:12,381 - INFO - Eval script for scikit-learn__scikit-learn-13328 written to logs/run_evaluation/mana-sympy-tools-scikit-learn-13328-33583a078a30/mana-agent__gpt-6-luna/scikit-learn__scikit-learn-13328/eval.sh; copying to container...
+2026-10-23 22:56:22,577 - INFO - Test runtime: 10.13 seconds
+2026-10-23 22:56:22,578 - INFO - Test output for scikit-learn__scikit-learn-13328 written to logs/run_evaluation/mana-sympy-tools-scikit-learn-13328-33583a078a30/mana-agent__gpt-6-luna/scikit-learn__scikit-learn-13328/test_output.txt
+2026-10-23 22:56:22,738 - INFO - Git diff after:
+diff --git a/sklearn/linear_model/huber.py b/sklearn/linear_model/huber.py
+index 65c686400..7f0f2320d 100644
+--- a/sklearn/linear_model/huber.py
++++ b/sklearn/linear_model/huber.py
+@@ -251,7 +251,8 @@ class HuberRegressor(LinearModel, RegressorMixin, BaseEstimator):
+         self : object
+         """
+         X, y = check_X_y(
+-            X, y, copy=False, accept_sparse=['csr'], y_numeric=True)
++            X, y, copy=False, accept_sparse=['csr'],
++            dtype=[np.float64, np.float32], y_numeric=True)
+         if sample_weight is not None:
+             sample_weight = np.array(sample_weight)
+             check_consistent_length(y, sample_weight)
+2026-10-23 22:56:22,738 - INFO - Grading answer for scikit-learn__scikit-learn-13328...
+2026-10-23 22:56:22,739 - INFO - report: {'scikit-learn__scikit-learn-13328': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': True, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': ['sklearn/linear_model/tests/test_huber.py::test_huber_bool'], 'failure': []}, 'PASS_TO_PASS': {'success': ['sklearn/linear_model/tests/test_huber.py::test_huber_equals_lr_for_high_epsilon', 'sklearn/linear_model/tests/test_huber.py::test_huber_max_iter', 'sklearn/linear_model/tests/test_huber.py::test_huber_gradient', 'sklearn/linear_model/tests/test_huber.py::test_huber_sample_weights', 'sklearn/linear_model/tests/test_huber.py::test_huber_sparse', 'sklearn/linear_model/tests/test_huber.py::test_huber_scaling_invariant', 'sklearn/linear_model/tests/test_huber.py::test_huber_and_sgd_same_results', 'sklearn/linear_model/tests/test_huber.py::test_huber_warm_start', 'sklearn/linear_model/tests/test_huber.py::test_huber_better_r2_score'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for scikit-learn__scikit-learn-13328: resolved: True
+2026-10-23 22:56:22,739 - INFO - Attempting to stop container sweb.eval.scikit-learn__scikit-learn-13328.mana-sympy-tools-scikit-learn-13328-33583a078a30...
+2026-10-23 22:56:37,880 - INFO - Container sweb.eval.scikit-learn__scikit-learn-13328.mana-sympy-tools-scikit-learn-13328-33583a078a30 stopped successfully.
+2026-10-23 22:56:37,881 - INFO - Attempting to remove container sweb.eval.scikit-learn__scikit-learn-13328.mana-sympy-tools-scikit-learn-13328-33583a078a30...
+2026-10-23 22:56:37,919 - INFO - Container sweb.eval.scikit-learn__scikit-learn-13328.mana-sympy-tools-scikit-learn-13328-33583a078a30 removed successfully.

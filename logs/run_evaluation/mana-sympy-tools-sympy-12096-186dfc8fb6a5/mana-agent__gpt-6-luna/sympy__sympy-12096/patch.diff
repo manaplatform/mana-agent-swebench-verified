@@ -1,0 +1,16 @@
+diff --git a/sympy/core/function.py b/sympy/core/function.py
+index 1b8005e1d2..cb5ae4af1c 100644
+--- a/sympy/core/function.py
++++ b/sympy/core/function.py
+@@ -507,7 +507,10 @@ def _eval_evalf(self, prec):
+             func = getattr(mpmath, fname)
+         except (AttributeError, KeyError):
+             try:
+-                return Float(self._imp_(*self.args), prec)
++                value = self._imp_(*self.args)
++                if isinstance(value, Basic):
++                    return value.evalf(mlib.libmpf.prec_to_dps(prec))
++                return Float(value, prec)
+             except (AttributeError, TypeError, ValueError):
+                 return
+ 

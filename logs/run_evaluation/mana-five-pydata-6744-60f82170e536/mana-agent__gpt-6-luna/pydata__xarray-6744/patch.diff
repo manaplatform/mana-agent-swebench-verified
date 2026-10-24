@@ -1,0 +1,24 @@
+diff --git a/xarray/core/rolling.py b/xarray/core/rolling.py
+index aef290f6..35787740 100644
+--- a/xarray/core/rolling.py
++++ b/xarray/core/rolling.py
+@@ -270,9 +270,16 @@ class DataArrayRolling(Rolling["DataArray"]):
+     def __iter__(self) -> Iterator[tuple[RollingKey, DataArray]]:
+         if self.ndim > 1:
+             raise ValueError("__iter__ is only supported for 1d-rolling")
+-        stops = np.arange(1, len(self.window_labels) + 1)
+-        starts = stops - int(self.window[0])
+-        starts[: int(self.window[0])] = 0
++        indices = np.arange(len(self.window_labels))
++        window_size = int(self.window[0])
++        if self.center[0]:
++            starts = indices - window_size // 2
++            stops = starts + window_size
++            starts = np.maximum(starts, 0)
++            stops = np.minimum(stops, len(self.window_labels))
++        else:
++            stops = indices + 1
++            starts = np.maximum(stops - window_size, 0)
+         for (label, start, stop) in zip(self.window_labels, starts, stops):
+             window = self.obj.isel({self.dim[0]: slice(start, stop)})
+ 

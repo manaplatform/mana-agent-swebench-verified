@@ -1,0 +1,78 @@
+diff --git a/sphinx/ext/autodoc/__init__.py b/sphinx/ext/autodoc/__init__.py
+index f8e4be999..04ef76a33 100644
+--- a/sphinx/ext/autodoc/__init__.py
++++ b/sphinx/ext/autodoc/__init__.py
+@@ -1044,6 +1044,7 @@ class DocstringSignatureMixin:
+                           RemovedInSphinx40Warning, stacklevel=2)
+         docstrings = self.get_doc()
+         self._new_docstrings = docstrings[:]
++        self._additional_signatures = []
+         result = None
+         for i, doclines in enumerate(docstrings):
+             # no lines in docstring, no match
+@@ -1053,20 +1054,34 @@ class DocstringSignatureMixin:
+             match = py_ext_sig_re.match(doclines[0])
+             if not match:
+                 continue
+-            exmod, path, base, args, retann = match.groups()
+             # the base name must match ours
+             valid_names = [self.objpath[-1]]  # type: ignore
+             if isinstance(self, ClassDocumenter):
+                 valid_names.append('__init__')
+                 if hasattr(self.object, '__mro__'):
+                     valid_names.extend(cls.__name__ for cls in self.object.__mro__)
+-            if base not in valid_names:
++            if match.group(3) not in valid_names:
+                 continue
++
++            signatures = [match.groups()[3:]]
++            line_index = 1
++            while line_index < len(doclines):
++                signature_index = line_index
++                while signature_index < len(doclines) and not doclines[signature_index].strip():
++                    signature_index += 1
++                match = (py_ext_sig_re.match(doclines[signature_index])
++                         if signature_index < len(doclines) else None)
++                if not match or match.group(3) not in valid_names:
++                    break
++                signatures.append(match.groups()[3:])
++                line_index = signature_index + 1
++
+             # re-prepare docstring to ignore more leading indentation
+             tab_width = self.directive.state.document.settings.tab_width  # type: ignore
+-            self._new_docstrings[i] = prepare_docstring('\n'.join(doclines[1:]),
++            self._new_docstrings[i] = prepare_docstring('\n'.join(doclines[line_index:]),
+                                                         tabsize=tab_width)
+-            result = args, retann
++            result = signatures[0]
++            self._additional_signatures = signatures[1:]
+             # don't look any further
+             break
+         return result
+@@ -1088,7 +1103,17 @@ class DocstringSignatureMixin:
+             result = self._find_signature()
+             if result is not None:
+                 self.args, self.retann = result
+-        return super().format_signature(**kwargs)  # type: ignore
++        signature = super().format_signature(**kwargs)  # type: ignore
++        additional_signatures = getattr(self, '_additional_signatures', [])
++        if additional_signatures:
++            signatures = []
++            for args, retann in additional_signatures:
++                overload = '(%s)' % args if args is not None else ''
++                if retann:
++                    overload += ' -> %s' % retann
++                signatures.append(overload)
++            return '\n'.join([signature] + signatures)
++        return signature
+ 
+ 
+ class DocstringStripSignatureMixin(DocstringSignatureMixin):
+@@ -1106,6 +1131,7 @@ class DocstringStripSignatureMixin(DocstringSignatureMixin):
+                 # DocstringSignatureMixin.format_signature.
+                 # Documenter.format_signature use self.args value to format.
+                 _args, self.retann = result
++                self._additional_signatures = []
+         return super().format_signature(**kwargs)
+ 
+ 

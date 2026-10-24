@@ -1,0 +1,108 @@
+2026-10-22 18:30:13,767 - INFO - Creating container for django__django-14034...
+2026-10-22 18:30:13,979 - INFO - Container for django__django-14034 created: c5a8176cdb9998a53bcb9d181e7a9067b96f7f95c6e0b06f6b1fb16edf671e58
+2026-10-22 18:30:14,072 - INFO - Container for django__django-14034 started: c5a8176cdb9998a53bcb9d181e7a9067b96f7f95c6e0b06f6b1fb16edf671e58
+2026-10-22 18:30:14,072 - INFO - Intermediate patch for django__django-14034 written to logs/run_evaluation/mana-django-p4-14034-a9884d871e18/mana-agent__gpt-6-luna/django__django-14034/patch.diff, now applying to container...
+2026-10-22 18:30:14,172 - INFO - >>>>> Applied Patch:
+Checking patch django/forms/fields.py...
+Checking patch django/forms/widgets.py...
+Applied patch django/forms/fields.py cleanly.
+Applied patch django/forms/widgets.py cleanly.
+
+2026-10-22 18:30:14,799 - INFO - Git diff before:
+diff --git a/django/forms/fields.py b/django/forms/fields.py
+index 65d6a9ec82..507ed70251 100644
+--- a/django/forms/fields.py
++++ b/django/forms/fields.py
+@@ -988,11 +988,19 @@ class MultiValueField(Field):
+     def __init__(self, fields, *, require_all_fields=True, **kwargs):
+         self.require_all_fields = require_all_fields
+         super().__init__(**kwargs)
+-        for f in fields:
++        subwidgets = getattr(self.widget, 'widgets', None)
++        if not self.require_all_fields and subwidgets is not None:
++            self.widget._required_by_subwidget = True
++        for i, f in enumerate(fields):
+             f.error_messages.setdefault('incomplete',
+                                         self.error_messages['incomplete'])
+             if self.disabled:
+                 f.disabled = True
++            if not self.require_all_fields and subwidgets is not None and i < len(subwidgets):
++                # The parent widget's required attribute is added to all
++                # subwidgets. Preserve the field-level required state on each
++                # subwidget so MultiWidget can apply it individually.
++                subwidgets[i].is_required = self.required and f.required
+             if self.require_all_fields:
+                 # Set 'required' to False on the individual fields, because the
+                 # required validation will be handled by MultiValueField, not
+diff --git a/django/forms/widgets.py b/django/forms/widgets.py
+index 00c19e2c55..ceb4f06c82 100644
+--- a/django/forms/widgets.py
++++ b/django/forms/widgets.py
+@@ -843,7 +843,12 @@ class MultiWidget(Widget):
+                 widget_attrs = final_attrs.copy()
+                 widget_attrs['id'] = '%s_%s' % (id_, i)
+             else:
+-                widget_attrs = final_attrs
++                widget_attrs = final_attrs.copy()
++            if getattr(self, '_required_by_subwidget', False) and 'required' in widget_attrs:
++                if widget.is_required and widget.use_required_attribute(widget_value):
++                    widget_attrs['required'] = True
++                else:
++                    widget_attrs.pop('required')
+             subwidgets.append(widget.get_context(widget_name, widget_value, widget_attrs)['widget'])
+         context['widget']['subwidgets'] = subwidgets
+         return context
+2026-10-22 18:30:14,800 - INFO - Eval script for django__django-14034 written to logs/run_evaluation/mana-django-p4-14034-a9884d871e18/mana-agent__gpt-6-luna/django__django-14034/eval.sh; copying to container...
+2026-10-22 18:30:25,956 - INFO - Test runtime: 11.12 seconds
+2026-10-22 18:30:25,956 - INFO - Test output for django__django-14034 written to logs/run_evaluation/mana-django-p4-14034-a9884d871e18/mana-agent__gpt-6-luna/django__django-14034/test_output.txt
+2026-10-22 18:30:26,037 - INFO - Git diff after:
+diff --git a/django/forms/fields.py b/django/forms/fields.py
+index 65d6a9ec82..507ed70251 100644
+--- a/django/forms/fields.py
++++ b/django/forms/fields.py
+@@ -988,11 +988,19 @@ class MultiValueField(Field):
+     def __init__(self, fields, *, require_all_fields=True, **kwargs):
+         self.require_all_fields = require_all_fields
+         super().__init__(**kwargs)
+-        for f in fields:
++        subwidgets = getattr(self.widget, 'widgets', None)
++        if not self.require_all_fields and subwidgets is not None:
++            self.widget._required_by_subwidget = True
++        for i, f in enumerate(fields):
+             f.error_messages.setdefault('incomplete',
+                                         self.error_messages['incomplete'])
+             if self.disabled:
+                 f.disabled = True
++            if not self.require_all_fields and subwidgets is not None and i < len(subwidgets):
++                # The parent widget's required attribute is added to all
++                # subwidgets. Preserve the field-level required state on each
++                # subwidget so MultiWidget can apply it individually.
++                subwidgets[i].is_required = self.required and f.required
+             if self.require_all_fields:
+                 # Set 'required' to False on the individual fields, because the
+                 # required validation will be handled by MultiValueField, not
+diff --git a/django/forms/widgets.py b/django/forms/widgets.py
+index 00c19e2c55..ceb4f06c82 100644
+--- a/django/forms/widgets.py
++++ b/django/forms/widgets.py
+@@ -843,7 +843,12 @@ class MultiWidget(Widget):
+                 widget_attrs = final_attrs.copy()
+                 widget_attrs['id'] = '%s_%s' % (id_, i)
+             else:
+-                widget_attrs = final_attrs
++                widget_attrs = final_attrs.copy()
++            if getattr(self, '_required_by_subwidget', False) and 'required' in widget_attrs:
++                if widget.is_required and widget.use_required_attribute(widget_value):
++                    widget_attrs['required'] = True
++                else:
++                    widget_attrs.pop('required')
+             subwidgets.append(widget.get_context(widget_name, widget_value, widget_attrs)['widget'])
+         context['widget']['subwidgets'] = subwidgets
+         return context
+2026-10-22 18:30:26,037 - INFO - Grading answer for django__django-14034...
+2026-10-22 18:30:26,038 - INFO - report: {'django__django-14034': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': True, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': ['test_render_required_attributes (forms_tests.field_tests.test_multivaluefield.MultiValueFieldTest)'], 'failure': []}, 'PASS_TO_PASS': {'success': ['test_bad_choice (forms_tests.field_tests.test_multivaluefield.MultiValueFieldTest)', 'test_clean (forms_tests.field_tests.test_multivaluefield.MultiValueFieldTest)', 'test_clean_disabled_multivalue (forms_tests.field_tests.test_multivaluefield.MultiValueFieldTest)', 'test_disabled_has_changed (forms_tests.field_tests.test_multivaluefield.MultiValueFieldTest)', 'test_form_as_table (forms_tests.field_tests.test_multivaluefield.MultiValueFieldTest)', 'test_form_as_table_data (forms_tests.field_tests.test_multivaluefield.MultiValueFieldTest)', 'test_form_cleaned_data (forms_tests.field_tests.test_multivaluefield.MultiValueFieldTest)', "Test when the first widget's data has changed.", "Test when the last widget's data has changed. This ensures that it is", 'test_has_changed_no_initial (forms_tests.field_tests.test_multivaluefield.MultiValueFieldTest)', 'test_has_changed_same (forms_tests.field_tests.test_multivaluefield.MultiValueFieldTest)', 'If insufficient data is provided, None is substituted.'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for django__django-14034: resolved: True
+2026-10-22 18:30:26,039 - INFO - Attempting to stop container sweb.eval.django__django-14034.mana-django-p4-14034-a9884d871e18...
+2026-10-22 18:30:41,150 - INFO - Container sweb.eval.django__django-14034.mana-django-p4-14034-a9884d871e18 stopped successfully.
+2026-10-22 18:30:41,150 - INFO - Attempting to remove container sweb.eval.django__django-14034.mana-django-p4-14034-a9884d871e18...
+2026-10-22 18:30:41,201 - INFO - Container sweb.eval.django__django-14034.mana-django-p4-14034-a9884d871e18 removed successfully.

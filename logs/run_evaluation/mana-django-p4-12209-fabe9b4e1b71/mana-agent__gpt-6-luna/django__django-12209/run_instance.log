@@ -1,0 +1,58 @@
+2026-10-22 15:44:56,581 - INFO - Creating container for django__django-12209...
+2026-10-22 15:44:57,116 - INFO - Container for django__django-12209 created: 749ada1bb50326069f2081f778806b4a0c793263ab4b104dc820bfb2f1a70e7f
+2026-10-22 15:44:57,244 - INFO - Container for django__django-12209 started: 749ada1bb50326069f2081f778806b4a0c793263ab4b104dc820bfb2f1a70e7f
+2026-10-22 15:44:57,245 - INFO - Intermediate patch for django__django-12209 written to logs/run_evaluation/mana-django-p4-12209-fabe9b4e1b71/mana-agent__gpt-6-luna/django__django-12209/patch.diff, now applying to container...
+2026-10-22 15:44:57,456 - INFO - >>>>> Applied Patch:
+Checking patch django/db/models/base.py...
+Applied patch django/db/models/base.py cleanly.
+
+2026-10-22 15:44:58,423 - INFO - Git diff before:
+diff --git a/django/db/models/base.py b/django/db/models/base.py
+index e3b14a41a0..549b060e38 100644
+--- a/django/db/models/base.py
++++ b/django/db/models/base.py
+@@ -847,9 +847,13 @@ class Model(metaclass=ModelBase):
+         if not pk_set and (force_update or update_fields):
+             raise ValueError("Cannot force an update in save() with no primary key.")
+         updated = False
+-        # Skip an UPDATE when adding an instance and primary key has a default.
++        # Skip an UPDATE when adding an instance and primary key has a default,
++        # unless an update is explicitly requested or this is a raw save.
+         if (
+             not force_insert and
++            not force_update and
++            not update_fields and
++            not raw and
+             self._state.adding and
+             self._meta.pk.default and
+             self._meta.pk.default is not NOT_PROVIDED
+2026-10-22 15:44:58,423 - INFO - Eval script for django__django-12209 written to logs/run_evaluation/mana-django-p4-12209-fabe9b4e1b71/mana-agent__gpt-6-luna/django__django-12209/eval.sh; copying to container...
+2026-10-22 15:45:20,639 - INFO - Test runtime: 22.11 seconds
+2026-10-22 15:45:20,640 - INFO - Test output for django__django-12209 written to logs/run_evaluation/mana-django-p4-12209-fabe9b4e1b71/mana-agent__gpt-6-luna/django__django-12209/test_output.txt
+2026-10-22 15:45:20,717 - INFO - Git diff after:
+diff --git a/django/db/models/base.py b/django/db/models/base.py
+index e3b14a41a0..549b060e38 100644
+--- a/django/db/models/base.py
++++ b/django/db/models/base.py
+@@ -847,9 +847,13 @@ class Model(metaclass=ModelBase):
+         if not pk_set and (force_update or update_fields):
+             raise ValueError("Cannot force an update in save() with no primary key.")
+         updated = False
+-        # Skip an UPDATE when adding an instance and primary key has a default.
++        # Skip an UPDATE when adding an instance and primary key has a default,
++        # unless an update is explicitly requested or this is a raw save.
+         if (
+             not force_insert and
++            not force_update and
++            not update_fields and
++            not raw and
+             self._state.adding and
+             self._meta.pk.default and
+             self._meta.pk.default is not NOT_PROVIDED
+2026-10-22 15:45:20,717 - INFO - Grading answer for django__django-12209...
+2026-10-22 15:45:20,719 - INFO - report: {'django__django-12209': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': True, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': ['partial(func, *args, **keywords) - new function with partial application'], 'failure': []}, 'PASS_TO_PASS': {'success': [], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for django__django-12209: resolved: True
+2026-10-22 15:45:20,720 - INFO - Attempting to stop container sweb.eval.django__django-12209.mana-django-p4-12209-fabe9b4e1b71...
+2026-10-22 15:45:35,804 - INFO - Container sweb.eval.django__django-12209.mana-django-p4-12209-fabe9b4e1b71 stopped successfully.
+2026-10-22 15:45:35,804 - INFO - Attempting to remove container sweb.eval.django__django-12209.mana-django-p4-12209-fabe9b4e1b71...
+2026-10-22 15:45:35,835 - INFO - Container sweb.eval.django__django-12209.mana-django-p4-12209-fabe9b4e1b71 removed successfully.

@@ -1,0 +1,16 @@
+diff --git a/sphinx/ext/autodoc/__init__.py b/sphinx/ext/autodoc/__init__.py
+index 76265f5be..5722a41fd 100644
+--- a/sphinx/ext/autodoc/__init__.py
++++ b/sphinx/ext/autodoc/__init__.py
+@@ -726,6 +726,11 @@ class Documenter:
+                 # hack for ClassDocumenter to inject docstring via ObjectMember
+                 doc = obj.docstring
+ 
++            if not doc and (namespace, membername) in attr_docs:
++                # Attribute documentation is stored separately from the
++                # object's docstring, but its metadata affects filtering too.
++                doc = '\n'.join(attr_docs[(namespace, membername)])
++
+             has_doc = bool(doc)
+ 
+             metadata = extract_metadata(doc)

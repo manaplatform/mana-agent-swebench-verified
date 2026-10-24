@@ -1,0 +1,66 @@
+2026-10-22 19:41:37,020 - INFO - Creating container for django__django-15127...
+2026-10-22 19:41:37,277 - INFO - Container for django__django-15127 created: ea497c5cdee019e934289294d74f900951bfea7afbf5944b48fb8346f64bf13b
+2026-10-22 19:41:37,353 - INFO - Container for django__django-15127 started: ea497c5cdee019e934289294d74f900951bfea7afbf5944b48fb8346f64bf13b
+2026-10-22 19:41:37,356 - INFO - Intermediate patch for django__django-15127 written to logs/run_evaluation/mana-django-p4-15127-398eb37df3ed/mana-agent__gpt-6-luna/django__django-15127/patch.diff, now applying to container...
+2026-10-22 19:41:37,468 - INFO - >>>>> Applied Patch:
+Checking patch django/contrib/messages/storage/base.py...
+Applied patch django/contrib/messages/storage/base.py cleanly.
+
+2026-10-22 19:41:37,988 - INFO - Git diff before:
+diff --git a/django/contrib/messages/storage/base.py b/django/contrib/messages/storage/base.py
+index 01422066a6..824082d3cb 100644
+--- a/django/contrib/messages/storage/base.py
++++ b/django/contrib/messages/storage/base.py
+@@ -1,9 +1,18 @@
+ from django.conf import settings
+ from django.contrib.messages import constants, utils
++from django.core.signals import setting_changed
++from django.dispatch import receiver
+ 
+ LEVEL_TAGS = utils.get_level_tags()
+ 
+ 
++@receiver(setting_changed)
++def update_level_tags(**kwargs):
++    global LEVEL_TAGS
++    if kwargs['setting'] == 'MESSAGE_TAGS':
++        LEVEL_TAGS = utils.get_level_tags()
++
++
+ class Message:
+     """
+     Represent an actual message that can be stored in any of the supported
+2026-10-22 19:41:37,989 - INFO - Eval script for django__django-15127 written to logs/run_evaluation/mana-django-p4-15127-398eb37df3ed/mana-agent__gpt-6-luna/django__django-15127/eval.sh; copying to container...
+2026-10-22 19:41:49,537 - INFO - Test runtime: 11.51 seconds
+2026-10-22 19:41:49,538 - INFO - Test output for django__django-15127 written to logs/run_evaluation/mana-django-p4-15127-398eb37df3ed/mana-agent__gpt-6-luna/django__django-15127/test_output.txt
+2026-10-22 19:41:49,618 - INFO - Git diff after:
+diff --git a/django/contrib/messages/storage/base.py b/django/contrib/messages/storage/base.py
+index 01422066a6..824082d3cb 100644
+--- a/django/contrib/messages/storage/base.py
++++ b/django/contrib/messages/storage/base.py
+@@ -1,9 +1,18 @@
+ from django.conf import settings
+ from django.contrib.messages import constants, utils
++from django.core.signals import setting_changed
++from django.dispatch import receiver
+ 
+ LEVEL_TAGS = utils.get_level_tags()
+ 
+ 
++@receiver(setting_changed)
++def update_level_tags(**kwargs):
++    global LEVEL_TAGS
++    if kwargs['setting'] == 'MESSAGE_TAGS':
++        LEVEL_TAGS = utils.get_level_tags()
++
++
+ class Message:
+     """
+     Represent an actual message that can be stored in any of the supported
+2026-10-22 19:41:49,618 - INFO - Grading answer for django__django-15127...
+2026-10-22 19:41:49,620 - INFO - report: {'django__django-15127': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': True, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': ['test_override_settings_level_tags (messages_tests.tests.TestLevelTags)'], 'failure': []}, 'PASS_TO_PASS': {'success': ['test_eq (messages_tests.tests.MessageTests)'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for django__django-15127: resolved: True
+2026-10-22 19:41:49,621 - INFO - Attempting to stop container sweb.eval.django__django-15127.mana-django-p4-15127-398eb37df3ed...
+2026-10-22 19:42:04,755 - INFO - Container sweb.eval.django__django-15127.mana-django-p4-15127-398eb37df3ed stopped successfully.
+2026-10-22 19:42:04,755 - INFO - Attempting to remove container sweb.eval.django__django-15127.mana-django-p4-15127-398eb37df3ed...
+2026-10-22 19:42:04,790 - INFO - Container sweb.eval.django__django-15127.mana-django-p4-15127-398eb37df3ed removed successfully.

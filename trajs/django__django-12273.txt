@@ -1,0 +1,330 @@
+# Mana-Agent trajectory: django__django-12273
+
+
+## Original task and instructions
+
+You are solving a single SWE-bench issue inside an isolated git checkout.
+Repository: django/django
+Instance ID: django__django-12273
+Working directory (repository root): /Users/ah/Documents/mana-agent/.swe-bench/worktrees/django__django-12273
+
+Task:
+- Read the issue carefully.
+- Inspect only the files needed to implement a minimal correct fix.
+- Prefer reading source files and applying edits over running the package.
+- The repository is a source checkout and may not be installed or importable;
+  do not spend the turn diagnosing import/runtime environment failures.
+- If you run Python, always use `python3` (never bare `python`, which may be 2.x).
+- Apply the fix directly in this repository (edit production source files only).
+- Do not add, edit, delete, or rename test files or test helpers.
+- Do not modify tests solely to make them pass.
+- Official evaluation tests are applied separately; test changes cause harness failures.
+- Do not commit, push, rebase, or rewrite git history.
+- Do not interact with the user; complete the coding task in one pass.
+- Success means production-source edits left as uncommitted working-tree changes.
+- Do not finish with only analysis or chat text when a code fix is required.
+
+Issue / problem statement:
+Resetting primary key for a child model doesn't work.
+Description
+	
+In the attached example code setting the primary key to None does not work (so that the existing object is overwritten on save()).
+The most important code fragments of the bug example:
+from django.db import models
+class Item(models.Model):
+	# uid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+	uid = models.AutoField(primary_key=True, editable=False)
+	f = models.BooleanField(default=False)
+	def reset(self):
+		self.uid = None
+		self.f = False
+class Derived(Item):
+	pass
+class SaveTestCase(TestCase):
+	def setUp(self):
+		self.derived = Derived.objects.create(f=True) # create the first object
+		item = Item.objects.get(pk=self.derived.pk)
+		obj1 = item.derived
+		obj1.reset()
+		obj1.save() # the first object is overwritten
+	def test_f_true(self):
+		obj = Item.objects.get(pk=self.derived.pk)
+		self.assertTrue(obj.f)
+Django 2.1.2
+
+Hints:
+I'm not sure if this is a bug. The test passes after adding self.item_ptr = None to Item.reset(). Is that the behavior you're looking for?
+I agree with Tim here. It feels like what you're after is self.pk = None as it will be alias for self.item_ptr for Derived instances and self.uid for Item instances.
+@Simon Charette No self.pk = None does not work too. It seems that there is no reliable (not error-prone, as depending on the usage of base or derived class) way to do this :-(
+Can we consider that self.pk = None does not work too, as a bug? At least it is a counterintuitive (and dangerous for the data!) behavior.
+Hello Victor, could you provide more details about what exactly you are trying to achieve here? So far you've only provided a test case that fails. Are you trying to create a copy of an existing objects using MTI? Providing more details about what you are trying to achieve and why you're expecting the test to pass would help us to determining if this is actually a bug. Does setting both self.uid and self.pk to None works? Thanks!
+Replying to Simon Charette: Hello Victor, could you provide more details about what exactly you are trying to achieve here? So far you've only provided a test case that fails. Are you trying to create a copy of an existing objects using MTI? Yes. I am trying to create a copy of an existing object using MTI. Providing more details about what you are trying to achieve and why you're expecting the test to pass would help us to determining if this is actually a bug. I am trying to create a copy of a Derived object which was in the DB long before. The copy should contain all fields of the Derived model and all fields of its base models. As for now, I do not know a reliable and not error-prone (such as depending on usage of base of derived class) way to do this. If there is no such way, it is a missing feature in Django and this should be considered at least as a feature suggestion. In my real code I may have several levels of inheritance (not just Item and Derived).
+Thanks for the extra details Victor. Could you confirm that the following patch work for you when setting self.pk = None in reset(). diff --git a/django/db/models/base.py b/django/db/models/base.py index 751f42bb9b..535928ce05 100644 --- a/django/db/models/base.py +++ b/django/db/models/base.py @@ -553,7 +553,11 @@ class Model(metaclass=ModelBase): return getattr(self, meta.pk.attname) def _set_pk_val(self, value): - return setattr(self, self._meta.pk.attname, value) + field = self._meta.pk + setattr(self, field.attname, value) + while getattr(field, 'parent_link', False): + field = field.target_field + setattr(self, field.attname, value) pk = property(_get_pk_val, _set_pk_val) This code should make sure that setting self.pk = None does self.item_ptr_id = self.id = None for any level of concrete model inheritance. That should be enough for save() to create new objects from my local testing. FWIW this changes passes the full test suite on SQLite so it could be a tentative patch but it kind of break the symmetry with _get_pk. Something to keep in mind though is that right now pk = None assignment trick for object copying is neither documented or embraced by the Django documentation AFAIK.
+Replying to Simon Charette: Could you confirm that the following patch work for you when setting self.pk = None in reset(). No, the patch does not make self.pk = None to work! pip install django ... patch -p1 < ~/t/patch.diff cd /home/porton/Projects/test/testsave (env) testsave,0$ ./manage.py test Creating test database for alias 'default'... System check identified no issues (0 silenced). F ====================================================================== FAIL: test_f_true (test1.tests.SaveTestCase) ---------------------------------------------------------------------- Traceback (most recent call last): File "/home/porton/Projects/test/testsave/test1/tests.py", line 19, in test_f_true self.assertTrue(obj.f) AssertionError: False is not true ---------------------------------------------------------------------- Ran 1 test in 0.005s FAILED (failures=1) Destroying test database for alias 'default'...
+The following should do diff --git a/django/db/models/base.py b/django/db/models/base.py index 751f42bb9b..d3141d6180 100644 --- a/django/db/models/base.py +++ b/django/db/models/base.py @@ -553,6 +553,8 @@ class Model(metaclass=ModelBase): return getattr(self, meta.pk.attname) def _set_pk_val(self, value): + for parent_link in self._meta.parents.values(): + setattr(self, parent_link.target_field.attname, value) return setattr(self, self._meta.pk.attname, value) pk = property(_get_pk_val, _set_pk_val)
+Replying to Simon Charette: The following should do My test with this patch passed.
+Replying to Victor Porton: My test with this patch passed. When to expect it to be included in Django distribution?
+The patch doesn't seem to work for child models that inherit from multiple models. It also created some other test failures. See my ​PR.
+Weird that didn't get these failures locally. Anyway this clearly need more work as it was an idea designed on the back of an envelope.
+
+
+## Agent execution output
+
+Mana-Agent v0.5.2  repo: django__django-12273  branch: detached/unknown
+model gpt-6-luna   mode chat   tools auto   memory off   skills not found
+cwd /Users/ah/Documents/mana-agent/.swe-bench/worktrees/django__django-12273
+auto tools  44 available · search×3
+Quiet startup (MANA_CHAT_QUIET); full tool catalog omitted.
+mana ❯ You are solving a single SWE-bench issue inside an isolated git checkout.
+Repository: django/django
+Instance ID: django__django-12273
+Working directory (repository root): 
+/Users/ah/Documents/mana-agent/.swe-bench/worktrees/django__django-12273
+
+Task:
+- Read the issue carefully.
+- Inspect only the files needed to implement a minimal correct fix.
+- Prefer reading source files and applying edits over running the package.
+- The repository is a source checkout and may not be installed or importable;
+  do not spend the turn diagnosing import/runtime environment failures.
+- If you run Python, always use `python3` (never bare `python`, which may be 
+2.x).
+- Apply the fix directly in this repository (edit production source files only).
+- Do not add, edit, delete, or rename test files or test helpers.
+- Do not modify tests solely to make them pass.
+- Official evaluation tests are applied separately; test changes cause harness 
+failures.
+- Do not commit, push, rebase, or rewrite git history.
+- Do not interact with the user; complete the coding task in one pass.
+- Success means production-source edits left as uncommitted working-tree 
+changes.
+- Do not finish with only analysis or chat text when a code fix is required.
+
+Issue / problem statement:
+Resetting primary key for a child model doesn't work.
+Description
+        
+In the attached example code setting the primary key to None does not work (so 
+that the existing object is overwritten on save()).
+The most important code fragments of the bug example:
+from django.db import models
+class Item(models.Model):
+        # uid = models.UUIDField(primary_key=True, default=uuid.uuid4, 
+editable=False)
+        uid = models.AutoField(primary_key=True, editable=False)
+        f = models.BooleanField(default=False)
+        def reset(self):
+                self.uid = None
+                self.f = False
+class Derived(Item):
+        pass
+class SaveTestCase(TestCase):
+        def setUp(self):
+                self.derived = Derived.objects.create(f=True) # create the first
+object
+                item = Item.objects.get(pk=self.derived.pk)
+                obj1 = item.derived
+                obj1.reset()
+                obj1.save() # the first object is overwritten
+        def test_f_true(self):
+                obj = Item.objects.get(pk=self.derived.pk)
+                self.assertTrue(obj.f)
+Django 2.1.2
+
+Hints:
+I'm not sure if this is a bug. The test passes after adding self.item_ptr = None
+to Item.reset(). Is that the behavior you're looking for?
+I agree with Tim here. It feels like what you're after is self.pk = None as it 
+will be alias for self.item_ptr for Derived instances and self.uid for Item 
+instances.
+@Simon Charette No self.pk = None does not work too. It seems that there is no 
+reliable (not error-prone, as depending on the usage of base or derived class) 
+way to do this :-(
+Can we consider that self.pk = None does not work too, as a bug? At least it is 
+a counterintuitive (and dangerous for the data!) behavior.
+Hello Victor, could you provide more details about what exactly you are trying 
+to achieve here? So far you've only provided a test case that fails. Are you 
+trying to create a copy of an existing objects using MTI? Providing more details
+about what you are trying to achieve and why you're expecting the test to pass 
+would help us to determining if this is actually a bug. Does setting both 
+self.uid and self.pk to None works? Thanks!
+Replying to Simon Charette: Hello Victor, could you provide more details about 
+what exactly you are trying to achieve here? So far you've only provided a test 
+case that fails. Are you trying to create a copy of an existing objects using 
+MTI? Yes. I am trying to create a copy of an existing object using MTI. 
+Providing more details about what you are trying to achieve and why you're 
+expecting the test to pass would help us to determining if this is actually a 
+bug. I am trying to create a copy of a Derived object which was in the DB long 
+before. The copy should contain all fields of the Derived model and all fields 
+of its base models. As for now, I do not know a reliable and not error-prone 
+(such as depending on usage of base of derived class) way to do this. If there 
+is no such way, it is a missing feature in Django and this should be considered 
+at least as a feature suggestion. In my real code I may have several levels of 
+inheritance (not just Item and Derived).
+Thanks for the extra details Victor. Could you confirm that the following patch 
+work for you when setting self.pk = None in reset(). diff --git 
+a/django/db/models/base.py b/django/db/models/base.py index 
+751f42bb9b..535928ce05 100644 --- a/django/db/models/base.py +++ 
+b/django/db/models/base.py @@ -553,7 +553,11 @@ class 
+Model(metaclass=ModelBase): return getattr(self, meta.pk.attname) def 
+_set_pk_val(self, value): - return setattr(self, self._meta.pk.attname, value) +
+field = self._meta.pk + setattr(self, field.attname, value) + while 
+getattr(field, 'parent_link', False): + field = field.target_field + 
+setattr(self, field.attname, value) pk = property(_get_pk_val, _set_pk_val) This
+code should make sure that setting self.pk = None does self.item_ptr_id = 
+self.id = None for any level of concrete model inheritance. That should be 
+enough for save() to create new objects from my local testing. FWIW this changes
+passes the full test suite on SQLite so it could be a tentative patch but it 
+kind of break the symmetry with _get_pk. Something to keep in mind though is 
+that right now pk = None assignment trick for object copying is neither 
+documented or embraced by the Django documentation AFAIK.
+Replying to Simon Charette: Could you confirm that the following patch work for 
+you when setting self.pk = None in reset(). No, the patch does not make self.pk 
+= None to work! pip install django ... patch -p1 < ~/t/patch.diff cd 
+/home/porton/Projects/test/testsave (env) testsave,0$ ./manage.py test Creating 
+test database for alias 'default'... System check identified no issues (0 
+silenced). F 
+====================================================================== FAIL: 
+test_f_true (test1.tests.SaveTestCase) 
+---------------------------------------------------------------------- Traceback
+(most recent call last): File 
+"/home/porton/Projects/test/testsave/test1/tests.py", line 19, in test_f_true 
+self.assertTrue(obj.f) AssertionError: False is not true 
+---------------------------------------------------------------------- Ran 1 
+test in 0.005s FAILED (failures=1) Destroying test database for alias 
+'default'...
+The following should do diff --git a/django/db/models/base.py 
+b/django/db/models/base.py index 751f42bb9b..d3141d6180 100644 --- 
+a/django/db/models/base.py +++ b/django/db/models/base.py @@ -553,6 +553,8 @@ 
+class Model(metaclass=ModelBase): return getattr(self, meta.pk.attname) def 
+_set_pk_val(self, value): + for parent_link in self._meta.parents.values(): + 
+setattr(self, parent_link.target_field.attname, value) return setattr(self, 
+self._meta.pk.attname, value) pk = property(_get_pk_val, _set_pk_val)
+Replying to Simon Charette: The following should do My test with this patch 
+passed.
+Replying to Victor Porton: My test with this patch passed. When to expect it to 
+be included in Django distribution?
+The patch doesn't seem to work for child models that inherit from multiple 
+models. It also created some other test failures. See my ​PR.
+Weird that didn't get these failures locally. Anyway this clearly need more work
+as it was an idea designed on the back of an envelope.
+
+◌ decision routing
+✓ decision routing Completed.
+
+Answer ─────────────────────────────────────────────────────────────────────────
+Codex completed the repository mutation. Changed files:                         
+
+ • django/db/models/base.py Commands run: /bin/zsh -lc "rg -n "def              
+   _set_pk_val|def _get_pk_val|_meta\.parents|parent_link|class .*Model"        
+   django/db/models/base.py", /bin/zsh -lc "sed -n '540,595p'                   
+   django/db/models/base.py && rg -n "set.*pk|pk =                              
+   None|multi-table|parent.*primary|parent_link" tests/model_inheritance tests",
+   /bin/zsh -lc "sed -n '180,300p' django/db/models/base.py && rg -n "def       
+   _save_parents|def _save_table|_meta\.parents" django/db/models/base.py",     
+   /bin/zsh -lc "sed -n '760,890p' django/db/models/base.py && sed -n '1,190p'  
+   tests/model_inheritance/tests.py && sed -n '1,210p'                          
+   tests/model_inheritance/models.py", /bin/zsh -lc 'rg -n "parent_link"        
+   django/db/models/fields/related.py                                           
+   django/db/models/fields/related_descriptors.py django/db/models/fields',     
+   /bin/zsh -lc 'git diff --check && git diff -- django/db/models/base.py',     
+   /bin/zsh -lc 'python3 tests/runtests.py model_inheritance', /bin/zsh -lc     
+   'PYTHONPATH=. python3 tests/runtests.py model_inheritance' Updated           
+   django/db/models/base.py so assigning pk propagates its value through the    
+   primary-key parent-link chain. This lets pk = None clear ancestor keys in    
+   multi-level inheritance without clearing unrelated parent links.             
+
+py_compile and git diff --check passed. The inheritance test runner could not   
+start because this Python environment lacks distutils. No tests were modified.  
+
+Exiting chat (single-shot).
+
+
+## Agent execution summary
+
+returncode=0 elapsed=188.7s timed_out=False
+--- stdout (tail) ---
+ut it 
+kind of break the symmetry with _get_pk. Something to keep in mind though is 
+that right now pk = None assignment trick for object copying is neither 
+documented or embraced by the Django documentation AFAIK.
+Replying to Simon Charette: Could you confirm that the following patch work for 
+you when setting self.pk = None in reset(). No, the patch does not make self.pk 
+= None to work! pip install django ... patch -p1 < ~/t/patch.diff cd 
+/home/porton/Projects/test/testsave (env) testsave,0$ ./manage.py test Creating 
+test database for alias 'default'... System check identified no issues (0 
+silenced). F 
+====================================================================== FAIL: 
+test_f_true (test1.tests.SaveTestCase) 
+---------------------------------------------------------------------- Traceback
+(most recent call last): File 
+"/home/porton/Projects/test/testsave/test1/tests.py", line 19, in test_f_true 
+self.assertTrue(obj.f) AssertionError: False is not true 
+---------------------------------------------------------------------- Ran 1 
+test in 0.005s FAILED (failures=1) Destroying test database for alias 
+'default'...
+The following should do diff --git a/django/db/models/base.py 
+b/django/db/models/base.py index 751f42bb9b..d3141d6180 100644 --- 
+a/django/db/models/base.py +++ b/django/db/models/base.py @@ -553,6 +553,8 @@ 
+class Model(metaclass=ModelBase): return getattr(self, meta.pk.attname) def 
+_set_pk_val(self, value): + for parent_link in self._meta.parents.values(): + 
+setattr(self, parent_link.target_field.attname, value) return setattr(self, 
+self._meta.pk.attname, value) pk = property(_get_pk_val, _set_pk_val)
+Replying to Simon Charette: The following should do My test with this patch 
+passed.
+Replying to Victor Porton: My test with this patch passed. When to expect it to 
+be included in Django distribution?
+The patch doesn't seem to work for child models that inherit from multiple 
+models. It also created some other test failures. See my ​PR.
+Weird that didn't get these failures locally. Anyway this clearly need more work
+as it was an idea designed on the back of an envelope.
+
+◌ decision routing
+✓ decision routing Completed.
+
+Answer ─────────────────────────────────────────────────────────────────────────
+Codex completed the repository mutation. Changed files:                         
+
+ • django/db/models/base.py Commands run: /bin/zsh -lc "rg -n "def              
+   _set_pk_val|def _get_pk_val|_meta\.parents|parent_link|class .*Model"        
+   django/db/models/base.py", /bin/zsh -lc "sed -n '540,595p'                   
+   django/db/models/base.py && rg -n "set.*pk|pk =                              
+   None|multi-table|parent.*primary|parent_link" tests/model_inheritance tests",
+   /bin/zsh -lc "sed -n '180,300p' django/db/models/base.py && rg -n "def       
+   _save_parents|def _save_table|_meta\.parents" django/db/models/base.py",     
+   /bin/zsh -lc "sed -n '760,890p' django/db/models/base.py && sed -n '1,190p'  
+   tests/model_inheritance/tests.py && sed -n '1,210p'                          
+   tests/model_inheritance/models.py", /bin/zsh -lc 'rg -n "parent_link"        
+   django/db/models/fields/related.py                                           
+   django/db/models/fields/related_descriptors.py django/db/models/fields',     
+   /bin/zsh -lc 'git diff --check && git diff -- django/db/models/base.py',     
+   /bin/zsh -lc 'python3 tests/runtests.py model_inheritance', /bin/zsh -lc     
+   'PYTHONPATH=. python3 tests/runtests.py model_inheritance' Updated           
+   django/db/models/base.py so assigning pk propagates its value through the    
+   primary-key parent-link chain. This lets pk = None clear ancestor keys in    
+   multi-level inheritance without clearing unrelated parent links.             
+
+py_compile and git diff --check passed. The inheritance test runner could not   
+start because this Python environment lacks distutils. No tests were modified.  
+
+Exiting chat (single-shot).
+
+--- stderr (tail) ---
+
+
+
+## Execution metadata
+
+{
+  "instance_id": "django__django-12273",
+  "status": "ok",
+  "error": "",
+  "duration_seconds": 194.21803745883517,
+  "empty_patch": false,
+  "patch_chars": 599,
+  "worktree": "/Users/ah/Documents/mana-agent/.swe-bench/worktrees/django__django-12273",
+  "agent_name": "mana-agent",
+  "agent_provider": "openai",
+  "agent_model": "gpt-6-luna",
+  "model_name_or_path": "mana-agent__gpt-6-luna"
+}

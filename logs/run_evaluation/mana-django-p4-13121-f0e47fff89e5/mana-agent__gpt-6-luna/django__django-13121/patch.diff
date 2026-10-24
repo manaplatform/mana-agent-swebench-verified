@@ -1,0 +1,60 @@
+diff --git a/django/db/backends/sqlite3/base.py b/django/db/backends/sqlite3/base.py
+index 31e8a55a43..b32ed3dbc7 100644
+--- a/django/db/backends/sqlite3/base.py
++++ b/django/db/backends/sqlite3/base.py
+@@ -550,6 +550,7 @@ def _sqlite_format_dtdelta(conn, lhs, rhs):
+     - An integer number of microseconds
+     - A string representing a datetime
+     """
++    duration_only = isinstance(lhs, int) and isinstance(rhs, int)
+     try:
+         real_lhs = datetime.timedelta(0, 0, lhs) if isinstance(lhs, int) else backend_utils.typecast_timestamp(lhs)
+         real_rhs = datetime.timedelta(0, 0, rhs) if isinstance(rhs, int) else backend_utils.typecast_timestamp(rhs)
+@@ -559,6 +560,8 @@ def _sqlite_format_dtdelta(conn, lhs, rhs):
+             out = real_lhs - real_rhs
+     except (ValueError, TypeError):
+         return None
++    if duration_only:
++        return duration_microseconds(out)
+     # typecast_timestamp returns a date or a datetime without timezone.
+     # It will be formatted as "%Y-%m-%d" or "%Y-%m-%d %H:%M:%S[.%f]"
+     return str(out)
+diff --git a/django/db/models/expressions.py b/django/db/models/expressions.py
+index a156c5e881..537dbf95f7 100644
+--- a/django/db/models/expressions.py
++++ b/django/db/models/expressions.py
+@@ -479,7 +479,11 @@ class CombinedExpression(SQLiteNumericMixin, Expression):
+ 
+ 
+ class DurationExpression(CombinedExpression):
+-    def compile(self, side, compiler, connection):
++    def compile(self, side, compiler, connection, duration_only=False):
++        if duration_only:
++            if isinstance(side, DurationValue):
++                return Value.as_sql(side, compiler, connection)
++            return compiler.compile(side)
+         if not isinstance(side, DurationValue):
+             try:
+                 output = side.output_field
+@@ -493,12 +497,19 @@ class DurationExpression(CombinedExpression):
+ 
+     def as_sql(self, compiler, connection):
+         connection.ops.check_expression_support(self)
++        try:
++            duration_only = all(
++                side.output_field.get_internal_type() == 'DurationField'
++                for side in (self.lhs, self.rhs)
++            )
++        except FieldError:
++            duration_only = False
+         expressions = []
+         expression_params = []
+-        sql, params = self.compile(self.lhs, compiler, connection)
++        sql, params = self.compile(self.lhs, compiler, connection, duration_only)
+         expressions.append(sql)
+         expression_params.extend(params)
+-        sql, params = self.compile(self.rhs, compiler, connection)
++        sql, params = self.compile(self.rhs, compiler, connection, duration_only)
+         expressions.append(sql)
+         expression_params.extend(params)
+         # order of precedence

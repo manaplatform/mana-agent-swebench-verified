@@ -1,0 +1,102 @@
+2026-10-22 01:01:44,770 - INFO - Creating container for django__django-11087...
+2026-10-22 01:01:45,433 - INFO - Container for django__django-11087 created: cb6e3e1fc6394cd633f257f6d5cd6f7bf0e50651c49a5ad9d39b74bed88f640e
+2026-10-22 01:01:45,492 - INFO - Container for django__django-11087 started: cb6e3e1fc6394cd633f257f6d5cd6f7bf0e50651c49a5ad9d39b74bed88f640e
+2026-10-22 01:01:45,493 - INFO - Intermediate patch for django__django-11087 written to logs/run_evaluation/mana-django-11087-11169a66a032/mana-agent__gpt-6-luna/django__django-11087/patch.diff, now applying to container...
+2026-10-22 01:01:45,573 - INFO - >>>>> Applied Patch:
+Checking patch django/db/models/deletion.py...
+Applied patch django/db/models/deletion.py cleanly.
+
+2026-10-22 01:01:45,988 - INFO - Git diff before:
+diff --git a/django/db/models/deletion.py b/django/db/models/deletion.py
+index 3a462f1c4c..179433165c 100644
+--- a/django/db/models/deletion.py
++++ b/django/db/models/deletion.py
+@@ -188,6 +188,36 @@ class Collector:
+         if self.can_fast_delete(objs):
+             self.fast_deletes.append(objs)
+             return
++
++        # Fetch only the fields needed to collect and delete these objects.
++        # Signal handlers receive model instances and may rely on any field,
++        # so keep the full rows in that case.
++        if hasattr(objs, 'model'):
++            model = objs.model
++            if not (signals.pre_delete.has_listeners(model) or
++                    signals.post_delete.has_listeners(model) or
++                    signals.m2m_changed.has_listeners(model)):
++                opts = model._meta
++                required_fields = {opts.pk.name}
++                # These target fields are used to find objects that reference
++                # the objects being collected. This also handles ForeignKeys
++                # that target a non-primary key field.
++                required_fields.update(
++                    related.field.target_field.name
++                    for related in get_candidate_relations_to_delete(opts)
++                    if related.field.remote_field.on_delete is not DO_NOTHING
++                )
++                # Parent objects are collected through their parent link.
++                required_fields.update(
++                    ptr.name for ptr in opts.parents.values() if ptr is not None
++                )
++                fields = [opts.pk.name]
++                fields.extend(
++                    field.name for field in opts.concrete_fields
++                    if field.name in required_fields and field.name not in fields
++                )
++                objs = objs.only(*fields)
++
+         new_objs = self.add(objs, source, nullable,
+                             reverse_dependency=reverse_dependency)
+         if not new_objs:
+2026-10-22 01:01:45,988 - INFO - Eval script for django__django-11087 written to logs/run_evaluation/mana-django-11087-11169a66a032/mana-agent__gpt-6-luna/django__django-11087/eval.sh; copying to container...
+2026-10-22 01:01:57,145 - INFO - Test runtime: 11.13 seconds
+2026-10-22 01:01:57,145 - INFO - Test output for django__django-11087 written to logs/run_evaluation/mana-django-11087-11169a66a032/mana-agent__gpt-6-luna/django__django-11087/test_output.txt
+2026-10-22 01:01:57,206 - INFO - Git diff after:
+diff --git a/django/db/models/deletion.py b/django/db/models/deletion.py
+index 3a462f1c4c..179433165c 100644
+--- a/django/db/models/deletion.py
++++ b/django/db/models/deletion.py
+@@ -188,6 +188,36 @@ class Collector:
+         if self.can_fast_delete(objs):
+             self.fast_deletes.append(objs)
+             return
++
++        # Fetch only the fields needed to collect and delete these objects.
++        # Signal handlers receive model instances and may rely on any field,
++        # so keep the full rows in that case.
++        if hasattr(objs, 'model'):
++            model = objs.model
++            if not (signals.pre_delete.has_listeners(model) or
++                    signals.post_delete.has_listeners(model) or
++                    signals.m2m_changed.has_listeners(model)):
++                opts = model._meta
++                required_fields = {opts.pk.name}
++                # These target fields are used to find objects that reference
++                # the objects being collected. This also handles ForeignKeys
++                # that target a non-primary key field.
++                required_fields.update(
++                    related.field.target_field.name
++                    for related in get_candidate_relations_to_delete(opts)
++                    if related.field.remote_field.on_delete is not DO_NOTHING
++                )
++                # Parent objects are collected through their parent link.
++                required_fields.update(
++                    ptr.name for ptr in opts.parents.values() if ptr is not None
++                )
++                fields = [opts.pk.name]
++                fields.extend(
++                    field.name for field in opts.concrete_fields
++                    if field.name in required_fields and field.name not in fields
++                )
++                objs = objs.only(*fields)
++
+         new_objs = self.add(objs, source, nullable,
+                             reverse_dependency=reverse_dependency)
+         if not new_objs:
+2026-10-22 01:01:57,206 - INFO - Grading answer for django__django-11087...
+2026-10-22 01:01:57,209 - INFO - report: {'django__django-11087': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': False, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': [], 'failure': ['test_only_referenced_fields_selected (delete.tests.DeletionTests)']}, 'PASS_TO_PASS': {'success': ['test_fast_delete_empty_no_update_can_self_select (delete.tests.FastDeleteTests)', 'test_fast_delete_fk (delete.tests.FastDeleteTests)', 'test_fast_delete_inheritance (delete.tests.FastDeleteTests)', 'test_fast_delete_instance_set_pk_none (delete.tests.FastDeleteTests)', 'test_fast_delete_joined_qs (delete.tests.FastDeleteTests)', 'test_fast_delete_large_batch (delete.tests.FastDeleteTests)', 'test_fast_delete_m2m (delete.tests.FastDeleteTests)', 'test_fast_delete_qs (delete.tests.FastDeleteTests)', 'test_fast_delete_revm2m (delete.tests.FastDeleteTests)', 'test_auto (delete.tests.OnDeleteTests)', 'test_auto_nullable (delete.tests.OnDeleteTests)', 'test_cascade (delete.tests.OnDeleteTests)', 'test_cascade_from_child (delete.tests.OnDeleteTests)', 'test_cascade_from_parent (delete.tests.OnDeleteTests)', 'test_cascade_nullable (delete.tests.OnDeleteTests)', 'test_do_nothing (delete.tests.OnDeleteTests)', 'test_do_nothing_qscount (delete.tests.OnDeleteTests)', 'test_inheritance_cascade_down (delete.tests.OnDeleteTests)', 'test_inheritance_cascade_up (delete.tests.OnDeleteTests)', 'test_o2o_setnull (delete.tests.OnDeleteTests)', 'test_protect (delete.tests.OnDeleteTests)', 'test_setdefault (delete.tests.OnDeleteTests)', 'test_setdefault_none (delete.tests.OnDeleteTests)', 'test_setnull (delete.tests.OnDeleteTests)', 'test_setnull_from_child (delete.tests.OnDeleteTests)', 'test_setnull_from_parent (delete.tests.OnDeleteTests)', 'test_setvalue (delete.tests.OnDeleteTests)', 'test_can_defer_constraint_checks (delete.tests.DeletionTests)', 'test_delete_with_keeping_parents (delete.tests.DeletionTests)', 'test_delete_with_keeping_parents_relationships (delete.tests.DeletionTests)', 'test_deletion_order (delete.tests.DeletionTests)', 'test_hidden_related (delete.tests.DeletionTests)', 'test_instance_update (delete.tests.DeletionTests)', 'test_large_delete (delete.tests.DeletionTests)', 'test_m2m (delete.tests.DeletionTests)', 'test_model_delete_returns_num_rows (delete.tests.DeletionTests)', 'test_proxied_model_duplicate_queries (delete.tests.DeletionTests)', 'test_queryset_delete_returns_num_rows (delete.tests.DeletionTests)', 'test_relational_post_delete_signals_happen_before_parent_object (delete.tests.DeletionTests)'], 'failure': ['test_bulk (delete.tests.DeletionTests)', 'test_large_delete_related (delete.tests.DeletionTests)']}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for django__django-11087: resolved: False
+2026-10-22 01:01:57,210 - INFO - Attempting to stop container sweb.eval.django__django-11087.mana-django-11087-11169a66a032...
+2026-10-22 01:02:12,343 - INFO - Container sweb.eval.django__django-11087.mana-django-11087-11169a66a032 stopped successfully.
+2026-10-22 01:02:12,343 - INFO - Attempting to remove container sweb.eval.django__django-11087.mana-django-11087-11169a66a032...
+2026-10-22 01:02:12,384 - INFO - Container sweb.eval.django__django-11087.mana-django-11087-11169a66a032 removed successfully.

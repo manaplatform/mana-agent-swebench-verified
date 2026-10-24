@@ -1,0 +1,76 @@
+2026-10-23 23:04:06,501 - INFO - Creating container for scikit-learn__scikit-learn-14053...
+2026-10-23 23:04:06,700 - INFO - Container for scikit-learn__scikit-learn-14053 created: f90e183f8f8c3bff7bf3c94ab6402ca65d0ce3b898d7a341738eef92006c1f8c
+2026-10-23 23:04:06,827 - INFO - Container for scikit-learn__scikit-learn-14053 started: f90e183f8f8c3bff7bf3c94ab6402ca65d0ce3b898d7a341738eef92006c1f8c
+2026-10-23 23:04:06,835 - INFO - Intermediate patch for scikit-learn__scikit-learn-14053 written to logs/run_evaluation/mana-sympy-tools-scikit-learn-14053-10edca6663ff/mana-agent__gpt-6-luna/scikit-learn__scikit-learn-14053/patch.diff, now applying to container...
+2026-10-23 23:04:07,071 - INFO - >>>>> Applied Patch:
+Checking patch sklearn/tree/export.py...
+Applied patch sklearn/tree/export.py cleanly.
+
+2026-10-23 23:04:07,622 - INFO - Git diff before:
+diff --git a/sklearn/tree/export.py b/sklearn/tree/export.py
+index 1fe11e596..7fee2f793 100644
+--- a/sklearn/tree/export.py
++++ b/sklearn/tree/export.py
+@@ -889,10 +889,11 @@ def export_text(decision_tree, feature_names=None, max_depth=10,
+     else:
+         value_fmt = "{}{} value: {}\n"
+ 
+-    if feature_names:
+-        feature_names_ = [feature_names[i] for i in tree_.feature]
++    if feature_names is not None:
++        feature_names_ = feature_names
+     else:
+-        feature_names_ = ["feature_{}".format(i) for i in tree_.feature]
++        feature_names_ = ["feature_{}".format(i)
++                          for i in range(tree_.n_features)]
+ 
+     export_text.report = ""
+ 
+@@ -928,7 +929,7 @@ def export_text(decision_tree, feature_names=None, max_depth=10,
+             info_fmt_right = info_fmt
+ 
+             if tree_.feature[node] != _tree.TREE_UNDEFINED:
+-                name = feature_names_[node]
++                name = feature_names_[tree_.feature[node]]
+                 threshold = tree_.threshold[node]
+                 threshold = "{1:.{0}f}".format(decimals, threshold)
+                 export_text.report += right_child_fmt.format(indent,
+2026-10-23 23:04:07,623 - INFO - Eval script for scikit-learn__scikit-learn-14053 written to logs/run_evaluation/mana-sympy-tools-scikit-learn-14053-10edca6663ff/mana-agent__gpt-6-luna/scikit-learn__scikit-learn-14053/eval.sh; copying to container...
+2026-10-23 23:04:16,960 - INFO - Test runtime: 9.29 seconds
+2026-10-23 23:04:16,960 - INFO - Test output for scikit-learn__scikit-learn-14053 written to logs/run_evaluation/mana-sympy-tools-scikit-learn-14053-10edca6663ff/mana-agent__gpt-6-luna/scikit-learn__scikit-learn-14053/test_output.txt
+2026-10-23 23:04:17,141 - INFO - Git diff after:
+diff --git a/sklearn/tree/export.py b/sklearn/tree/export.py
+index 1fe11e596..7fee2f793 100644
+--- a/sklearn/tree/export.py
++++ b/sklearn/tree/export.py
+@@ -889,10 +889,11 @@ def export_text(decision_tree, feature_names=None, max_depth=10,
+     else:
+         value_fmt = "{}{} value: {}\n"
+ 
+-    if feature_names:
+-        feature_names_ = [feature_names[i] for i in tree_.feature]
++    if feature_names is not None:
++        feature_names_ = feature_names
+     else:
+-        feature_names_ = ["feature_{}".format(i) for i in tree_.feature]
++        feature_names_ = ["feature_{}".format(i)
++                          for i in range(tree_.n_features)]
+ 
+     export_text.report = ""
+ 
+@@ -928,7 +929,7 @@ def export_text(decision_tree, feature_names=None, max_depth=10,
+             info_fmt_right = info_fmt
+ 
+             if tree_.feature[node] != _tree.TREE_UNDEFINED:
+-                name = feature_names_[node]
++                name = feature_names_[tree_.feature[node]]
+                 threshold = tree_.threshold[node]
+                 threshold = "{1:.{0}f}".format(decimals, threshold)
+                 export_text.report += right_child_fmt.format(indent,
+2026-10-23 23:04:17,141 - INFO - Grading answer for scikit-learn__scikit-learn-14053...
+2026-10-23 23:04:17,143 - INFO - report: {'scikit-learn__scikit-learn-14053': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': True, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': ['sklearn/tree/tests/test_export.py::test_export_text'], 'failure': []}, 'PASS_TO_PASS': {'success': ['sklearn/tree/tests/test_export.py::test_graphviz_toy', 'sklearn/tree/tests/test_export.py::test_graphviz_errors', 'sklearn/tree/tests/test_export.py::test_friedman_mse_in_graphviz', 'sklearn/tree/tests/test_export.py::test_precision', 'sklearn/tree/tests/test_export.py::test_export_text_errors'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for scikit-learn__scikit-learn-14053: resolved: True
+2026-10-23 23:04:17,144 - INFO - Attempting to stop container sweb.eval.scikit-learn__scikit-learn-14053.mana-sympy-tools-scikit-learn-14053-10edca6663ff...
+2026-10-23 23:04:32,289 - INFO - Container sweb.eval.scikit-learn__scikit-learn-14053.mana-sympy-tools-scikit-learn-14053-10edca6663ff stopped successfully.
+2026-10-23 23:04:32,289 - INFO - Attempting to remove container sweb.eval.scikit-learn__scikit-learn-14053.mana-sympy-tools-scikit-learn-14053-10edca6663ff...
+2026-10-23 23:04:32,325 - INFO - Container sweb.eval.scikit-learn__scikit-learn-14053.mana-sympy-tools-scikit-learn-14053-10edca6663ff removed successfully.

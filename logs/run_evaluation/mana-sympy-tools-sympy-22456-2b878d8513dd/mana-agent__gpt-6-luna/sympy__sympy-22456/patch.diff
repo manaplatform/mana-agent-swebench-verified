@@ -1,0 +1,61 @@
+diff --git a/sympy/codegen/ast.py b/sympy/codegen/ast.py
+index a02714b174..96b10e9d5b 100644
+--- a/sympy/codegen/ast.py
++++ b/sympy/codegen/ast.py
+@@ -132,6 +132,7 @@
+ 
+ from sympy.core.relational import (Ge, Gt, Le, Lt)
+ from sympy.core import Symbol, Tuple, Dummy
++from sympy.core.symbol import Str
+ from sympy.core.basic import Basic
+ from sympy.core.expr import Expr
+ from sympy.core.numbers import Float, Integer, oo
+@@ -208,6 +209,14 @@ def _construct(cls, attr, arg):
+             else:
+                 return cls._get_constructor(attr)(arg)
+ 
++    @classmethod
++    def _basic_args(cls, attrvals):
++        """Return the attribute values passed to :class:`Basic`."""
++        return [
++            val for attr, val in zip(cls.__slots__, attrvals)
++            if attr not in cls.not_in_args
++        ]
++
+     def __new__(cls, *args, **kwargs):
+         # Pass through existing instances when given as sole argument
+         if len(args) == 1 and not kwargs and isinstance(args[0], cls):
+@@ -242,10 +251,7 @@ def __new__(cls, *args, **kwargs):
+             raise ValueError("Unknown keyword arguments: %s" % ' '.join(kwargs))
+ 
+         # Parent constructor
+-        basic_args = [
+-            val for attr, val in zip(cls.__slots__, attrvals)
+-            if attr not in cls.not_in_args
+-        ]
++        basic_args = cls._basic_args(attrvals)
+         obj = CodegenAST.__new__(cls, *basic_args)
+ 
+         # Set attributes
+@@ -895,11 +901,20 @@ class String(Token):
+ 
+     """
+     __slots__ = ('text',)
+-    not_in_args = ['text']
+     is_Atom = True
+ 
++    @classmethod
++    def _basic_args(cls, attrvals):
++        return [
++            Str(val) if attr == 'text' else val
++            for attr, val in zip(cls.__slots__, attrvals)
++            if attr not in cls.not_in_args
++        ]
++
+     @classmethod
+     def _construct_text(cls, text):
++        if isinstance(text, Str):
++            text = text.name
+         if not isinstance(text, str):
+             raise TypeError("Argument text is not a string type.")
+         return text

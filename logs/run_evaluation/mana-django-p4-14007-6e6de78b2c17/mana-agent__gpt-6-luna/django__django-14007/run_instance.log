@@ -1,0 +1,78 @@
+2026-10-22 18:22:44,434 - INFO - Creating container for django__django-14007...
+2026-10-22 18:22:44,554 - INFO - Container for django__django-14007 created: 436af3ab2d81f96822ca69e3a2fd737abca341b4425bfec891295ec2665da68d
+2026-10-22 18:22:44,604 - INFO - Container for django__django-14007 started: 436af3ab2d81f96822ca69e3a2fd737abca341b4425bfec891295ec2665da68d
+2026-10-22 18:22:44,604 - INFO - Intermediate patch for django__django-14007 written to logs/run_evaluation/mana-django-p4-14007-6e6de78b2c17/mana-agent__gpt-6-luna/django__django-14007/patch.diff, now applying to container...
+2026-10-22 18:22:44,700 - INFO - >>>>> Applied Patch:
+Checking patch django/db/models/sql/compiler.py...
+Applied patch django/db/models/sql/compiler.py cleanly.
+
+2026-10-22 18:22:45,145 - INFO - Git diff before:
+diff --git a/django/db/models/sql/compiler.py b/django/db/models/sql/compiler.py
+index f02199d97c..fd77ee39cf 100644
+--- a/django/db/models/sql/compiler.py
++++ b/django/db/models/sql/compiler.py
+@@ -1412,13 +1412,18 @@ class SQLInsertCompiler(SQLCompiler):
+             if not self.returning_fields:
+                 return []
+             if self.connection.features.can_return_rows_from_bulk_insert and len(self.query.objs) > 1:
+-                return self.connection.ops.fetch_returned_insert_rows(cursor)
+-            if self.connection.features.can_return_columns_from_insert:
++                rows = self.connection.ops.fetch_returned_insert_rows(cursor)
++            elif self.connection.features.can_return_columns_from_insert:
+                 assert len(self.query.objs) == 1
+-                return [self.connection.ops.fetch_returned_insert_columns(cursor, self.returning_params)]
+-            return [(self.connection.ops.last_insert_id(
+-                cursor, self.query.get_meta().db_table, self.query.get_meta().pk.column
+-            ),)]
++                rows = [self.connection.ops.fetch_returned_insert_columns(cursor, self.returning_params)]
++            else:
++                rows = [(self.connection.ops.last_insert_id(
++                    cursor, self.query.get_meta().db_table, self.query.get_meta().pk.column
++                ),)]
++            converters = self.get_converters(self.returning_fields)
++            if converters:
++                rows = [tuple(row) for row in self.apply_converters(rows, converters)]
++            return rows
+ 
+ 
+ class SQLDeleteCompiler(SQLCompiler):
+2026-10-22 18:22:45,145 - INFO - Eval script for django__django-14007 written to logs/run_evaluation/mana-django-p4-14007-6e6de78b2c17/mana-agent__gpt-6-luna/django__django-14007/eval.sh; copying to container...
+2026-10-22 18:22:58,724 - INFO - Test runtime: 13.54 seconds
+2026-10-22 18:22:58,725 - INFO - Test output for django__django-14007 written to logs/run_evaluation/mana-django-p4-14007-6e6de78b2c17/mana-agent__gpt-6-luna/django__django-14007/test_output.txt
+2026-10-22 18:22:58,787 - INFO - Git diff after:
+diff --git a/django/db/models/sql/compiler.py b/django/db/models/sql/compiler.py
+index f02199d97c..fd77ee39cf 100644
+--- a/django/db/models/sql/compiler.py
++++ b/django/db/models/sql/compiler.py
+@@ -1412,13 +1412,18 @@ class SQLInsertCompiler(SQLCompiler):
+             if not self.returning_fields:
+                 return []
+             if self.connection.features.can_return_rows_from_bulk_insert and len(self.query.objs) > 1:
+-                return self.connection.ops.fetch_returned_insert_rows(cursor)
+-            if self.connection.features.can_return_columns_from_insert:
++                rows = self.connection.ops.fetch_returned_insert_rows(cursor)
++            elif self.connection.features.can_return_columns_from_insert:
+                 assert len(self.query.objs) == 1
+-                return [self.connection.ops.fetch_returned_insert_columns(cursor, self.returning_params)]
+-            return [(self.connection.ops.last_insert_id(
+-                cursor, self.query.get_meta().db_table, self.query.get_meta().pk.column
+-            ),)]
++                rows = [self.connection.ops.fetch_returned_insert_columns(cursor, self.returning_params)]
++            else:
++                rows = [(self.connection.ops.last_insert_id(
++                    cursor, self.query.get_meta().db_table, self.query.get_meta().pk.column
++                ),)]
++            converters = self.get_converters(self.returning_fields)
++            if converters:
++                rows = [tuple(row) for row in self.apply_converters(rows, converters)]
++            return rows
+ 
+ 
+ class SQLDeleteCompiler(SQLCompiler):
+2026-10-22 18:22:58,787 - INFO - Grading answer for django__django-14007...
+2026-10-22 18:22:58,793 - INFO - report: {'django__django-14007': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': False, 'resolved': False, 'infra_failure': False}}
+Result for django__django-14007: resolved: False
+2026-10-22 18:22:58,793 - INFO - Attempting to stop container sweb.eval.django__django-14007.mana-django-p4-14007-6e6de78b2c17...
+2026-10-22 18:23:13,918 - INFO - Container sweb.eval.django__django-14007.mana-django-p4-14007-6e6de78b2c17 stopped successfully.
+2026-10-22 18:23:13,918 - INFO - Attempting to remove container sweb.eval.django__django-14007.mana-django-p4-14007-6e6de78b2c17...
+2026-10-22 18:23:13,949 - INFO - Container sweb.eval.django__django-14007.mana-django-p4-14007-6e6de78b2c17 removed successfully.

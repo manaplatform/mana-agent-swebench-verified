@@ -1,0 +1,27 @@
+diff --git a/sympy/combinatorics/permutations.py b/sympy/combinatorics/permutations.py
+index 136ed5a478..6780b37453 100644
+--- a/sympy/combinatorics/permutations.py
++++ b/sympy/combinatorics/permutations.py
+@@ -801,8 +801,7 @@ class Permutation(Basic):
+     def __new__(cls, *args, **kwargs):
+         """
+         Constructor for the Permutation object from a list or a
+-        list of lists in which all elements of the permutation may
+-        appear only once.
++        list of cycles. Cycles are applied in left-to-right order.
+ 
+         Examples
+         ========
+@@ -896,10 +895,10 @@ def __new__(cls, *args, **kwargs):
+ 
+         temp = flatten(args)
+         if has_dups(temp):
+-            if is_cycle:
++            if is_cycle and any(has_dups(c) for c in args):
+                 raise ValueError('there were repeated elements; to resolve '
+                 'cycles use Cycle%s.' % ''.join([str(tuple(c)) for c in args]))
+-            else:
++            elif not is_cycle:
+                 raise ValueError('there were repeated elements.')
+         temp = set(temp)
+ 

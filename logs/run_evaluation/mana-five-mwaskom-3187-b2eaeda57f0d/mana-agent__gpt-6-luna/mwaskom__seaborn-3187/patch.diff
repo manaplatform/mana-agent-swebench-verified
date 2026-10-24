@@ -1,0 +1,136 @@
+diff --git a/seaborn/_core/plot.py b/seaborn/_core/plot.py
+index 8915616..849531c 100644
+--- a/seaborn/_core/plot.py
++++ b/seaborn/_core/plot.py
+@@ -1569,6 +1569,9 @@ class Plotter:
+                         break
+                 else:
+                     title = self._resolve_label(p, var, data.names[var])
++                    offset = scales[var]._legend_title_extra
++                    if offset:
++                        title = f"{title}\n{offset}"
+                     entry = (title, data.ids[var]), [var], (values, labels)
+                     schema.append(entry)
+ 
+diff --git a/seaborn/_core/scales.py b/seaborn/_core/scales.py
+index 55874bf..9435be7 100644
+--- a/seaborn/_core/scales.py
++++ b/seaborn/_core/scales.py
+@@ -61,12 +61,14 @@ class Scale:
+     _matplotlib_scale: ScaleBase
+     _spacer: staticmethod
+     _legend: tuple[list[str], list[Any]] | None
++    _legend_title_extra: str
+ 
+     def __post_init__(self):
+ 
+         self._tick_params = None
+         self._label_params = None
+         self._legend = None
++        self._legend_title_extra = ""
+ 
+     def tick(self):
+         raise NotImplementedError()
+@@ -378,7 +380,9 @@ class ContinuousBase(Scale):
+             axis.set_view_interval(vmin, vmax)
+             locs = axis.major.locator()
+             locs = locs[(vmin <= locs) & (locs <= vmax)]
+-            labels = axis.major.formatter.format_ticks(locs)
++            formatter = axis.major.formatter
++            labels = formatter.format_ticks(locs)
++            new._legend_title_extra = formatter.get_offset()
+             new._legend = list(locs), list(labels)
+ 
+         return new
+diff --git a/seaborn/relational.py b/seaborn/relational.py
+index 18e18bb..2111e16 100644
+--- a/seaborn/relational.py
++++ b/seaborn/relational.py
+@@ -210,6 +210,7 @@ class _RelationalPlotter(VectorPlotter):
+             (self.variables.get(v, None) for v in ["hue", "size", "style"])
+             if title is not None
+         }
++        n_titles = len(titles)
+         if len(titles) == 1:
+             legend_title = titles.pop()
+         else:
+@@ -231,6 +232,7 @@ class _RelationalPlotter(VectorPlotter):
+ 
+         # Define the maximum number of ticks to use for "brief" legends
+         brief_ticks = 6
++        legend_offsets = {}
+ 
+         # -- Add a legend for hue semantics
+         brief_hue = self._hue_map.map_type == "numeric" and (
+@@ -243,9 +245,12 @@ class _RelationalPlotter(VectorPlotter):
+             else:
+                 locator = mpl.ticker.MaxNLocator(nbins=brief_ticks)
+             limits = min(self._hue_map.levels), max(self._hue_map.levels)
+-            hue_levels, hue_formatted_levels = locator_to_legend_entries(
+-                locator, limits, self.plot_data["hue"].infer_objects().dtype
++            hue_levels, hue_formatted_levels, offset = locator_to_legend_entries(
++                locator, limits, self.plot_data["hue"].infer_objects().dtype,
++                return_offset=True,
+             )
++            if offset:
++                legend_offsets["hue"] = offset
+         elif self._hue_map.levels is None:
+             hue_levels = hue_formatted_levels = []
+         else:
+@@ -275,9 +280,12 @@ class _RelationalPlotter(VectorPlotter):
+                 locator = mpl.ticker.MaxNLocator(nbins=brief_ticks)
+             # Define the min/max data values
+             limits = min(self._size_map.levels), max(self._size_map.levels)
+-            size_levels, size_formatted_levels = locator_to_legend_entries(
+-                locator, limits, self.plot_data["size"].infer_objects().dtype
++            size_levels, size_formatted_levels, offset = locator_to_legend_entries(
++                locator, limits, self.plot_data["size"].infer_objects().dtype,
++                return_offset=True,
+             )
++            if offset:
++                legend_offsets["size"] = offset
+         elif self._size_map.levels is None:
+             size_levels = size_formatted_levels = []
+         else:
+@@ -318,6 +326,17 @@ class _RelationalPlotter(VectorPlotter):
+                         dashes=attrs.get("dashes", ""),
+                     )
+ 
++        if legend_offsets:
++            if n_titles == 1:
++                offset = next(iter(legend_offsets.values()))
++                legend_title = f"{legend_title}\n{offset}"
++            else:
++                offset_lines = [
++                    f"{self.variables[var]}: {offset}"
++                    for var, offset in legend_offsets.items()
++                ]
++                legend_title = "\n".join(filter(None, [legend_title, *offset_lines]))
++
+         func = getattr(ax, self._legend_func)
+ 
+         legend_data = {}
+diff --git a/seaborn/utils.py b/seaborn/utils.py
+index 2407853..ca2720c 100644
+--- a/seaborn/utils.py
++++ b/seaborn/utils.py
+@@ -684,7 +684,7 @@ def axes_ticklabels_overlap(ax):
+             axis_ticklabels_overlap(ax.get_yticklabels()))
+ 
+ 
+-def locator_to_legend_entries(locator, limits, dtype):
++def locator_to_legend_entries(locator, limits, dtype, *, return_offset=False):
+     """Return levels and formatted levels for brief numeric legends."""
+     raw_levels = locator.tick_values(*limits).astype(dtype)
+ 
+@@ -706,7 +706,10 @@ def locator_to_legend_entries(locator, limits, dtype):
+     # formatted_levels = formatter.format_ticks(raw_levels)
+     formatter.set_locs(raw_levels)
+     formatted_levels = [formatter(x) for x in raw_levels]
++    offset = formatter.get_offset()
+ 
++    if return_offset:
++        return raw_levels, formatted_levels, offset
+     return raw_levels, formatted_levels
+ 
+ 

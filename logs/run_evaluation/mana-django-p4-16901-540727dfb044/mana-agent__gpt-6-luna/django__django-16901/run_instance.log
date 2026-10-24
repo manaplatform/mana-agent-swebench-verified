@@ -1,0 +1,60 @@
+2026-10-22 21:49:31,463 - INFO - Creating container for django__django-16901...
+2026-10-22 21:49:31,644 - INFO - Container for django__django-16901 created: 9537c4a92ad384cdb3c6b051dd96a7cc78fd74b2cb9a3f89a934d506f8fae2b8
+2026-10-22 21:49:31,707 - INFO - Container for django__django-16901 started: 9537c4a92ad384cdb3c6b051dd96a7cc78fd74b2cb9a3f89a934d506f8fae2b8
+2026-10-22 21:49:31,707 - INFO - Intermediate patch for django__django-16901 written to logs/run_evaluation/mana-django-p4-16901-540727dfb044/mana-agent__gpt-6-luna/django__django-16901/patch.diff, now applying to container...
+2026-10-22 21:49:31,809 - INFO - >>>>> Applied Patch:
+Checking patch django/db/models/sql/where.py...
+Applied patch django/db/models/sql/where.py cleanly.
+
+2026-10-22 21:49:32,266 - INFO - Git diff before:
+diff --git a/django/db/models/sql/where.py b/django/db/models/sql/where.py
+index aaab1730b7..84dcfeae51 100644
+--- a/django/db/models/sql/where.py
++++ b/django/db/models/sql/where.py
+@@ -129,13 +129,13 @@ class WhereNode(tree.Node):
+             # Convert if the database doesn't support XOR:
+             #   a XOR b XOR c XOR ...
+             # to:
+-            #   (a OR b OR c OR ...) AND (a + b + c + ...) == 1
++            #   (a OR b OR c OR ...) AND (a + b + c + ...) % 2 == 1
+             lhs = self.__class__(self.children, OR)
+             rhs_sum = reduce(
+                 operator.add,
+                 (Case(When(c, then=1), default=0) for c in self.children),
+             )
+-            rhs = Exact(1, rhs_sum)
++            rhs = Exact(1, rhs_sum % 2)
+             return self.__class__([lhs, rhs], AND, self.negated).as_sql(
+                 compiler, connection
+             )
+2026-10-22 21:49:32,266 - INFO - Eval script for django__django-16901 written to logs/run_evaluation/mana-django-p4-16901-540727dfb044/mana-agent__gpt-6-luna/django__django-16901/eval.sh; copying to container...
+2026-10-22 21:49:56,087 - INFO - Test runtime: 23.79 seconds
+2026-10-22 21:49:56,087 - INFO - Test output for django__django-16901 written to logs/run_evaluation/mana-django-p4-16901-540727dfb044/mana-agent__gpt-6-luna/django__django-16901/test_output.txt
+2026-10-22 21:49:56,154 - INFO - Git diff after:
+diff --git a/django/db/models/sql/where.py b/django/db/models/sql/where.py
+index aaab1730b7..84dcfeae51 100644
+--- a/django/db/models/sql/where.py
++++ b/django/db/models/sql/where.py
+@@ -129,13 +129,13 @@ class WhereNode(tree.Node):
+             # Convert if the database doesn't support XOR:
+             #   a XOR b XOR c XOR ...
+             # to:
+-            #   (a OR b OR c OR ...) AND (a + b + c + ...) == 1
++            #   (a OR b OR c OR ...) AND (a + b + c + ...) % 2 == 1
+             lhs = self.__class__(self.children, OR)
+             rhs_sum = reduce(
+                 operator.add,
+                 (Case(When(c, then=1), default=0) for c in self.children),
+             )
+-            rhs = Exact(1, rhs_sum)
++            rhs = Exact(1, rhs_sum % 2)
+             return self.__class__([lhs, rhs], AND, self.negated).as_sql(
+                 compiler, connection
+             )
+2026-10-22 21:49:56,154 - INFO - Grading answer for django__django-16901...
+2026-10-22 21:49:56,154 - INFO - report: {'django__django-16901': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': True, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': ['test_filter_multiple (xor_lookups.tests.XorLookupsTests.test_filter_multiple)'], 'failure': []}, 'PASS_TO_PASS': {'success': ['test_empty_in (xor_lookups.tests.XorLookupsTests.test_empty_in)', 'test_exclude (xor_lookups.tests.XorLookupsTests.test_exclude)', 'test_filter (xor_lookups.tests.XorLookupsTests.test_filter)', 'test_filter_negated (xor_lookups.tests.XorLookupsTests.test_filter_negated)', 'test_pk_q (xor_lookups.tests.XorLookupsTests.test_pk_q)', 'test_stages (xor_lookups.tests.XorLookupsTests.test_stages)'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for django__django-16901: resolved: True
+2026-10-22 21:49:56,154 - INFO - Attempting to stop container sweb.eval.django__django-16901.mana-django-p4-16901-540727dfb044...
+2026-10-22 21:50:11,260 - INFO - Container sweb.eval.django__django-16901.mana-django-p4-16901-540727dfb044 stopped successfully.
+2026-10-22 21:50:11,260 - INFO - Attempting to remove container sweb.eval.django__django-16901.mana-django-p4-16901-540727dfb044...
+2026-10-22 21:50:11,290 - INFO - Container sweb.eval.django__django-16901.mana-django-p4-16901-540727dfb044 removed successfully.

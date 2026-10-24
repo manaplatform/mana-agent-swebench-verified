@@ -1,0 +1,26 @@
+diff --git a/django/db/models/fields/__init__.py b/django/db/models/fields/__init__.py
+index 0f53d9c30b..8cb7f15067 100644
+--- a/django/db/models/fields/__init__.py
++++ b/django/db/models/fields/__init__.py
+@@ -14,7 +14,7 @@ from django.conf import settings
+ from django.core import checks, exceptions, validators
+ from django.db import connection, connections, router
+ from django.db.models.constants import LOOKUP_SEP
+-from django.db.models.query_utils import DeferredAttribute, RegisterLookupMixin
++from django.db.models.query_utils import DeferredAttribute, RegisterLookupMixin, subclasses
+ from django.utils import timezone
+ from django.utils.datastructures import DictWrapper
+ from django.utils.dateparse import (
+@@ -2518,7 +2518,11 @@ class AutoFieldMeta(type):
+ 
+     @property
+     def _subclasses(self):
+-        return (BigAutoField, SmallAutoField)
++        return tuple(
++            subclass
++            for field_class in (BigAutoField, SmallAutoField)
++            for subclass in subclasses(field_class)
++        )
+ 
+     def __instancecheck__(self, instance):
+         return isinstance(instance, self._subclasses) or super().__instancecheck__(instance)

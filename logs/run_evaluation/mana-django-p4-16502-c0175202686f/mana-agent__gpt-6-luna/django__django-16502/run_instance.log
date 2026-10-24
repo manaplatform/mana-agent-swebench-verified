@@ -1,0 +1,74 @@
+2026-10-22 21:17:55,363 - INFO - Creating container for django__django-16502...
+2026-10-22 21:17:55,485 - INFO - Container for django__django-16502 created: c11c73df6c055eec50fc011b4497111dd96abc57c4812f6485b7db1ed0f1e890
+2026-10-22 21:17:55,527 - INFO - Container for django__django-16502 started: c11c73df6c055eec50fc011b4497111dd96abc57c4812f6485b7db1ed0f1e890
+2026-10-22 21:17:55,528 - INFO - Intermediate patch for django__django-16502 written to logs/run_evaluation/mana-django-p4-16502-c0175202686f/mana-agent__gpt-6-luna/django__django-16502/patch.diff, now applying to container...
+2026-10-22 21:17:55,625 - INFO - >>>>> Applied Patch:
+Checking patch django/core/servers/basehttp.py...
+Applied patch django/core/servers/basehttp.py cleanly.
+
+2026-10-22 21:17:56,130 - INFO - Git diff before:
+diff --git a/django/core/servers/basehttp.py b/django/core/servers/basehttp.py
+index fef5532e58..354264d12c 100644
+--- a/django/core/servers/basehttp.py
++++ b/django/core/servers/basehttp.py
+@@ -128,6 +128,22 @@ class ServerHandler(simple_server.ServerHandler):
+             LimitedStream(stdin, content_length), stdout, stderr, environ, **kwargs
+         )
+ 
++    def write(self, data):
++        """Discard response body data for HEAD requests."""
++        assert type(data) is bytes, "write() argument must be a bytes instance"
++        if not self.status:
++            raise AssertionError("write() before start_response()")
++
++        if self.environ["REQUEST_METHOD"] == "HEAD":
++            if not self.headers_sent:
++                self.bytes_sent = len(data)
++                self.send_headers()
++            else:
++                self.bytes_sent += len(data)
++            self._flush()
++            return
++        super().write(data)
++
+     def cleanup_headers(self):
+         super().cleanup_headers()
+         # HTTP/1.1 requires support for persistent connections. Send 'close' if
+2026-10-22 21:17:56,131 - INFO - Eval script for django__django-16502 written to logs/run_evaluation/mana-django-p4-16502-c0175202686f/mana-agent__gpt-6-luna/django__django-16502/eval.sh; copying to container...
+2026-10-22 21:18:17,829 - INFO - Test runtime: 21.66 seconds
+2026-10-22 21:18:17,830 - INFO - Test output for django__django-16502 written to logs/run_evaluation/mana-django-p4-16502-c0175202686f/mana-agent__gpt-6-luna/django__django-16502/test_output.txt
+2026-10-22 21:18:17,898 - INFO - Git diff after:
+diff --git a/django/core/servers/basehttp.py b/django/core/servers/basehttp.py
+index fef5532e58..354264d12c 100644
+--- a/django/core/servers/basehttp.py
++++ b/django/core/servers/basehttp.py
+@@ -128,6 +128,22 @@ class ServerHandler(simple_server.ServerHandler):
+             LimitedStream(stdin, content_length), stdout, stderr, environ, **kwargs
+         )
+ 
++    def write(self, data):
++        """Discard response body data for HEAD requests."""
++        assert type(data) is bytes, "write() argument must be a bytes instance"
++        if not self.status:
++            raise AssertionError("write() before start_response()")
++
++        if self.environ["REQUEST_METHOD"] == "HEAD":
++            if not self.headers_sent:
++                self.bytes_sent = len(data)
++                self.send_headers()
++            else:
++                self.bytes_sent += len(data)
++            self._flush()
++            return
++        super().write(data)
++
+     def cleanup_headers(self):
+         super().cleanup_headers()
+         # HTTP/1.1 requires support for persistent connections. Send 'close' if
+2026-10-22 21:18:17,898 - INFO - Grading answer for django__django-16502...
+2026-10-22 21:18:17,899 - INFO - report: {'django__django-16502': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': False, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': [], 'failure': ['test_no_body_returned_for_head_requests (servers.test_basehttp.WSGIRequestHandlerTestCase.test_no_body_returned_for_head_requests)']}, 'PASS_TO_PASS': {'success': ['test_https (servers.test_basehttp.WSGIRequestHandlerTestCase.test_https)', 'test_log_message (servers.test_basehttp.WSGIRequestHandlerTestCase.test_log_message)', 'WSGIRequestHandler ignores headers containing underscores.', 'WSGIServer handles broken pipe errors.'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for django__django-16502: resolved: False
+2026-10-22 21:18:17,900 - INFO - Attempting to stop container sweb.eval.django__django-16502.mana-django-p4-16502-c0175202686f...
+2026-10-22 21:18:33,031 - INFO - Container sweb.eval.django__django-16502.mana-django-p4-16502-c0175202686f stopped successfully.
+2026-10-22 21:18:33,031 - INFO - Attempting to remove container sweb.eval.django__django-16502.mana-django-p4-16502-c0175202686f...
+2026-10-22 21:18:33,064 - INFO - Container sweb.eval.django__django-16502.mana-django-p4-16502-c0175202686f removed successfully.

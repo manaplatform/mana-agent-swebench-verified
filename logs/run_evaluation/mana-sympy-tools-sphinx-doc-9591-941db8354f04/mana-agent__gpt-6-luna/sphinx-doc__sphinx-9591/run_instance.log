@@ -1,0 +1,46 @@
+2026-10-24 00:21:44,714 - INFO - Creating container for sphinx-doc__sphinx-9591...
+2026-10-24 00:21:45,005 - INFO - Container for sphinx-doc__sphinx-9591 created: 0bffd88a5d925712c75cedf1d40d99a89fbe2d9394bffe2aa2f3e5f08df1daa9
+2026-10-24 00:21:45,143 - INFO - Container for sphinx-doc__sphinx-9591 started: 0bffd88a5d925712c75cedf1d40d99a89fbe2d9394bffe2aa2f3e5f08df1daa9
+2026-10-24 00:21:45,143 - INFO - Intermediate patch for sphinx-doc__sphinx-9591 written to logs/run_evaluation/mana-sympy-tools-sphinx-doc-9591-941db8354f04/mana-agent__gpt-6-luna/sphinx-doc__sphinx-9591/patch.diff, now applying to container...
+2026-10-24 00:21:45,303 - INFO - >>>>> Applied Patch:
+Checking patch sphinx/domains/python.py...
+Applied patch sphinx/domains/python.py cleanly.
+
+2026-10-24 00:21:45,710 - INFO - Git diff before:
+diff --git a/sphinx/domains/python.py b/sphinx/domains/python.py
+index e8330e81c..9875a9f4b 100644
+--- a/sphinx/domains/python.py
++++ b/sphinx/domains/python.py
+@@ -861,7 +861,8 @@ class PyProperty(PyObject):
+ 
+         typ = self.options.get('type')
+         if typ:
+-            signode += addnodes.desc_annotation(typ, ': ' + typ)
++            annotations = _parse_annotation(typ, self.env)
++            signode += addnodes.desc_annotation(typ, '', nodes.Text(': '), *annotations)
+ 
+         return fullname, prefix
+2026-10-24 00:21:45,710 - INFO - Eval script for sphinx-doc__sphinx-9591 written to logs/run_evaluation/mana-sympy-tools-sphinx-doc-9591-941db8354f04/mana-agent__gpt-6-luna/sphinx-doc__sphinx-9591/eval.sh; copying to container...
+2026-10-24 00:21:56,409 - INFO - Test runtime: 10.61 seconds
+2026-10-24 00:21:56,409 - INFO - Test output for sphinx-doc__sphinx-9591 written to logs/run_evaluation/mana-sympy-tools-sphinx-doc-9591-941db8354f04/mana-agent__gpt-6-luna/sphinx-doc__sphinx-9591/test_output.txt
+2026-10-24 00:21:56,468 - INFO - Git diff after:
+diff --git a/sphinx/domains/python.py b/sphinx/domains/python.py
+index e8330e81c..9875a9f4b 100644
+--- a/sphinx/domains/python.py
++++ b/sphinx/domains/python.py
+@@ -861,7 +861,8 @@ class PyProperty(PyObject):
+ 
+         typ = self.options.get('type')
+         if typ:
+-            signode += addnodes.desc_annotation(typ, ': ' + typ)
++            annotations = _parse_annotation(typ, self.env)
++            signode += addnodes.desc_annotation(typ, '', nodes.Text(': '), *annotations)
+ 
+         return fullname, prefix
+2026-10-24 00:21:56,468 - INFO - Grading answer for sphinx-doc__sphinx-9591...
+2026-10-24 00:21:56,473 - INFO - report: {'sphinx-doc__sphinx-9591': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': True, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': ['tests/test_domain_py.py::test_pyproperty'], 'failure': []}, 'PASS_TO_PASS': {'success': ['tests/test_domain_py.py::test_function_signatures', 'tests/test_domain_py.py::test_domain_py_xrefs', 'tests/test_domain_py.py::test_domain_py_xrefs_abbreviations', 'tests/test_domain_py.py::test_domain_py_objects', 'tests/test_domain_py.py::test_resolve_xref_for_properties', 'tests/test_domain_py.py::test_domain_py_find_obj', 'tests/test_domain_py.py::test_domain_py_canonical', 'tests/test_domain_py.py::test_get_full_qualified_name', 'tests/test_domain_py.py::test_parse_annotation', 'tests/test_domain_py.py::test_pyfunction_signature', 'tests/test_domain_py.py::test_pyfunction_signature_full', 'tests/test_domain_py.py::test_pyfunction_signature_full_py38', 'tests/test_domain_py.py::test_pyfunction_with_number_literals', 'tests/test_domain_py.py::test_pyfunction_with_union_type_operator', 'tests/test_domain_py.py::test_optional_pyfunction_signature', 'tests/test_domain_py.py::test_pyexception_signature', 'tests/test_domain_py.py::test_pydata_signature', 'tests/test_domain_py.py::test_pydata_signature_old', 'tests/test_domain_py.py::test_pydata_with_union_type_operator', 'tests/test_domain_py.py::test_pyobject_prefix', 'tests/test_domain_py.py::test_pydata', 'tests/test_domain_py.py::test_pyfunction', 'tests/test_domain_py.py::test_pyclass_options', 'tests/test_domain_py.py::test_pymethod_options', 'tests/test_domain_py.py::test_pyclassmethod', 'tests/test_domain_py.py::test_pystaticmethod', 'tests/test_domain_py.py::test_pyattribute', 'tests/test_domain_py.py::test_pydecorator_signature', 'tests/test_domain_py.py::test_pydecoratormethod_signature', 'tests/test_domain_py.py::test_canonical', 'tests/test_domain_py.py::test_canonical_definition_overrides', 'tests/test_domain_py.py::test_canonical_definition_skip', 'tests/test_domain_py.py::test_canonical_duplicated', 'tests/test_domain_py.py::test_info_field_list', 'tests/test_domain_py.py::test_info_field_list_piped_type', 'tests/test_domain_py.py::test_info_field_list_var', 'tests/test_domain_py.py::test_module_index', 'tests/test_domain_py.py::test_module_index_submodule', 'tests/test_domain_py.py::test_module_index_not_collapsed', 'tests/test_domain_py.py::test_modindex_common_prefix', 'tests/test_domain_py.py::test_noindexentry', 'tests/test_domain_py.py::test_python_python_use_unqualified_type_names', 'tests/test_domain_py.py::test_python_python_use_unqualified_type_names_disabled', 'tests/test_domain_py.py::test_warn_missing_reference'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for sphinx-doc__sphinx-9591: resolved: True
+2026-10-24 00:21:56,474 - INFO - Attempting to stop container sweb.eval.sphinx-doc__sphinx-9591.mana-sympy-tools-sphinx-doc-9591-941db8354f04...
+2026-10-24 00:22:11,549 - INFO - Container sweb.eval.sphinx-doc__sphinx-9591.mana-sympy-tools-sphinx-doc-9591-941db8354f04 stopped successfully.
+2026-10-24 00:22:11,550 - INFO - Attempting to remove container sweb.eval.sphinx-doc__sphinx-9591.mana-sympy-tools-sphinx-doc-9591-941db8354f04...
+2026-10-24 00:22:11,587 - INFO - Container sweb.eval.sphinx-doc__sphinx-9591.mana-sympy-tools-sphinx-doc-9591-941db8354f04 removed successfully.

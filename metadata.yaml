@@ -1,0 +1,30 @@
+# SWE-bench Verified leaderboard entry for Mana-Agent + GPT-6-Luna.
+# Complete all TODO values before publication.
+# Some originally empty patches were rerun; disclose the exact attempt policy.
+# Leave checked=false until maintainers verify the submission.
+
+info:
+  name: "Mana-Agent + GPT-6-Luna"
+  site: "https://github.com/manaplatform/mana-agent"
+  report: "https://github.com/manaplatform/mana-agent-swebench-verified/blob/main/README.md"
+  authors: "Ali Heidari"
+
+tags:
+  checked: false
+  model:
+    - "gpt-6-luna"
+  org:
+    - "ManaPlatform"
+  os_model: false
+  os_system: true
+  system:
+    attempts: "2+"
+  agent: "Mana-Agent"
+  agent_org: "ManaPlatform"
+  model_display: "GPT-6-Luna"
+  model_org: "OpenAI"
+
+assets:
+  repo: "https://github.com/manaplatform/mana-agent-swebench-verified"
+  logs: "https://github.com/manaplatform/mana-agent-swebench-verified/tree/main/logs"
+  trajs: "https://github.com/manaplatform/mana-agent-swebench-verified/tree/main/trajs"

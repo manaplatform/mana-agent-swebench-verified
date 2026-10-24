@@ -1,0 +1,142 @@
+2026-10-23 21:28:44,876 - INFO - Creating container for sympy__sympy-22456...
+2026-10-23 21:28:44,991 - INFO - Container for sympy__sympy-22456 created: 33839fa6652b5805a677f84765bbedc5a7a72be0dad2ada2424f563db0dc39c3
+2026-10-23 21:28:45,095 - INFO - Container for sympy__sympy-22456 started: 33839fa6652b5805a677f84765bbedc5a7a72be0dad2ada2424f563db0dc39c3
+2026-10-23 21:28:45,096 - INFO - Intermediate patch for sympy__sympy-22456 written to logs/run_evaluation/mana-sympy-tools-sympy-22456-2b878d8513dd/mana-agent__gpt-6-luna/sympy__sympy-22456/patch.diff, now applying to container...
+2026-10-23 21:28:45,258 - INFO - >>>>> Applied Patch:
+Checking patch sympy/codegen/ast.py...
+Applied patch sympy/codegen/ast.py cleanly.
+
+2026-10-23 21:28:45,795 - INFO - Git diff before:
+diff --git a/sympy/codegen/ast.py b/sympy/codegen/ast.py
+index a02714b174..96b10e9d5b 100644
+--- a/sympy/codegen/ast.py
++++ b/sympy/codegen/ast.py
+@@ -132,6 +132,7 @@
+ 
+ from sympy.core.relational import (Ge, Gt, Le, Lt)
+ from sympy.core import Symbol, Tuple, Dummy
++from sympy.core.symbol import Str
+ from sympy.core.basic import Basic
+ from sympy.core.expr import Expr
+ from sympy.core.numbers import Float, Integer, oo
+@@ -208,6 +209,14 @@ def _construct(cls, attr, arg):
+             else:
+                 return cls._get_constructor(attr)(arg)
+ 
++    @classmethod
++    def _basic_args(cls, attrvals):
++        """Return the attribute values passed to :class:`Basic`."""
++        return [
++            val for attr, val in zip(cls.__slots__, attrvals)
++            if attr not in cls.not_in_args
++        ]
++
+     def __new__(cls, *args, **kwargs):
+         # Pass through existing instances when given as sole argument
+         if len(args) == 1 and not kwargs and isinstance(args[0], cls):
+@@ -242,10 +251,7 @@ def __new__(cls, *args, **kwargs):
+             raise ValueError("Unknown keyword arguments: %s" % ' '.join(kwargs))
+ 
+         # Parent constructor
+-        basic_args = [
+-            val for attr, val in zip(cls.__slots__, attrvals)
+-            if attr not in cls.not_in_args
+-        ]
++        basic_args = cls._basic_args(attrvals)
+         obj = CodegenAST.__new__(cls, *basic_args)
+ 
+         # Set attributes
+@@ -895,11 +901,20 @@ class String(Token):
+ 
+     """
+     __slots__ = ('text',)
+-    not_in_args = ['text']
+     is_Atom = True
+ 
++    @classmethod
++    def _basic_args(cls, attrvals):
++        return [
++            Str(val) if attr == 'text' else val
++            for attr, val in zip(cls.__slots__, attrvals)
++            if attr not in cls.not_in_args
++        ]
++
+     @classmethod
+     def _construct_text(cls, text):
++        if isinstance(text, Str):
++            text = text.name
+         if not isinstance(text, str):
+             raise TypeError("Argument text is not a string type.")
+         return text
+2026-10-23 21:28:45,795 - INFO - Eval script for sympy__sympy-22456 written to logs/run_evaluation/mana-sympy-tools-sympy-22456-2b878d8513dd/mana-agent__gpt-6-luna/sympy__sympy-22456/eval.sh; copying to container...
+2026-10-23 21:28:54,427 - INFO - Test runtime: 8.58 seconds
+2026-10-23 21:28:54,427 - INFO - Test output for sympy__sympy-22456 written to logs/run_evaluation/mana-sympy-tools-sympy-22456-2b878d8513dd/mana-agent__gpt-6-luna/sympy__sympy-22456/test_output.txt
+2026-10-23 21:28:54,562 - INFO - Git diff after:
+diff --git a/sympy/codegen/ast.py b/sympy/codegen/ast.py
+index a02714b174..96b10e9d5b 100644
+--- a/sympy/codegen/ast.py
++++ b/sympy/codegen/ast.py
+@@ -132,6 +132,7 @@
+ 
+ from sympy.core.relational import (Ge, Gt, Le, Lt)
+ from sympy.core import Symbol, Tuple, Dummy
++from sympy.core.symbol import Str
+ from sympy.core.basic import Basic
+ from sympy.core.expr import Expr
+ from sympy.core.numbers import Float, Integer, oo
+@@ -208,6 +209,14 @@ def _construct(cls, attr, arg):
+             else:
+                 return cls._get_constructor(attr)(arg)
+ 
++    @classmethod
++    def _basic_args(cls, attrvals):
++        """Return the attribute values passed to :class:`Basic`."""
++        return [
++            val for attr, val in zip(cls.__slots__, attrvals)
++            if attr not in cls.not_in_args
++        ]
++
+     def __new__(cls, *args, **kwargs):
+         # Pass through existing instances when given as sole argument
+         if len(args) == 1 and not kwargs and isinstance(args[0], cls):
+@@ -242,10 +251,7 @@ def __new__(cls, *args, **kwargs):
+             raise ValueError("Unknown keyword arguments: %s" % ' '.join(kwargs))
+ 
+         # Parent constructor
+-        basic_args = [
+-            val for attr, val in zip(cls.__slots__, attrvals)
+-            if attr not in cls.not_in_args
+-        ]
++        basic_args = cls._basic_args(attrvals)
+         obj = CodegenAST.__new__(cls, *basic_args)
+ 
+         # Set attributes
+@@ -895,11 +901,20 @@ class String(Token):
+ 
+     """
+     __slots__ = ('text',)
+-    not_in_args = ['text']
+     is_Atom = True
+ 
++    @classmethod
++    def _basic_args(cls, attrvals):
++        return [
++            Str(val) if attr == 'text' else val
++            for attr, val in zip(cls.__slots__, attrvals)
++            if attr not in cls.not_in_args
++        ]
++
+     @classmethod
+     def _construct_text(cls, text):
++        if isinstance(text, Str):
++            text = text.name
+         if not isinstance(text, str):
+             raise TypeError("Argument text is not a string type.")
+         return text
+2026-10-23 21:28:54,562 - INFO - Grading answer for sympy__sympy-22456...
+2026-10-23 21:28:54,563 - INFO - report: {'sympy__sympy-22456': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': True, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': ['test_String'], 'failure': []}, 'PASS_TO_PASS': {'success': ['test_Assignment', 'test_AugAssign', 'test_Assignment_printing', 'test_CodeBlock', 'test_CodeBlock_topological_sort', 'test_CodeBlock_free_symbols', 'test_CodeBlock_cse', 'test_CodeBlock_cse__issue_14118', 'test_For', 'test_none', 'test_Comment', 'test_Node', 'test_Type', 'test_Type__from_expr', 'test_Type__cast_check__integers', 'test_Attribute', 'test_Variable', 'test_Pointer', 'test_Declaration', 'test_IntBaseType', 'test_FloatType', 'test_Type__cast_check__floating_point', 'test_Type__cast_check__complex_floating_point', 'test_While', 'test_Scope', 'test_Print', 'test_FunctionPrototype_and_FunctionDefinition', 'test_Return', 'test_FunctionCall'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for sympy__sympy-22456: resolved: True
+2026-10-23 21:28:54,564 - INFO - Attempting to stop container sweb.eval.sympy__sympy-22456.mana-sympy-tools-sympy-22456-2b878d8513dd...
+2026-10-23 21:29:09,710 - INFO - Container sweb.eval.sympy__sympy-22456.mana-sympy-tools-sympy-22456-2b878d8513dd stopped successfully.
+2026-10-23 21:29:09,710 - INFO - Attempting to remove container sweb.eval.sympy__sympy-22456.mana-sympy-tools-sympy-22456-2b878d8513dd...
+2026-10-23 21:29:09,758 - INFO - Container sweb.eval.sympy__sympy-22456.mana-sympy-tools-sympy-22456-2b878d8513dd removed successfully.

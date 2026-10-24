@@ -1,0 +1,210 @@
+2026-10-23 23:54:31,769 - INFO - Creating container for sphinx-doc__sphinx-7985...
+2026-10-23 23:54:32,007 - INFO - Container for sphinx-doc__sphinx-7985 created: 1f69d5fe68de191acd0dbfab659856743f4812cc32c36f8224c36ac5a6ce22ef
+2026-10-23 23:54:32,182 - INFO - Container for sphinx-doc__sphinx-7985 started: 1f69d5fe68de191acd0dbfab659856743f4812cc32c36f8224c36ac5a6ce22ef
+2026-10-23 23:54:32,182 - INFO - Intermediate patch for sphinx-doc__sphinx-7985 written to logs/run_evaluation/mana-sympy-tools-sphinx-doc-7985-c4c072f5a0a1/mana-agent__gpt-6-luna/sphinx-doc__sphinx-7985/patch.diff, now applying to container...
+2026-10-23 23:54:32,412 - INFO - >>>>> Applied Patch:
+Checking patch sphinx/builders/linkcheck.py...
+Applied patch sphinx/builders/linkcheck.py cleanly.
+
+2026-10-23 23:54:32,955 - INFO - Git diff before:
+diff --git a/sphinx/builders/linkcheck.py b/sphinx/builders/linkcheck.py
+index dd5317087..9bb2d9ce2 100644
+--- a/sphinx/builders/linkcheck.py
++++ b/sphinx/builders/linkcheck.py
+@@ -9,6 +9,7 @@
+ """
+ 
+ import json
++import posixpath
+ import queue
+ import re
+ import socket
+@@ -213,7 +214,10 @@ class CheckExternalLinksBuilder(Builder):
+             if len(uri) == 0 or uri.startswith(('#', 'mailto:', 'ftp:')):
+                 return 'unchecked', '', 0
+             elif not uri.startswith(('http:', 'https:')):
+-                return 'local', '', 0
++                if self.config.linkcheck_check_local:
++                    return self.check_local_uri(uri, docname)
++                else:
++                    return 'local', '', 0
+             elif uri in self.good:
+                 return 'working', 'old', 0
+             elif uri in self.broken:
+@@ -246,6 +250,54 @@ class CheckExternalLinksBuilder(Builder):
+             status, info, code = check()
+             self.rqueue.put((uri, docname, lineno, status, info, code))
+ 
++    def check_local_uri(self, uri: str, docname: str) -> Tuple[str, str, int]:
++        """Check a relative local URI against documents and source files."""
++        parsed = urlparse(uri)
++        if parsed.scheme or parsed.netloc or parsed.path.startswith('/'):
++            return 'local', '', 0
++
++        uri_path = unquote(parsed.path)
++        if not uri_path:
++            # A query-only URI refers to the current document.
++            return 'working', '', 0
++
++        target = posixpath.normpath(posixpath.join(posixpath.dirname(docname), uri_path))
++        if target == '..' or target.startswith('../'):
++            return 'local', '', 0
++        if uri_path.endswith('/'):
++            target = posixpath.join(target, 'index')
++
++        html_suffix = (self.config.html_link_suffix or
++                       self.config.html_file_suffix or '.html')
++        if html_suffix == '/' and uri_path.endswith('/') and target.endswith('/index'):
++            target = target[:-len('/index')]
++        elif html_suffix and target.endswith(html_suffix):
++            target = target[:-len(html_suffix)]
++        if target in self.env.found_docs:
++            return 'working', '', 0
++
++        # Sphinx documents may be linked to with their output suffix, while
++        # ordinary local files are relative to the source document.
++        source_dir = path.dirname(self.env.doc2path(docname))
++        filename = path.normpath(path.join(source_dir, uri_path))
++        source_root = path.realpath(self.srcdir)
++        real_filename = path.realpath(filename)
++        try:
++            inside_source = path.commonpath((source_root, real_filename)) == source_root
++        except ValueError:
++            inside_source = False
++
++        if inside_source:
++            if path.isfile(real_filename):
++                return 'working', '', 0
++
++            if not path.splitext(filename)[1]:
++                for suffix in self.config.source_suffix:
++                    if path.isfile(real_filename + suffix):
++                        return 'working', '', 0
++
++        return 'broken', __('file not found'), 0
++
+     def process_result(self, result: Tuple[str, str, int, str, str, int]) -> None:
+         uri, docname, lineno, status, info, code = result
+ 
+@@ -275,6 +327,7 @@ class CheckExternalLinksBuilder(Builder):
+             logger.info(darkgreen('ok        ') + uri + info)
+             self.write_linkstat(linkstat)
+         elif status == 'broken':
++            self.app.statuscode = 1
+             if self.app.quiet or self.app.warningiserror:
+                 logger.warning(__('broken link: %s (%s)'), uri, info,
+                                location=(filename, lineno))
+@@ -362,6 +415,7 @@ def setup(app: Sphinx) -> Dict[str, Any]:
+     app.add_config_value('linkcheck_timeout', None, None, [int])
+     app.add_config_value('linkcheck_workers', 5, None)
+     app.add_config_value('linkcheck_anchors', True, None)
++    app.add_config_value('linkcheck_check_local', False, None)
+     # Anchors starting with ! are ignored since they are
+     # commonly used for dynamic pages
+     app.add_config_value('linkcheck_anchors_ignore', ["^!"], None)
+2026-10-23 23:54:32,955 - INFO - Eval script for sphinx-doc__sphinx-7985 written to logs/run_evaluation/mana-sympy-tools-sphinx-doc-7985-c4c072f5a0a1/mana-agent__gpt-6-luna/sphinx-doc__sphinx-7985/eval.sh; copying to container...
+2026-10-23 23:54:46,791 - INFO - Test runtime: 13.78 seconds
+2026-10-23 23:54:46,791 - INFO - Test output for sphinx-doc__sphinx-7985 written to logs/run_evaluation/mana-sympy-tools-sphinx-doc-7985-c4c072f5a0a1/mana-agent__gpt-6-luna/sphinx-doc__sphinx-7985/test_output.txt
+2026-10-23 23:54:46,849 - INFO - Git diff after:
+diff --git a/sphinx/builders/linkcheck.py b/sphinx/builders/linkcheck.py
+index dd5317087..9bb2d9ce2 100644
+--- a/sphinx/builders/linkcheck.py
++++ b/sphinx/builders/linkcheck.py
+@@ -9,6 +9,7 @@
+ """
+ 
+ import json
++import posixpath
+ import queue
+ import re
+ import socket
+@@ -213,7 +214,10 @@ class CheckExternalLinksBuilder(Builder):
+             if len(uri) == 0 or uri.startswith(('#', 'mailto:', 'ftp:')):
+                 return 'unchecked', '', 0
+             elif not uri.startswith(('http:', 'https:')):
+-                return 'local', '', 0
++                if self.config.linkcheck_check_local:
++                    return self.check_local_uri(uri, docname)
++                else:
++                    return 'local', '', 0
+             elif uri in self.good:
+                 return 'working', 'old', 0
+             elif uri in self.broken:
+@@ -246,6 +250,54 @@ class CheckExternalLinksBuilder(Builder):
+             status, info, code = check()
+             self.rqueue.put((uri, docname, lineno, status, info, code))
+ 
++    def check_local_uri(self, uri: str, docname: str) -> Tuple[str, str, int]:
++        """Check a relative local URI against documents and source files."""
++        parsed = urlparse(uri)
++        if parsed.scheme or parsed.netloc or parsed.path.startswith('/'):
++            return 'local', '', 0
++
++        uri_path = unquote(parsed.path)
++        if not uri_path:
++            # A query-only URI refers to the current document.
++            return 'working', '', 0
++
++        target = posixpath.normpath(posixpath.join(posixpath.dirname(docname), uri_path))
++        if target == '..' or target.startswith('../'):
++            return 'local', '', 0
++        if uri_path.endswith('/'):
++            target = posixpath.join(target, 'index')
++
++        html_suffix = (self.config.html_link_suffix or
++                       self.config.html_file_suffix or '.html')
++        if html_suffix == '/' and uri_path.endswith('/') and target.endswith('/index'):
++            target = target[:-len('/index')]
++        elif html_suffix and target.endswith(html_suffix):
++            target = target[:-len(html_suffix)]
++        if target in self.env.found_docs:
++            return 'working', '', 0
++
++        # Sphinx documents may be linked to with their output suffix, while
++        # ordinary local files are relative to the source document.
++        source_dir = path.dirname(self.env.doc2path(docname))
++        filename = path.normpath(path.join(source_dir, uri_path))
++        source_root = path.realpath(self.srcdir)
++        real_filename = path.realpath(filename)
++        try:
++            inside_source = path.commonpath((source_root, real_filename)) == source_root
++        except ValueError:
++            inside_source = False
++
++        if inside_source:
++            if path.isfile(real_filename):
++                return 'working', '', 0
++
++            if not path.splitext(filename)[1]:
++                for suffix in self.config.source_suffix:
++                    if path.isfile(real_filename + suffix):
++                        return 'working', '', 0
++
++        return 'broken', __('file not found'), 0
++
+     def process_result(self, result: Tuple[str, str, int, str, str, int]) -> None:
+         uri, docname, lineno, status, info, code = result
+ 
+@@ -275,6 +327,7 @@ class CheckExternalLinksBuilder(Builder):
+             logger.info(darkgreen('ok        ') + uri + info)
+             self.write_linkstat(linkstat)
+         elif status == 'broken':
++            self.app.statuscode = 1
+             if self.app.quiet or self.app.warningiserror:
+                 logger.warning(__('broken link: %s (%s)'), uri, info,
+                                location=(filename, lineno))
+@@ -362,6 +415,7 @@ def setup(app: Sphinx) -> Dict[str, Any]:
+     app.add_config_value('linkcheck_timeout', None, None, [int])
+     app.add_config_value('linkcheck_workers', 5, None)
+     app.add_config_value('linkcheck_anchors', True, None)
++    app.add_config_value('linkcheck_check_local', False, None)
+     # Anchors starting with ! are ignored since they are
+     # commonly used for dynamic pages
+     app.add_config_value('linkcheck_anchors_ignore', ["^!"], None)
+2026-10-23 23:54:46,850 - INFO - Grading answer for sphinx-doc__sphinx-7985...
+2026-10-23 23:54:46,856 - INFO - report: {'sphinx-doc__sphinx-7985': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': False, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': [], 'failure': ['tests/test_build_linkcheck.py::test_defaults', 'tests/test_build_linkcheck.py::test_anchors_ignored']}, 'PASS_TO_PASS': {'success': ['tests/test_build_linkcheck.py::test_defaults_json', 'tests/test_build_linkcheck.py::test_auth', 'tests/test_build_linkcheck.py::test_linkcheck_request_headers'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for sphinx-doc__sphinx-7985: resolved: False
+2026-10-23 23:54:46,857 - INFO - Attempting to stop container sweb.eval.sphinx-doc__sphinx-7985.mana-sympy-tools-sphinx-doc-7985-c4c072f5a0a1...
+2026-10-23 23:55:01,960 - INFO - Container sweb.eval.sphinx-doc__sphinx-7985.mana-sympy-tools-sphinx-doc-7985-c4c072f5a0a1 stopped successfully.
+2026-10-23 23:55:01,960 - INFO - Attempting to remove container sweb.eval.sphinx-doc__sphinx-7985.mana-sympy-tools-sphinx-doc-7985-c4c072f5a0a1...
+2026-10-23 23:55:01,993 - INFO - Container sweb.eval.sphinx-doc__sphinx-7985.mana-sympy-tools-sphinx-doc-7985-c4c072f5a0a1 removed successfully.

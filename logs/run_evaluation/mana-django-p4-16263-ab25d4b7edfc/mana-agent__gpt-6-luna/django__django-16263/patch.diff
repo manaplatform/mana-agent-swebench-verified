@@ -1,0 +1,156 @@
+diff --git a/django/db/models/sql/query.py b/django/db/models/sql/query.py
+index 9735ce10c8..2b35d04b43 100644
+--- a/django/db/models/sql/query.py
++++ b/django/db/models/sql/query.py
+@@ -550,14 +550,151 @@ class Query(BaseExpression):
+         Perform a COUNT() query using the current filter constraints.
+         """
+         obj = self.clone()
++        obj.remove_unused_annotations()
+         obj.add_annotation(Count("*"), alias="__count", is_summary=True)
+         return obj.get_aggregation(using, ["__count"])["__count"]
+ 
++    def remove_unused_annotations(self):
++        """Remove annotations which don't affect the query's result."""
++        if not self.annotations:
++            return
++
++        def get_references(expressions):
++            references = set()
++            names = set()
++            seen = set()
++            stack = list(expressions)
++            while stack:
++                expression = stack.pop()
++                if expression is None or id(expression) in seen:
++                    continue
++                seen.add(id(expression))
++                if isinstance(expression, Ref):
++                    names.add(expression.refs)
++                elif isinstance(expression, F):
++                    names.add(expression.name)
++                references.add(id(expression))
++                get_source_expressions = getattr(
++                    expression, "get_source_expressions", None
++                )
++                if get_source_expressions:
++                    stack.extend(get_source_expressions())
++                elif hasattr(expression, "children"):
++                    stack.extend(expression.children)
++            return references, names
++
++        # Annotation expressions are resolved into filters when they're
++        # added, so find those expressions in the WHERE tree as well as any
++        # references which still use an annotation's alias.
++        referenced, names = get_references(self.where.children)
++        if self.annotation_select_mask is not None:
++            names.update(self.annotation_select_mask)
++        if isinstance(self.group_by, tuple):
++            group_references, group_names = get_references(self.group_by)
++            referenced.update(group_references)
++            names.update(group_names)
++        names.update(self.distinct_fields)
++        for ordering in (*self.order_by, *self.extra_order_by):
++            if isinstance(ordering, str):
++                names.add(ordering.lstrip("-"))
++            else:
++                order_references, order_names = get_references((ordering,))
++                referenced.update(order_references)
++                names.update(order_names)
++
++        # Follow references between annotations, including expressions which
++        # were inlined while resolving F() references.
++        used_annotations = {
++            alias
++            for alias, expression in self.annotations.items()
++            if alias in names or id(expression) in referenced
++        }
++        while True:
++            annotation_references, annotation_names = get_references(
++                self.annotations[alias]
++                for alias in used_annotations
++            )
++            new_used_annotations = used_annotations | (
++                annotation_names & self.annotations.keys()
++            )
++            new_used_annotations.update(
++                alias
++                for alias, expression in self.annotations.items()
++                if id(expression) in annotation_references
++            )
++            if new_used_annotations == used_annotations:
++                break
++            used_annotations = new_used_annotations
++
++        unused_annotations = self.annotations.keys() - used_annotations
++        if not unused_annotations:
++            return
++
++        removed_expressions = [
++            self.annotations.pop(alias) for alias in unused_annotations
++        ]
++        if self.annotation_select_mask is not None:
++            self.annotation_select_mask.difference_update(unused_annotations)
++        self._annotation_select_cache = None
++
++        # Annotation resolution may have introduced joins. Disable joins that
++        # are only referenced by the removed expressions.
++        used_aliases = set()
++        if not self.extra and not self.extra_tables:
++            expressions = [*self.where.children, *self.select, *self.annotations.values()]
++            if isinstance(self.group_by, tuple):
++                expressions.extend(self.group_by)
++            expressions.extend(
++                expression
++                for expression in (*self.order_by, *self.extra_order_by)
++                if not isinstance(expression, str)
++            )
++            for alias in self._gen_col_aliases(expressions):
++                while alias and alias not in used_aliases:
++                    used_aliases.add(alias)
++                    join = self.alias_map.get(alias)
++                    alias = getattr(join, "parent_alias", None)
++            annotation_aliases = set(self._gen_col_aliases(removed_expressions))
++            for alias in tuple(annotation_aliases):
++                join = self.alias_map.get(alias)
++                alias = getattr(join, "parent_alias", None)
++                while alias and alias not in annotation_aliases:
++                    annotation_aliases.add(alias)
++                    join = self.alias_map.get(alias)
++                    alias = getattr(join, "parent_alias", None)
++            for alias in annotation_aliases - used_aliases:
++                if alias in self.alias_refcount:
++                    self.alias_refcount[alias] = 0
++
++        if (
++            self.group_by is True
++            and not self.where.contains_aggregate
++            and not any(
++                annotation.contains_aggregate
++                for annotation in self.annotations.values()
++            )
++        ):
++            has_many_to_many_join = any(
++                isinstance(self.alias_map.get(alias), Join)
++                and (
++                    self.alias_map[alias].join_field.one_to_many
++                    or self.alias_map[alias].join_field.many_to_many
++                )
++                for alias in used_aliases
++            )
++            if has_many_to_many_join or self.extra or self.extra_tables:
++                self.group_by = (
++                    self.model._meta.pk.get_col(self.get_initial_alias()),
++                )
++            else:
++                self.group_by = None
++
+     def has_filters(self):
+         return self.where
+ 
+     def exists(self, limit=True):
+         q = self.clone()
++        q.remove_unused_annotations()
+         if not (q.distinct and q.is_sliced):
+             if q.group_by is True:
+                 q.add_fields(

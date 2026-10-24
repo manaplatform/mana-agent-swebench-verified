@@ -1,0 +1,72 @@
+2026-10-22 00:24:41,433 - INFO - Creating container for astropy__astropy-7166...
+2026-10-22 00:24:41,588 - INFO - Container for astropy__astropy-7166 created: dc43d18c5b2217759099a538d156ea8abb27f557d2c43e46ead8424618b1443f
+2026-10-22 00:24:41,635 - INFO - Container for astropy__astropy-7166 started: dc43d18c5b2217759099a538d156ea8abb27f557d2c43e46ead8424618b1443f
+2026-10-22 00:24:41,636 - INFO - Intermediate patch for astropy__astropy-7166 written to logs/run_evaluation/mana-astropy-7166-eadbd8b2ff64/mana-agent__gpt-6-luna/astropy__astropy-7166/patch.diff, now applying to container...
+2026-10-22 00:24:41,721 - INFO - >>>>> Applied Patch:
+Checking patch astropy/utils/misc.py...
+Applied patch astropy/utils/misc.py cleanly.
+
+2026-10-22 00:24:42,032 - INFO - Git diff before:
+diff --git a/astropy/utils/misc.py b/astropy/utils/misc.py
+index de3fb01d1..33ddcc28b 100644
+--- a/astropy/utils/misc.py
++++ b/astropy/utils/misc.py
+@@ -496,9 +496,9 @@ def did_you_mean(s, candidates, n=3, cutoff=0.8, fix=None):
+ 
+ class InheritDocstrings(type):
+     """
+-    This metaclass makes methods of a class automatically have their
+-    docstrings filled in from the methods they override in the base
+-    class.
++    This metaclass makes methods and properties of a class automatically
++    have their docstrings filled in from the methods and properties they
++    override in the base class.
+ 
+     If the class uses multiple inheritance, the docstring will be
+     chosen from the first class in the bases list, in the same way as
+@@ -528,7 +528,7 @@ class InheritDocstrings(type):
+                 not key.startswith('_'))
+ 
+         for key, val in dct.items():
+-            if (inspect.isfunction(val) and
++            if ((inspect.isfunction(val) or inspect.isdatadescriptor(val)) and
+                 is_public_member(key) and
+                 val.__doc__ is None):
+                 for base in cls.__mro__[1:]:
+2026-10-22 00:24:42,033 - INFO - Eval script for astropy__astropy-7166 written to logs/run_evaluation/mana-astropy-7166-eadbd8b2ff64/mana-agent__gpt-6-luna/astropy__astropy-7166/eval.sh; copying to container...
+2026-10-22 00:24:48,136 - INFO - Test runtime: 6.07 seconds
+2026-10-22 00:24:48,137 - INFO - Test output for astropy__astropy-7166 written to logs/run_evaluation/mana-astropy-7166-eadbd8b2ff64/mana-agent__gpt-6-luna/astropy__astropy-7166/test_output.txt
+2026-10-22 00:24:48,235 - INFO - Git diff after:
+diff --git a/astropy/utils/misc.py b/astropy/utils/misc.py
+index de3fb01d1..33ddcc28b 100644
+--- a/astropy/utils/misc.py
++++ b/astropy/utils/misc.py
+@@ -496,9 +496,9 @@ def did_you_mean(s, candidates, n=3, cutoff=0.8, fix=None):
+ 
+ class InheritDocstrings(type):
+     """
+-    This metaclass makes methods of a class automatically have their
+-    docstrings filled in from the methods they override in the base
+-    class.
++    This metaclass makes methods and properties of a class automatically
++    have their docstrings filled in from the methods and properties they
++    override in the base class.
+ 
+     If the class uses multiple inheritance, the docstring will be
+     chosen from the first class in the bases list, in the same way as
+@@ -528,7 +528,7 @@ class InheritDocstrings(type):
+                 not key.startswith('_'))
+ 
+         for key, val in dct.items():
+-            if (inspect.isfunction(val) and
++            if ((inspect.isfunction(val) or inspect.isdatadescriptor(val)) and
+                 is_public_member(key) and
+                 val.__doc__ is None):
+                 for base in cls.__mro__[1:]:
+2026-10-22 00:24:48,235 - INFO - Grading answer for astropy__astropy-7166...
+2026-10-22 00:24:48,235 - INFO - report: {'astropy__astropy-7166': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': True, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': ['astropy/utils/tests/test_misc.py::test_inherit_docstrings'], 'failure': []}, 'PASS_TO_PASS': {'success': ['astropy/utils/tests/test_misc.py::test_isiterable', 'astropy/utils/tests/test_misc.py::test_signal_number_to_name_no_failure', 'astropy/utils/tests/test_misc.py::test_skip_hidden', 'astropy/utils/tests/test_misc.py::test_JsonCustomEncoder', 'astropy/utils/tests/test_misc.py::test_check_broadcast', 'astropy/utils/tests/test_misc.py::test_dtype_bytes_or_chars'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for astropy__astropy-7166: resolved: True
+2026-10-22 00:24:48,235 - INFO - Attempting to stop container sweb.eval.astropy__astropy-7166.mana-astropy-7166-eadbd8b2ff64...
+2026-10-22 00:25:03,327 - INFO - Container sweb.eval.astropy__astropy-7166.mana-astropy-7166-eadbd8b2ff64 stopped successfully.
+2026-10-22 00:25:03,328 - INFO - Attempting to remove container sweb.eval.astropy__astropy-7166.mana-astropy-7166-eadbd8b2ff64...
+2026-10-22 00:25:03,353 - INFO - Container sweb.eval.astropy__astropy-7166.mana-astropy-7166-eadbd8b2ff64 removed successfully.

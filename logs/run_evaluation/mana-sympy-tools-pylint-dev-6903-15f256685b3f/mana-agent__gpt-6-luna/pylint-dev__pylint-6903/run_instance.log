@@ -1,0 +1,50 @@
+2026-10-23 21:53:23,179 - INFO - Creating container for pylint-dev__pylint-6903...
+2026-10-23 21:53:23,313 - INFO - Container for pylint-dev__pylint-6903 created: 2c8e47df4a58deb1712503e8ee45b32acef83cfed0da160bb7f204e1cd40d1c9
+2026-10-23 21:53:23,435 - INFO - Container for pylint-dev__pylint-6903 started: 2c8e47df4a58deb1712503e8ee45b32acef83cfed0da160bb7f204e1cd40d1c9
+2026-10-23 21:53:23,435 - INFO - Intermediate patch for pylint-dev__pylint-6903 written to logs/run_evaluation/mana-sympy-tools-pylint-dev-6903-15f256685b3f/mana-agent__gpt-6-luna/pylint-dev__pylint-6903/patch.diff, now applying to container...
+2026-10-23 21:53:23,606 - INFO - >>>>> Applied Patch:
+Checking patch pylint/lint/run.py...
+Applied patch pylint/lint/run.py cleanly.
+
+2026-10-23 21:53:23,835 - INFO - Git diff before:
+diff --git a/pylint/lint/run.py b/pylint/lint/run.py
+index a7e5d557..4b9c52ab 100644
+--- a/pylint/lint/run.py
++++ b/pylint/lint/run.py
+@@ -58,7 +58,9 @@ def _query_cpu() -> int | None:
+             cpu_shares = int(file.read().rstrip())
+         # For AWS, gives correct value * 1024.
+         avail_cpu = int(cpu_shares / 1024)
+-    return avail_cpu
++    # Rounding fractional CPU shares down can otherwise produce zero, which
++    # multiprocessing cannot use as its process count.
++    return max(1, avail_cpu) if avail_cpu is not None else None
+ 
+ 
+ def _cpu_count() -> int:
+2026-10-23 21:53:23,835 - INFO - Eval script for pylint-dev__pylint-6903 written to logs/run_evaluation/mana-sympy-tools-pylint-dev-6903-15f256685b3f/mana-agent__gpt-6-luna/pylint-dev__pylint-6903/eval.sh; copying to container...
+2026-10-23 21:53:37,976 - INFO - Test runtime: 14.10 seconds
+2026-10-23 21:53:37,976 - INFO - Test output for pylint-dev__pylint-6903 written to logs/run_evaluation/mana-sympy-tools-pylint-dev-6903-15f256685b3f/mana-agent__gpt-6-luna/pylint-dev__pylint-6903/test_output.txt
+2026-10-23 21:53:38,038 - INFO - Git diff after:
+diff --git a/pylint/lint/run.py b/pylint/lint/run.py
+index a7e5d557..4b9c52ab 100644
+--- a/pylint/lint/run.py
++++ b/pylint/lint/run.py
+@@ -58,7 +58,9 @@ def _query_cpu() -> int | None:
+             cpu_shares = int(file.read().rstrip())
+         # For AWS, gives correct value * 1024.
+         avail_cpu = int(cpu_shares / 1024)
+-    return avail_cpu
++    # Rounding fractional CPU shares down can otherwise produce zero, which
++    # multiprocessing cannot use as its process count.
++    return max(1, avail_cpu) if avail_cpu is not None else None
+ 
+ 
+ def _cpu_count() -> int:
+2026-10-23 21:53:38,038 - INFO - Grading answer for pylint-dev__pylint-6903...
+2026-10-23 21:53:38,039 - INFO - report: {'pylint-dev__pylint-6903': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': True, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': ['tests/test_pylint_runners.py::test_pylint_run_jobs_equal_zero_dont_crash_with_cpu_fraction'], 'failure': []}, 'PASS_TO_PASS': {'success': ['tests/test_pylint_runners.py::test_runner[run_epylint]', 'tests/test_pylint_runners.py::test_runner[run_pylint]', 'tests/test_pylint_runners.py::test_runner[run_pyreverse]', 'tests/test_pylint_runners.py::test_runner[run_symilar]', 'tests/test_pylint_runners.py::test_runner_with_arguments[run_epylint]', 'tests/test_pylint_runners.py::test_runner_with_arguments[run_pylint]', 'tests/test_pylint_runners.py::test_runner_with_arguments[run_pyreverse]', 'tests/test_pylint_runners.py::test_runner_with_arguments[run_symilar]'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for pylint-dev__pylint-6903: resolved: True
+2026-10-23 21:53:38,040 - INFO - Attempting to stop container sweb.eval.pylint-dev__pylint-6903.mana-sympy-tools-pylint-dev-6903-15f256685b3f...
+2026-10-23 21:53:53,139 - INFO - Container sweb.eval.pylint-dev__pylint-6903.mana-sympy-tools-pylint-dev-6903-15f256685b3f stopped successfully.
+2026-10-23 21:53:53,139 - INFO - Attempting to remove container sweb.eval.pylint-dev__pylint-6903.mana-sympy-tools-pylint-dev-6903-15f256685b3f...
+2026-10-23 21:53:53,167 - INFO - Container sweb.eval.pylint-dev__pylint-6903.mana-sympy-tools-pylint-dev-6903-15f256685b3f removed successfully.

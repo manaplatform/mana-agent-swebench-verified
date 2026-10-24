@@ -1,0 +1,16 @@
+diff --git a/lib/matplotlib/contour.py b/lib/matplotlib/contour.py
+index 144eadeae2..c7e0dfd071 100644
+--- a/lib/matplotlib/contour.py
++++ b/lib/matplotlib/contour.py
+@@ -1447,7 +1447,10 @@ class QuadContourSet(ContourSet):
+             fn = 'contour'
+         nargs = len(args)
+         if nargs <= 2:
+-            z = ma.asarray(args[0], dtype=np.float64)
++            z = ma.asarray(args[0])
++            if (nargs == 1 and self.levels is None and z.dtype == bool):
++                self.levels = [0, 0.5, 1] if self.filled else [0.5]
++            z = ma.asarray(z, dtype=np.float64)
+             x, y = self._initialize_x_y(z)
+             args = args[1:]
+         elif nargs <= 4:

@@ -1,0 +1,73 @@
+2026-10-23 23:24:46,636 - INFO - Creating container for scikit-learn__scikit-learn-25747...
+2026-10-23 23:24:46,693 - INFO - Container for scikit-learn__scikit-learn-25747 created: 3db15ac60af7eff9a5de2cfa5d1a7c9d358dc6e295ff8e1ea3b7370e66c1c49b
+2026-10-23 23:24:46,841 - INFO - Container for scikit-learn__scikit-learn-25747 started: 3db15ac60af7eff9a5de2cfa5d1a7c9d358dc6e295ff8e1ea3b7370e66c1c49b
+2026-10-23 23:24:46,841 - INFO - Intermediate patch for scikit-learn__scikit-learn-25747 written to logs/run_evaluation/mana-sympy-tools-scikit-learn-25747-fe9dd4777b6c/mana-agent__gpt-6-luna/scikit-learn__scikit-learn-25747/patch.diff, now applying to container...
+2026-10-23 23:24:47,037 - INFO - >>>>> Applied Patch:
+Checking patch sklearn/utils/_set_output.py...
+warning: sklearn/utils/_set_output.py has type 100755, expected 100644
+Applied patch sklearn/utils/_set_output.py cleanly.
+
+2026-10-23 23:24:47,424 - INFO - Git diff before:
+diff --git a/sklearn/utils/_set_output.py b/sklearn/utils/_set_output.py
+index 335773c6a..236e0be22 100755
+--- a/sklearn/utils/_set_output.py
++++ b/sklearn/utils/_set_output.py
+@@ -15,9 +15,9 @@ def _wrap_in_pandas_container(
+ ):
+     """Create a Pandas DataFrame.
+ 
+-    If `data_to_wrap` is a DataFrame, then the `columns` and `index` will be changed
+-    inplace. If `data_to_wrap` is a ndarray, then a new DataFrame is created with
+-    `columns` and `index`.
++    If `data_to_wrap` is a DataFrame, then the `columns` will be changed inplace.
++    If `data_to_wrap` is a ndarray, then a new DataFrame is created with `columns`
++    and `index`.
+ 
+     Parameters
+     ----------
+@@ -55,8 +55,6 @@ def _wrap_in_pandas_container(
+     if isinstance(data_to_wrap, pd.DataFrame):
+         if columns is not None:
+             data_to_wrap.columns = columns
+-        if index is not None:
+-            data_to_wrap.index = index
+         return data_to_wrap
+ 
+     return pd.DataFrame(data_to_wrap, index=index, columns=columns)
+2026-10-23 23:24:47,424 - INFO - Eval script for scikit-learn__scikit-learn-25747 written to logs/run_evaluation/mana-sympy-tools-scikit-learn-25747-fe9dd4777b6c/mana-agent__gpt-6-luna/scikit-learn__scikit-learn-25747/eval.sh; copying to container...
+2026-10-23 23:25:00,909 - INFO - Test runtime: 13.43 seconds
+2026-10-23 23:25:00,910 - INFO - Test output for scikit-learn__scikit-learn-25747 written to logs/run_evaluation/mana-sympy-tools-scikit-learn-25747-fe9dd4777b6c/mana-agent__gpt-6-luna/scikit-learn__scikit-learn-25747/test_output.txt
+2026-10-23 23:25:01,050 - INFO - Git diff after:
+diff --git a/sklearn/utils/_set_output.py b/sklearn/utils/_set_output.py
+index 335773c6a..236e0be22 100755
+--- a/sklearn/utils/_set_output.py
++++ b/sklearn/utils/_set_output.py
+@@ -15,9 +15,9 @@ def _wrap_in_pandas_container(
+ ):
+     """Create a Pandas DataFrame.
+ 
+-    If `data_to_wrap` is a DataFrame, then the `columns` and `index` will be changed
+-    inplace. If `data_to_wrap` is a ndarray, then a new DataFrame is created with
+-    `columns` and `index`.
++    If `data_to_wrap` is a DataFrame, then the `columns` will be changed inplace.
++    If `data_to_wrap` is a ndarray, then a new DataFrame is created with `columns`
++    and `index`.
+ 
+     Parameters
+     ----------
+@@ -55,8 +55,6 @@ def _wrap_in_pandas_container(
+     if isinstance(data_to_wrap, pd.DataFrame):
+         if columns is not None:
+             data_to_wrap.columns = columns
+-        if index is not None:
+-            data_to_wrap.index = index
+         return data_to_wrap
+ 
+     return pd.DataFrame(data_to_wrap, index=index, columns=columns)
+2026-10-23 23:25:01,050 - INFO - Grading answer for scikit-learn__scikit-learn-25747...
+2026-10-23 23:25:01,054 - INFO - report: {'scikit-learn__scikit-learn-25747': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': True, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': ['sklearn/utils/tests/test_set_output.py::test_set_output_pandas_keep_index'], 'failure': []}, 'PASS_TO_PASS': {'success': ['sklearn/utils/tests/test_set_output.py::test__wrap_in_pandas_container_dense', 'sklearn/utils/tests/test_set_output.py::test__wrap_in_pandas_container_dense_update_columns_and_index', 'sklearn/utils/tests/test_set_output.py::test__wrap_in_pandas_container_error_validation', 'sklearn/utils/tests/test_set_output.py::test__safe_set_output', 'sklearn/utils/tests/test_set_output.py::test_set_output_mixin', 'sklearn/utils/tests/test_set_output.py::test__safe_set_output_error', 'sklearn/utils/tests/test_set_output.py::test_set_output_method', 'sklearn/utils/tests/test_set_output.py::test_set_output_method_error', 'sklearn/utils/tests/test_set_output.py::test__get_output_config', 'sklearn/utils/tests/test_set_output.py::test_get_output_auto_wrap_false', 'sklearn/utils/tests/test_set_output.py::test_auto_wrap_output_keys_errors_with_incorrect_input', 'sklearn/utils/tests/test_set_output.py::test_set_output_mixin_custom_mixin', 'sklearn/utils/tests/test_set_output.py::test__wrap_in_pandas_container_column_errors', 'sklearn/utils/tests/test_set_output.py::test_set_output_mro'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for scikit-learn__scikit-learn-25747: resolved: True
+2026-10-23 23:25:01,054 - INFO - Attempting to stop container sweb.eval.scikit-learn__scikit-learn-25747.mana-sympy-tools-scikit-learn-25747-fe9dd4777b6c...
+2026-10-23 23:25:16,210 - INFO - Container sweb.eval.scikit-learn__scikit-learn-25747.mana-sympy-tools-scikit-learn-25747-fe9dd4777b6c stopped successfully.
+2026-10-23 23:25:16,210 - INFO - Attempting to remove container sweb.eval.scikit-learn__scikit-learn-25747.mana-sympy-tools-scikit-learn-25747-fe9dd4777b6c...
+2026-10-23 23:25:16,238 - INFO - Container sweb.eval.scikit-learn__scikit-learn-25747.mana-sympy-tools-scikit-learn-25747-fe9dd4777b6c removed successfully.

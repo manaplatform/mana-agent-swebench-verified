@@ -1,0 +1,17 @@
+diff --git a/sphinx/ext/autodoc/__init__.py b/sphinx/ext/autodoc/__init__.py
+index 1f4c98284..9dfb31bd0 100644
+--- a/sphinx/ext/autodoc/__init__.py
++++ b/sphinx/ext/autodoc/__init__.py
+@@ -1470,6 +1470,12 @@ class ClassDocumenter(DocstringSignatureMixin, ModuleLevelDocumenter):  # type:
+                 self.doc_as_attr = True
+         return ret
+ 
++    def get_real_modname(self) -> str:
++        if getattr(self, 'doc_as_attr', False):
++            return self.modname
++        else:
++            return super().get_real_modname()
++
+     def _get_signature(self) -> Tuple[Optional[Any], Optional[str], Optional[Signature]]:
+         def get_user_defined_function_or_method(obj: Any, attr: str) -> Any:
+             """ Get the `attr` function or method from `obj`, if it is user-defined. """

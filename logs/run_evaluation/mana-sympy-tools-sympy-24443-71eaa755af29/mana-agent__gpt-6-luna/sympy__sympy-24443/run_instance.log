@@ -1,0 +1,122 @@
+2026-10-23 21:45:43,304 - INFO - Creating container for sympy__sympy-24443...
+2026-10-23 21:45:43,353 - INFO - Container for sympy__sympy-24443 created: cf00e2f0181eb11ffca9049302146c30db2981a7b55a7ea24e048e45a89df500
+2026-10-23 21:45:43,456 - INFO - Container for sympy__sympy-24443 started: cf00e2f0181eb11ffca9049302146c30db2981a7b55a7ea24e048e45a89df500
+2026-10-23 21:45:43,456 - INFO - Intermediate patch for sympy__sympy-24443 written to logs/run_evaluation/mana-sympy-tools-sympy-24443-71eaa755af29/mana-agent__gpt-6-luna/sympy__sympy-24443/patch.diff, now applying to container...
+2026-10-23 21:45:43,630 - INFO - >>>>> Applied Patch:
+Checking patch sympy/combinatorics/homomorphisms.py...
+Applied patch sympy/combinatorics/homomorphisms.py cleanly.
+
+2026-10-23 21:45:44,337 - INFO - Git diff before:
+diff --git a/sympy/combinatorics/homomorphisms.py b/sympy/combinatorics/homomorphisms.py
+index bb7bdf32ba..319b7cd225 100644
+--- a/sympy/combinatorics/homomorphisms.py
++++ b/sympy/combinatorics/homomorphisms.py
+@@ -311,8 +311,9 @@ def _check_homomorphism(domain, codomain, images):
+     if hasattr(domain, 'relators'):
+         rels = domain.relators
+     else:
+-        gens = domain.presentation().generators
+-        rels = domain.presentation().relators
++        presentation = domain.presentation()
++        gens = presentation.generators
++        rels = presentation.relators
+     identity = codomain.identity
+ 
+     def _image(r):
+@@ -320,29 +321,11 @@ def _image(r):
+             return identity
+         else:
+             w = identity
+-            r_arr = r.array_form
+-            i = 0
+-            j = 0
+-            # i is the index for r and j is for
+-            # r_arr. r_arr[j] is the tuple (sym, p)
+-            # where sym is the generator symbol
+-            # and p is the power to which it is
+-            # raised while r[i] is a generator
+-            # (not just its symbol) or the inverse of
+-            # a generator - hence the need for
+-            # both indices
+-            while i < len(r):
+-                power = r_arr[j][1]
+-                if isinstance(domain, PermutationGroup) and r[i] in gens:
+-                    s = domain.generators[gens.index(r[i])]
+-                else:
+-                    s = r[i]
+-                if s in images:
+-                    w = w*images[s]**power
+-                elif s**-1 in images:
+-                    w = w*images[s**-1]**power
+-                i += abs(power)
+-                j += 1
++            for (symbol, power) in r.array_form:
++                s = r.group.dtype(((symbol, 1),))
++                if isinstance(domain, PermutationGroup):
++                    s = domain.generators[gens.index(s)]
++                w = w*images[s]**power
+             return w
+ 
+     for r in rels:
+2026-10-23 21:45:44,337 - INFO - Eval script for sympy__sympy-24443 written to logs/run_evaluation/mana-sympy-tools-sympy-24443-71eaa755af29/mana-agent__gpt-6-luna/sympy__sympy-24443/eval.sh; copying to container...
+2026-10-23 21:45:51,842 - INFO - Test runtime: 7.44 seconds
+2026-10-23 21:45:51,843 - INFO - Test output for sympy__sympy-24443 written to logs/run_evaluation/mana-sympy-tools-sympy-24443-71eaa755af29/mana-agent__gpt-6-luna/sympy__sympy-24443/test_output.txt
+2026-10-23 21:45:52,028 - INFO - Git diff after:
+diff --git a/sympy/combinatorics/homomorphisms.py b/sympy/combinatorics/homomorphisms.py
+index bb7bdf32ba..319b7cd225 100644
+--- a/sympy/combinatorics/homomorphisms.py
++++ b/sympy/combinatorics/homomorphisms.py
+@@ -311,8 +311,9 @@ def _check_homomorphism(domain, codomain, images):
+     if hasattr(domain, 'relators'):
+         rels = domain.relators
+     else:
+-        gens = domain.presentation().generators
+-        rels = domain.presentation().relators
++        presentation = domain.presentation()
++        gens = presentation.generators
++        rels = presentation.relators
+     identity = codomain.identity
+ 
+     def _image(r):
+@@ -320,29 +321,11 @@ def _image(r):
+             return identity
+         else:
+             w = identity
+-            r_arr = r.array_form
+-            i = 0
+-            j = 0
+-            # i is the index for r and j is for
+-            # r_arr. r_arr[j] is the tuple (sym, p)
+-            # where sym is the generator symbol
+-            # and p is the power to which it is
+-            # raised while r[i] is a generator
+-            # (not just its symbol) or the inverse of
+-            # a generator - hence the need for
+-            # both indices
+-            while i < len(r):
+-                power = r_arr[j][1]
+-                if isinstance(domain, PermutationGroup) and r[i] in gens:
+-                    s = domain.generators[gens.index(r[i])]
+-                else:
+-                    s = r[i]
+-                if s in images:
+-                    w = w*images[s]**power
+-                elif s**-1 in images:
+-                    w = w*images[s**-1]**power
+-                i += abs(power)
+-                j += 1
++            for (symbol, power) in r.array_form:
++                s = r.group.dtype(((symbol, 1),))
++                if isinstance(domain, PermutationGroup):
++                    s = domain.generators[gens.index(s)]
++                w = w*images[s]**power
+             return w
+ 
+     for r in rels:
+2026-10-23 21:45:52,028 - INFO - Grading answer for sympy__sympy-24443...
+2026-10-23 21:45:52,028 - INFO - report: {'sympy__sympy-24443': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': True, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': ['test_homomorphism'], 'failure': []}, 'PASS_TO_PASS': {'success': ['test_isomorphisms'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for sympy__sympy-24443: resolved: True
+2026-10-23 21:45:52,029 - INFO - Attempting to stop container sweb.eval.sympy__sympy-24443.mana-sympy-tools-sympy-24443-71eaa755af29...
+2026-10-23 21:46:07,172 - INFO - Container sweb.eval.sympy__sympy-24443.mana-sympy-tools-sympy-24443-71eaa755af29 stopped successfully.
+2026-10-23 21:46:07,172 - INFO - Attempting to remove container sweb.eval.sympy__sympy-24443.mana-sympy-tools-sympy-24443-71eaa755af29...
+2026-10-23 21:46:07,208 - INFO - Container sweb.eval.sympy__sympy-24443.mana-sympy-tools-sympy-24443-71eaa755af29 removed successfully.

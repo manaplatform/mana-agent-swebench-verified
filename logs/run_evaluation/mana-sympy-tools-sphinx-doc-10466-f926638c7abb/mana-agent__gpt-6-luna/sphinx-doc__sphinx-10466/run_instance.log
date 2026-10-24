@@ -1,0 +1,50 @@
+2026-10-23 23:40:10,045 - INFO - Creating container for sphinx-doc__sphinx-10466...
+2026-10-23 23:40:10,363 - INFO - Container for sphinx-doc__sphinx-10466 created: fdd1d6a9cea55767e3c15bfba04d2d978eeeb8d57ab1eeed09084975f43119ac
+2026-10-23 23:40:10,520 - INFO - Container for sphinx-doc__sphinx-10466 started: fdd1d6a9cea55767e3c15bfba04d2d978eeeb8d57ab1eeed09084975f43119ac
+2026-10-23 23:40:10,520 - INFO - Intermediate patch for sphinx-doc__sphinx-10466 written to logs/run_evaluation/mana-sympy-tools-sphinx-doc-10466-f926638c7abb/mana-agent__gpt-6-luna/sphinx-doc__sphinx-10466/patch.diff, now applying to container...
+2026-10-23 23:40:10,670 - INFO - >>>>> Applied Patch:
+Checking patch sphinx/builders/gettext.py...
+Applied patch sphinx/builders/gettext.py cleanly.
+
+2026-10-23 23:40:11,227 - INFO - Git diff before:
+diff --git a/sphinx/builders/gettext.py b/sphinx/builders/gettext.py
+index e8bc547b7..1902ae5e8 100644
+--- a/sphinx/builders/gettext.py
++++ b/sphinx/builders/gettext.py
+@@ -57,7 +57,10 @@ class Catalog:
+ 
+     def __iter__(self) -> Generator[Message, None, None]:
+         for message in self.messages:
+-            positions = [(source, line) for source, line, uuid in self.metadata[message]]
++            positions = list(OrderedDict.fromkeys(
++                (path.relpath(source), line)
++                for source, line, uuid in self.metadata[message]
++            ))
+             uuids = [uuid for source, line, uuid in self.metadata[message]]
+             yield Message(message, positions, uuids)
+2026-10-23 23:40:11,227 - INFO - Eval script for sphinx-doc__sphinx-10466 written to logs/run_evaluation/mana-sympy-tools-sphinx-doc-10466-f926638c7abb/mana-agent__gpt-6-luna/sphinx-doc__sphinx-10466/eval.sh; copying to container...
+2026-10-23 23:40:21,805 - INFO - Test runtime: 10.54 seconds
+2026-10-23 23:40:21,806 - INFO - Test output for sphinx-doc__sphinx-10466 written to logs/run_evaluation/mana-sympy-tools-sphinx-doc-10466-f926638c7abb/mana-agent__gpt-6-luna/sphinx-doc__sphinx-10466/test_output.txt
+2026-10-23 23:40:21,876 - INFO - Git diff after:
+diff --git a/sphinx/builders/gettext.py b/sphinx/builders/gettext.py
+index e8bc547b7..1902ae5e8 100644
+--- a/sphinx/builders/gettext.py
++++ b/sphinx/builders/gettext.py
+@@ -57,7 +57,10 @@ class Catalog:
+ 
+     def __iter__(self) -> Generator[Message, None, None]:
+         for message in self.messages:
+-            positions = [(source, line) for source, line, uuid in self.metadata[message]]
++            positions = list(OrderedDict.fromkeys(
++                (path.relpath(source), line)
++                for source, line, uuid in self.metadata[message]
++            ))
+             uuids = [uuid for source, line, uuid in self.metadata[message]]
+             yield Message(message, positions, uuids)
+2026-10-23 23:40:21,876 - INFO - Grading answer for sphinx-doc__sphinx-10466...
+2026-10-23 23:40:21,885 - INFO - report: {'sphinx-doc__sphinx-10466': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': False, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': [], 'failure': ['tests/test_build_gettext.py::test_Catalog_duplicated_message']}, 'PASS_TO_PASS': {'success': ['tests/test_build_gettext.py::test_build_gettext', 'tests/test_build_gettext.py::test_gettext_index_entries', 'tests/test_build_gettext.py::test_gettext_disable_index_entries', 'tests/test_build_gettext.py::test_gettext_template', 'tests/test_build_gettext.py::test_gettext_template_msgid_order_in_sphinxpot', 'tests/test_build_gettext.py::test_build_single_pot'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for sphinx-doc__sphinx-10466: resolved: False
+2026-10-23 23:40:21,885 - INFO - Attempting to stop container sweb.eval.sphinx-doc__sphinx-10466.mana-sympy-tools-sphinx-doc-10466-f926638c7abb...
+2026-10-23 23:40:36,985 - INFO - Container sweb.eval.sphinx-doc__sphinx-10466.mana-sympy-tools-sphinx-doc-10466-f926638c7abb stopped successfully.
+2026-10-23 23:40:36,985 - INFO - Attempting to remove container sweb.eval.sphinx-doc__sphinx-10466.mana-sympy-tools-sphinx-doc-10466-f926638c7abb...
+2026-10-23 23:40:37,023 - INFO - Container sweb.eval.sphinx-doc__sphinx-10466.mana-sympy-tools-sphinx-doc-10466-f926638c7abb removed successfully.

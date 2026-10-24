@@ -1,0 +1,24 @@
+diff --git a/django/db/models/sql/query.py b/django/db/models/sql/query.py
+index d69c24419b..46a42ce251 100644
+--- a/django/db/models/sql/query.py
++++ b/django/db/models/sql/query.py
+@@ -1662,10 +1662,19 @@ class Query(BaseExpression):
+         handle.
+         """
+         filter_lhs, filter_rhs = filter_expr
++        filtered_relation = None
++        lookup_parts = filter_lhs.split(LOOKUP_SEP)
++        if lookup_parts[0] in self._filtered_relations:
++            filtered_relation = self._filtered_relations[lookup_parts[0]]
++            lookup_parts[0] = filtered_relation.relation_name
++            filter_lhs = LOOKUP_SEP.join(lookup_parts)
++            filter_expr = (filter_lhs, filter_rhs)
+         if isinstance(filter_rhs, F):
+             filter_expr = (filter_lhs, OuterRef(filter_rhs.name))
+         # Generate the inner query.
+         query = Query(self.model)
++        if filtered_relation:
++            query.add_q(filtered_relation.condition)
+         query.add_filter(filter_expr)
+         query.clear_ordering(True)
+         # Try to have as simple as possible subquery -> trim leading joins from

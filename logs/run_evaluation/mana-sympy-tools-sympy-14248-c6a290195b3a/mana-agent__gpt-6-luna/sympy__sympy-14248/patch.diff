@@ -1,0 +1,97 @@
+diff --git a/sympy/printing/latex.py b/sympy/printing/latex.py
+index 8253b2f682..308892c184 100644
+--- a/sympy/printing/latex.py
++++ b/sympy/printing/latex.py
+@@ -1477,8 +1477,16 @@ def _print_Adjoint(self, expr):
+             return r"%s^\dagger" % self._print(mat)
+ 
+     def _print_MatAdd(self, expr):
+-        terms = list(expr.args)
+-        tex = " + ".join(map(self._print, terms))
++        tex = ""
++        for i, term in enumerate(expr.args):
++            negative = (_coeff_isneg(term) or
++                (term.is_MatMul and term.as_coeff_mmul()[0].is_negative))
++            if negative:
++                tex += " - " if i else "-"
++                term = -term
++            elif i:
++                tex += " + "
++            tex += self._print(term)
+         return tex
+ 
+     def _print_MatMul(self, expr):
+diff --git a/sympy/printing/pretty/pretty.py b/sympy/printing/pretty/pretty.py
+index db24f4c612..abb8267526 100644
+--- a/sympy/printing/pretty/pretty.py
++++ b/sympy/printing/pretty/pretty.py
+@@ -819,7 +819,31 @@ def _print_BlockMatrix(self, B):
+         return self._print(B.blocks)
+ 
+     def _print_MatAdd(self, expr):
+-        return self._print_seq(expr.args, None, None, ' + ')
++        pforms = []
++
++        def pretty_negative(pform, index):
++            if index == 0:
++                pform_neg = '- ' if pform.height() > 1 else '-'
++            else:
++                pform_neg = ' - '
++
++            if (pform.binding > prettyForm.NEG
++                    or pform.binding == prettyForm.ADD):
++                p = stringPict(*pform.parens())
++            else:
++                p = pform
++            p = stringPict.next(pform_neg, p)
++            return prettyForm(binding=prettyForm.NEG, *p)
++
++        for i, term in enumerate(expr.args):
++            negative = (_coeff_isneg(term) or
++                (term.is_MatMul and term.as_coeff_mmul()[0].is_negative))
++            if negative:
++                pforms.append(pretty_negative(self._print(-term), i))
++            else:
++                pforms.append(self._print(term))
++
++        return prettyForm.__add__(*pforms)
+ 
+     def _print_MatMul(self, expr):
+         args = list(expr.args)
+diff --git a/sympy/printing/str.py b/sympy/printing/str.py
+index 0baefe0f7f..525bbbaf0b 100644
+--- a/sympy/printing/str.py
++++ b/sympy/printing/str.py
+@@ -5,6 +5,7 @@
+ from __future__ import print_function, division
+ 
+ from sympy.core import S, Rational, Pow, Basic, Mul
++from sympy.core.function import _coeff_isneg
+ from sympy.core.mul import _keep_coeff
+ from .printer import Printer
+ from sympy.printing.precedence import precedence, PRECEDENCE
+@@ -312,8 +313,22 @@ def _print_HadamardProduct(self, expr):
+             for arg in expr.args])
+ 
+     def _print_MatAdd(self, expr):
+-        return ' + '.join([self.parenthesize(arg, precedence(expr))
+-            for arg in expr.args])
++        PREC = precedence(expr)
++        terms = []
++        for i, term in enumerate(expr.args):
++            sign = ''
++            negative = (_coeff_isneg(term) or
++                (term.is_MatMul and term.as_coeff_mmul()[0].is_negative))
++            if negative:
++                sign = '-' if i == 0 else ' - '
++                term = -term
++            elif i:
++                sign = ' + '
++
++            t = self.parenthesize(term, PREC)
++            terms.append(sign + t)
++
++        return ''.join(terms)
+ 
+     def _print_NaN(self, expr):
+         return 'nan'

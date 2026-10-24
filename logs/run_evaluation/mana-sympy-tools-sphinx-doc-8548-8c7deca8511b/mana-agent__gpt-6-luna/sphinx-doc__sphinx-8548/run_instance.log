@@ -1,0 +1,237 @@
+2026-10-24 00:01:25,965 - INFO - Creating container for sphinx-doc__sphinx-8548...
+2026-10-24 00:01:26,058 - INFO - Container for sphinx-doc__sphinx-8548 created: 9cfa9a6be64744c612c925a648e7612bccdbdae5df5e88a1a7e6ed94cf9b2b35
+2026-10-24 00:01:26,343 - INFO - Container for sphinx-doc__sphinx-8548 started: 9cfa9a6be64744c612c925a648e7612bccdbdae5df5e88a1a7e6ed94cf9b2b35
+2026-10-24 00:01:26,343 - INFO - Intermediate patch for sphinx-doc__sphinx-8548 written to logs/run_evaluation/mana-sympy-tools-sphinx-doc-8548-8c7deca8511b/mana-agent__gpt-6-luna/sphinx-doc__sphinx-8548/patch.diff, now applying to container...
+2026-10-24 00:01:26,570 - INFO - >>>>> Applied Patch:
+Checking patch sphinx/ext/autodoc/__init__.py...
+Applied patch sphinx/ext/autodoc/__init__.py cleanly.
+
+2026-10-24 00:01:26,854 - INFO - Git diff before:
+diff --git a/sphinx/ext/autodoc/__init__.py b/sphinx/ext/autodoc/__init__.py
+index ddfd2b365..8770b2f22 100644
+--- a/sphinx/ext/autodoc/__init__.py
++++ b/sphinx/ext/autodoc/__init__.py
+@@ -584,6 +584,27 @@ class Documenter:
+         else:
+             return 'docstring of %s' % fullname
+ 
++    def get_class_attr_doc(self, cls: Any, name: str) -> Optional[List[str]]:
++        """Find the source comment for a class attribute in its defining class."""
++        if not inspect.isclass(cls):
++            return None
++
++        for base in inspect.getmro(cls):
++            if name not in getattr(base, '__dict__', {}) and \
++                    name not in getattr(base, '__annotations__', {}):
++                continue
++
++            try:
++                analyzer = ModuleAnalyzer.for_module(base.__module__)
++                attr_docs = analyzer.find_attr_docs()
++            except PycodeError:
++                return None
++
++            self.directive.filename_set.add(analyzer.srcname)
++            return attr_docs.get((base.__qualname__, name))
++
++        return None
++
+     def add_content(self, more_content: Optional[StringList], no_docstring: bool = False
+                     ) -> None:
+         """Add content from docstrings, attribute documentation and user."""
+@@ -594,17 +615,22 @@ class Documenter:
+ 
+         # set sourcename and add content from attribute documentation
+         sourcename = self.get_sourcename()
+-        if self.analyzer:
+-            attr_docs = self.analyzer.find_attr_docs()
+-            if self.objpath:
+-                key = ('.'.join(self.objpath[:-1]), self.objpath[-1])
+-                if key in attr_docs:
++        attr_docs = self.analyzer.find_attr_docs() if self.analyzer else {}
++        if self.objpath:
++            key = ('.'.join(self.objpath[:-1]), self.objpath[-1])
++            if key in attr_docs:
++                no_docstring = True
++                # make a copy of docstring for attributes to avoid cache
++                # the change of autodoc-process-docstring event.
++                docstrings = [list(attr_docs[key])]
++
++                for i, line in enumerate(self.process_doc(docstrings)):
++                    self.add_line(line, sourcename, i)
++            elif self.parent:
++                docstring = self.get_class_attr_doc(self.parent, self.objpath[-1])
++                if docstring:
+                     no_docstring = True
+-                    # make a copy of docstring for attributes to avoid cache
+-                    # the change of autodoc-process-docstring event.
+-                    docstrings = [list(attr_docs[key])]
+-
+-                    for i, line in enumerate(self.process_doc(docstrings)):
++                    for i, line in enumerate(self.process_doc([list(docstring)])):
+                         self.add_line(line, sourcename, i)
+ 
+         # add content from docstrings
+@@ -746,7 +772,8 @@ class Documenter:
+                         keep = has_doc or self.options.undoc_members
+                 else:
+                     keep = False
+-            elif (namespace, membername) in attr_docs:
++            elif ((namespace, membername) in attr_docs or
++                  self.get_class_attr_doc(self.object, membername)):
+                 if want_all and isprivate:
+                     if self.options.private_members is None:
+                         keep = False
+2026-10-24 00:01:26,855 - INFO - Eval script for sphinx-doc__sphinx-8548 written to logs/run_evaluation/mana-sympy-tools-sphinx-doc-8548-8c7deca8511b/mana-agent__gpt-6-luna/sphinx-doc__sphinx-8548/eval.sh; copying to container...
+2026-10-24 00:01:35,197 - INFO - Test runtime: 8.29 seconds
+2026-10-24 00:01:35,198 - INFO - Test output for sphinx-doc__sphinx-8548 written to logs/run_evaluation/mana-sympy-tools-sphinx-doc-8548-8c7deca8511b/mana-agent__gpt-6-luna/sphinx-doc__sphinx-8548/test_output.txt
+2026-10-24 00:01:35,317 - INFO - Git diff after:
+diff --git a/sphinx/ext/autodoc/__init__.py b/sphinx/ext/autodoc/__init__.py
+index ddfd2b365..8770b2f22 100644
+--- a/sphinx/ext/autodoc/__init__.py
++++ b/sphinx/ext/autodoc/__init__.py
+@@ -584,6 +584,27 @@ class Documenter:
+         else:
+             return 'docstring of %s' % fullname
+ 
++    def get_class_attr_doc(self, cls: Any, name: str) -> Optional[List[str]]:
++        """Find the source comment for a class attribute in its defining class."""
++        if not inspect.isclass(cls):
++            return None
++
++        for base in inspect.getmro(cls):
++            if name not in getattr(base, '__dict__', {}) and \
++                    name not in getattr(base, '__annotations__', {}):
++                continue
++
++            try:
++                analyzer = ModuleAnalyzer.for_module(base.__module__)
++                attr_docs = analyzer.find_attr_docs()
++            except PycodeError:
++                return None
++
++            self.directive.filename_set.add(analyzer.srcname)
++            return attr_docs.get((base.__qualname__, name))
++
++        return None
++
+     def add_content(self, more_content: Optional[StringList], no_docstring: bool = False
+                     ) -> None:
+         """Add content from docstrings, attribute documentation and user."""
+@@ -594,17 +615,22 @@ class Documenter:
+ 
+         # set sourcename and add content from attribute documentation
+         sourcename = self.get_sourcename()
+-        if self.analyzer:
+-            attr_docs = self.analyzer.find_attr_docs()
+-            if self.objpath:
+-                key = ('.'.join(self.objpath[:-1]), self.objpath[-1])
+-                if key in attr_docs:
++        attr_docs = self.analyzer.find_attr_docs() if self.analyzer else {}
++        if self.objpath:
++            key = ('.'.join(self.objpath[:-1]), self.objpath[-1])
++            if key in attr_docs:
++                no_docstring = True
++                # make a copy of docstring for attributes to avoid cache
++                # the change of autodoc-process-docstring event.
++                docstrings = [list(attr_docs[key])]
++
++                for i, line in enumerate(self.process_doc(docstrings)):
++                    self.add_line(line, sourcename, i)
++            elif self.parent:
++                docstring = self.get_class_attr_doc(self.parent, self.objpath[-1])
++                if docstring:
+                     no_docstring = True
+-                    # make a copy of docstring for attributes to avoid cache
+-                    # the change of autodoc-process-docstring event.
+-                    docstrings = [list(attr_docs[key])]
+-
+-                    for i, line in enumerate(self.process_doc(docstrings)):
++                    for i, line in enumerate(self.process_doc([list(docstring)])):
+                         self.add_line(line, sourcename, i)
+ 
+         # add content from docstrings
+@@ -746,7 +772,8 @@ class Documenter:
+                         keep = has_doc or self.options.undoc_members
+                 else:
+                     keep = False
+-            elif (namespace, membername) in attr_docs:
++            elif ((namespace, membername) in attr_docs or
++                  self.get_class_attr_doc(self.object, membername)):
+                 if want_all and isprivate:
+                     if self.options.private_members is None:
+                         keep = False
+diff --git a/tests/test_ext_autodoc_autoclass.py b/tests/test_ext_autodoc_autoclass.py
+index c36305de3..6130f233a 100644
+--- a/tests/test_ext_autodoc_autoclass.py
++++ b/tests/test_ext_autodoc_autoclass.py
+@@ -51,6 +51,61 @@ def test_classes(app):
+     ]
+ 
+ 
++@pytest.mark.sphinx('html', testroot='ext-autodoc')
++def test_instance_variable(app):
++    options = {'members': True}
++    actual = do_autodoc(app, 'class', 'target.instance_variable.Bar', options)
++    assert list(actual) == [
++        '',
++        '.. py:class:: Bar()',
++        '   :module: target.instance_variable',
++        '',
++        '',
++        '   .. py:attribute:: Bar.attr2',
++        '      :module: target.instance_variable',
++        '',
++        '      docstring bar',
++        '',
++        '',
++        '   .. py:attribute:: Bar.attr3',
++        '      :module: target.instance_variable',
++        '',
++        '      docstring bar',
++        '',
++    ]
++
++
++@pytest.mark.sphinx('html', testroot='ext-autodoc')
++def test_inherited_instance_variable(app):
++    options = {'members': True,
++               'inherited-members': True}
++    actual = do_autodoc(app, 'class', 'target.instance_variable.Bar', options)
++    assert list(actual) == [
++        '',
++        '.. py:class:: Bar()',
++        '   :module: target.instance_variable',
++        '',
++        '',
++        '   .. py:attribute:: Bar.attr1',
++        '      :module: target.instance_variable',
++        '',
++        '      docstring foo',
++        '',
++        '',
++        '   .. py:attribute:: Bar.attr2',
++        '      :module: target.instance_variable',
++        '',
++        '      docstring bar',
++        '',
++        '',
++        '   .. py:attribute:: Bar.attr3',
++        '      :module: target.instance_variable',
++        '',
++        '      docstring bar',
++        '',
++    ]
++
++
+ def test_decorators(app):
+     actual = do_autodoc(app, 'class', 'target.decorator.Baz')
+     assert list(actual) == [
+2026-10-24 00:01:35,317 - INFO - Git diff changed after running eval script
+2026-10-24 00:01:35,317 - INFO - Grading answer for sphinx-doc__sphinx-8548...
+2026-10-24 00:01:35,321 - INFO - report: {'sphinx-doc__sphinx-8548': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': False, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': [], 'failure': ['tests/test_ext_autodoc_autoclass.py::test_inherited_instance_variable']}, 'PASS_TO_PASS': {'success': ['tests/test_ext_autodoc_autoclass.py::test_classes', 'tests/test_ext_autodoc_autoclass.py::test_instance_variable', 'tests/test_ext_autodoc_autoclass.py::test_decorators', 'tests/test_ext_autodoc_autoclass.py::test_slots_attribute', 'tests/test_ext_autodoc_autoclass.py::test_show_inheritance_for_subclass_of_generic_type'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for sphinx-doc__sphinx-8548: resolved: False
+2026-10-24 00:01:35,321 - INFO - Attempting to stop container sweb.eval.sphinx-doc__sphinx-8548.mana-sympy-tools-sphinx-doc-8548-8c7deca8511b...
+2026-10-24 00:01:50,460 - INFO - Container sweb.eval.sphinx-doc__sphinx-8548.mana-sympy-tools-sphinx-doc-8548-8c7deca8511b stopped successfully.
+2026-10-24 00:01:50,460 - INFO - Attempting to remove container sweb.eval.sphinx-doc__sphinx-8548.mana-sympy-tools-sphinx-doc-8548-8c7deca8511b...
+2026-10-24 00:01:50,494 - INFO - Container sweb.eval.sphinx-doc__sphinx-8548.mana-sympy-tools-sphinx-doc-8548-8c7deca8511b removed successfully.

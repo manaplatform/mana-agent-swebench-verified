@@ -1,0 +1,82 @@
+2026-10-23 23:49:12,733 - INFO - Creating container for sphinx-doc__sphinx-7440...
+2026-10-23 23:49:13,269 - INFO - Container for sphinx-doc__sphinx-7440 created: df97d761e1e66c243f5fa0334f923ff340ffd07bb6608774506c515b84671379
+2026-10-23 23:49:13,397 - INFO - Container for sphinx-doc__sphinx-7440 started: df97d761e1e66c243f5fa0334f923ff340ffd07bb6608774506c515b84671379
+2026-10-23 23:49:13,398 - INFO - Intermediate patch for sphinx-doc__sphinx-7440 written to logs/run_evaluation/mana-sympy-tools-sphinx-doc-7440-ce35320d56bc/mana-agent__gpt-6-luna/sphinx-doc__sphinx-7440/patch.diff, now applying to container...
+2026-10-23 23:49:13,579 - INFO - >>>>> Applied Patch:
+Checking patch sphinx/domains/std.py...
+Applied patch sphinx/domains/std.py cleanly.
+
+2026-10-23 23:49:13,821 - INFO - Git diff before:
+diff --git a/sphinx/domains/std.py b/sphinx/domains/std.py
+index d820cfe5c..95f896563 100644
+--- a/sphinx/domains/std.py
++++ b/sphinx/domains/std.py
+@@ -305,7 +305,7 @@ def make_glossary_term(env: "BuildEnvironment", textnodes: Iterable[Node], index
+         term['ids'].append(node_id)
+ 
+     std = cast(StandardDomain, env.get_domain('std'))
+-    std.note_object('term', termtext.lower(), node_id, location=term)
++    std.note_object('term', termtext, node_id, location=term)
+ 
+     # add an index entry too
+     indexnode = addnodes.index()
+@@ -565,7 +565,7 @@ class StandardDomain(Domain):
+         # links to tokens in grammar productions
+         'token':   TokenXRefRole(),
+         # links to terms in glossary
+-        'term':    XRefRole(lowercase=True, innernodeclass=nodes.inline,
++        'term':    XRefRole(innernodeclass=nodes.inline,
+                             warn_dangling=True),
+         # links to headings or arbitrary labels
+         'ref':     XRefRole(lowercase=True, innernodeclass=nodes.inline,
+@@ -952,8 +952,6 @@ class StandardDomain(Domain):
+         # all others
+         for objtype in self.object_types:
+             key = (objtype, target)
+-            if objtype == 'term':
+-                key = (objtype, ltarget)
+             if key in self.objects:
+                 docname, labelid = self.objects[key]
+                 results.append(('std:' + self.role_for_objtype(objtype),
+2026-10-23 23:49:13,821 - INFO - Eval script for sphinx-doc__sphinx-7440 written to logs/run_evaluation/mana-sympy-tools-sphinx-doc-7440-ce35320d56bc/mana-agent__gpt-6-luna/sphinx-doc__sphinx-7440/eval.sh; copying to container...
+2026-10-23 23:49:20,944 - INFO - Test runtime: 7.08 seconds
+2026-10-23 23:49:20,944 - INFO - Test output for sphinx-doc__sphinx-7440 written to logs/run_evaluation/mana-sympy-tools-sphinx-doc-7440-ce35320d56bc/mana-agent__gpt-6-luna/sphinx-doc__sphinx-7440/test_output.txt
+2026-10-23 23:49:21,077 - INFO - Git diff after:
+diff --git a/sphinx/domains/std.py b/sphinx/domains/std.py
+index d820cfe5c..95f896563 100644
+--- a/sphinx/domains/std.py
++++ b/sphinx/domains/std.py
+@@ -305,7 +305,7 @@ def make_glossary_term(env: "BuildEnvironment", textnodes: Iterable[Node], index
+         term['ids'].append(node_id)
+ 
+     std = cast(StandardDomain, env.get_domain('std'))
+-    std.note_object('term', termtext.lower(), node_id, location=term)
++    std.note_object('term', termtext, node_id, location=term)
+ 
+     # add an index entry too
+     indexnode = addnodes.index()
+@@ -565,7 +565,7 @@ class StandardDomain(Domain):
+         # links to tokens in grammar productions
+         'token':   TokenXRefRole(),
+         # links to terms in glossary
+-        'term':    XRefRole(lowercase=True, innernodeclass=nodes.inline,
++        'term':    XRefRole(innernodeclass=nodes.inline,
+                             warn_dangling=True),
+         # links to headings or arbitrary labels
+         'ref':     XRefRole(lowercase=True, innernodeclass=nodes.inline,
+@@ -952,8 +952,6 @@ class StandardDomain(Domain):
+         # all others
+         for objtype in self.object_types:
+             key = (objtype, target)
+-            if objtype == 'term':
+-                key = (objtype, ltarget)
+             if key in self.objects:
+                 docname, labelid = self.objects[key]
+                 results.append(('std:' + self.role_for_objtype(objtype),
+2026-10-23 23:49:21,077 - INFO - Grading answer for sphinx-doc__sphinx-7440...
+2026-10-23 23:49:21,083 - INFO - report: {'sphinx-doc__sphinx-7440': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': True, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': ['tests/test_domain_std.py::test_glossary'], 'failure': []}, 'PASS_TO_PASS': {'success': ['tests/test_domain_std.py::test_process_doc_handle_figure_caption', 'tests/test_domain_std.py::test_process_doc_handle_table_title', 'tests/test_domain_std.py::test_get_full_qualified_name', 'tests/test_domain_std.py::test_glossary_warning', 'tests/test_domain_std.py::test_glossary_comment', 'tests/test_domain_std.py::test_glossary_comment2', 'tests/test_domain_std.py::test_glossary_sorted', 'tests/test_domain_std.py::test_glossary_alphanumeric', 'tests/test_domain_std.py::test_glossary_conflicted_labels', 'tests/test_domain_std.py::test_cmdoption', 'tests/test_domain_std.py::test_multiple_cmdoptions', 'tests/test_domain_std.py::test_disabled_docref'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for sphinx-doc__sphinx-7440: resolved: True
+2026-10-23 23:49:21,084 - INFO - Attempting to stop container sweb.eval.sphinx-doc__sphinx-7440.mana-sympy-tools-sphinx-doc-7440-ce35320d56bc...
+2026-10-23 23:49:36,224 - INFO - Container sweb.eval.sphinx-doc__sphinx-7440.mana-sympy-tools-sphinx-doc-7440-ce35320d56bc stopped successfully.
+2026-10-23 23:49:36,224 - INFO - Attempting to remove container sweb.eval.sphinx-doc__sphinx-7440.mana-sympy-tools-sphinx-doc-7440-ce35320d56bc...
+2026-10-23 23:49:36,259 - INFO - Container sweb.eval.sphinx-doc__sphinx-7440.mana-sympy-tools-sphinx-doc-7440-ce35320d56bc removed successfully.

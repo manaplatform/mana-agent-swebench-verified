@@ -1,0 +1,273 @@
+# Mana-Agent trajectory: django__django-13964
+
+
+## Original task and instructions
+
+You are solving a single SWE-bench issue inside an isolated git checkout.
+Repository: django/django
+Instance ID: django__django-13964
+Working directory (repository root): /Users/ah/Documents/mana-agent/.swe-bench/worktrees/django__django-13964
+
+Task:
+- Read the issue carefully.
+- Inspect only the files needed to implement a minimal correct fix.
+- Prefer reading source files and applying edits over running the package.
+- The repository is a source checkout and may not be installed or importable;
+  do not spend the turn diagnosing import/runtime environment failures.
+- If you run Python, always use `python3` (never bare `python`, which may be 2.x).
+- Apply the fix directly in this repository (edit production source files only).
+- Do not add, edit, delete, or rename test files or test helpers.
+- Do not modify tests solely to make them pass.
+- Official evaluation tests are applied separately; test changes cause harness failures.
+- Do not commit, push, rebase, or rewrite git history.
+- Do not interact with the user; complete the coding task in one pass.
+- Success means production-source edits left as uncommitted working-tree changes.
+- Do not finish with only analysis or chat text when a code fix is required.
+
+Issue / problem statement:
+Saving parent object after setting on child leads to data loss for parents with non-numeric primary key.
+Description
+	 
+		(last modified by Charlie DeTar)
+	 
+Given a model with a foreign key relation to another model that has a non-auto CharField as its primary key:
+class Product(models.Model):
+	sku = models.CharField(primary_key=True, max_length=50)
+class Order(models.Model):
+	product = models.ForeignKey(Product, on_delete=models.CASCADE)
+If the relation is initialized on the parent with an empty instance that does not yet specify its primary key, and the primary key is subsequently defined, the parent does not "see" the primary key's change:
+with transaction.atomic():
+	order = Order()
+	order.product = Product()
+	order.product.sku = "foo"
+	order.product.save()
+	order.save()
+	assert Order.objects.filter(product_id="").exists() # Succeeds, but shouldn't
+	assert Order.objects.filter(product=order.product).exists() # Fails
+Instead of product_id being populated with product.sku, it is set to emptystring. The foreign key constraint which would enforce the existence of a product with sku="" is deferred until the transaction commits. The transaction does correctly fail on commit with a ForeignKeyViolation due to the non-existence of a product with emptystring as its primary key.
+On the other hand, if the related unsaved instance is initialized with its primary key before assignment to the parent, it is persisted correctly:
+with transaction.atomic():
+	order = Order()
+	order.product = Product(sku="foo")
+	order.product.save()
+	order.save()
+	assert Order.objects.filter(product=order.product).exists() # succeeds
+Committing the transaction also succeeds.
+This may have something to do with how the Order.product_id field is handled at assignment, together with something about handling fetching of auto vs non-auto primary keys from the related instance.
+
+Hints:
+Thanks for this report. product_id is an empty string in ​_prepare_related_fields_for_save() that's why pk from a related object is not used. We could use empty_values: diff --git a/django/db/models/base.py b/django/db/models/base.py index 822aad080d..8e7a8e3ae7 100644 --- a/django/db/models/base.py +++ b/django/db/models/base.py @@ -933,7 +933,7 @@ class Model(metaclass=ModelBase): "%s() prohibited to prevent data loss due to unsaved " "related object '%s'." % (operation_name, field.name) ) - elif getattr(self, field.attname) is None: + elif getattr(self, field.attname) in field.empty_values: # Use pk from related object if it has been saved after # an assignment. setattr(self, field.attname, obj.pk) but I'm not sure. Related with #28147.
+
+
+## Agent execution output
+
+Mana-Agent v0.5.2  repo: django__django-13964  branch: detached/unknown
+model gpt-6-luna   mode chat   tools auto   memory off   skills not found
+cwd /Users/ah/Documents/mana-agent/.swe-bench/worktrees/django__django-13964
+auto tools  44 available · search×3
+Quiet startup (MANA_CHAT_QUIET); full tool catalog omitted.
+mana ❯ You are solving a single SWE-bench issue inside an isolated git checkout.
+Repository: django/django
+Instance ID: django__django-13964
+Working directory (repository root): 
+/Users/ah/Documents/mana-agent/.swe-bench/worktrees/django__django-13964
+
+Task:
+- Read the issue carefully.
+- Inspect only the files needed to implement a minimal correct fix.
+- Prefer reading source files and applying edits over running the package.
+- The repository is a source checkout and may not be installed or importable;
+  do not spend the turn diagnosing import/runtime environment failures.
+- If you run Python, always use `python3` (never bare `python`, which may be 
+2.x).
+- Apply the fix directly in this repository (edit production source files only).
+- Do not add, edit, delete, or rename test files or test helpers.
+- Do not modify tests solely to make them pass.
+- Official evaluation tests are applied separately; test changes cause harness 
+failures.
+- Do not commit, push, rebase, or rewrite git history.
+- Do not interact with the user; complete the coding task in one pass.
+- Success means production-source edits left as uncommitted working-tree 
+changes.
+- Do not finish with only analysis or chat text when a code fix is required.
+
+Issue / problem statement:
+Saving parent object after setting on child leads to data loss for parents with 
+non-numeric primary key.
+Description
+         
+                (last modified by Charlie DeTar)
+         
+Given a model with a foreign key relation to another model that has a non-auto 
+CharField as its primary key:
+class Product(models.Model):
+        sku = models.CharField(primary_key=True, max_length=50)
+class Order(models.Model):
+        product = models.ForeignKey(Product, on_delete=models.CASCADE)
+If the relation is initialized on the parent with an empty instance that does 
+not yet specify its primary key, and the primary key is subsequently defined, 
+the parent does not "see" the primary key's change:
+with transaction.atomic():
+        order = Order()
+        order.product = Product()
+        order.product.sku = "foo"
+        order.product.save()
+        order.save()
+        assert Order.objects.filter(product_id="").exists() # Succeeds, but 
+shouldn't
+        assert Order.objects.filter(product=order.product).exists() # Fails
+Instead of product_id being populated with product.sku, it is set to 
+emptystring. The foreign key constraint which would enforce the existence of a 
+product with sku="" is deferred until the transaction commits. The transaction 
+does correctly fail on commit with a ForeignKeyViolation due to the 
+non-existence of a product with emptystring as its primary key.
+On the other hand, if the related unsaved instance is initialized with its 
+primary key before assignment to the parent, it is persisted correctly:
+with transaction.atomic():
+        order = Order()
+        order.product = Product(sku="foo")
+        order.product.save()
+        order.save()
+        assert Order.objects.filter(product=order.product).exists() # succeeds
+Committing the transaction also succeeds.
+This may have something to do with how the Order.product_id field is handled at 
+assignment, together with something about handling fetching of auto vs non-auto 
+primary keys from the related instance.
+
+Hints:
+Thanks for this report. product_id is an empty string in 
+​_prepare_related_fields_for_save() that's why pk from a related object is not 
+used. We could use empty_values: diff --git a/django/db/models/base.py 
+b/django/db/models/base.py index 822aad080d..8e7a8e3ae7 100644 --- 
+a/django/db/models/base.py +++ b/django/db/models/base.py @@ -933,7 +933,7 @@ 
+class Model(metaclass=ModelBase): "%s() prohibited to prevent data loss due to 
+unsaved " "related object '%s'." % (operation_name, field.name) ) - elif 
+getattr(self, field.attname) is None: + elif getattr(self, field.attname) in 
+field.empty_values: # Use pk from related object if it has been saved after # an
+assignment. setattr(self, field.attname, obj.pk) but I'm not sure. Related with 
+#28147.
+
+◌ decision routing
+✓ decision routing Completed.
+
+Answer ─────────────────────────────────────────────────────────────────────────
+Codex completed the repository mutation. Changed files:                         
+
+ • django/db/models/base.py Commands run: /bin/zsh -lc 'rg -n                   
+   "_prepare_related_fields_for_save|empty_values" django/db/models/base.py     
+   django/db/models/fields', /bin/zsh -lc "sed -n '900,955p'                    
+   django/db/models/base.py && sed -n '2310,2355p'                              
+   django/db/models/fields/init.py && sed -n '660,705p'                         
+   django/db/models/base.py", /bin/zsh -lc 'git diff --check && git diff --     
+   django/db/models/base.py' Updated _prepare_related_fields_for_save() to use  
+   the relation field’s empty_values, so it copies the saved related object’s   
+   primary key when the parent’s foreign-key value is ''.                       
+
+git diff --check passed. Tests were not run. The production change remains      
+uncommitted.                                                                    
+
+Exiting chat (single-shot).
+
+
+## Agent execution summary
+
+returncode=0 elapsed=96.9s timed_out=False
+--- stdout (tail) ---
+ with only analysis or chat text when a code fix is required.
+
+Issue / problem statement:
+Saving parent object after setting on child leads to data loss for parents with 
+non-numeric primary key.
+Description
+         
+                (last modified by Charlie DeTar)
+         
+Given a model with a foreign key relation to another model that has a non-auto 
+CharField as its primary key:
+class Product(models.Model):
+        sku = models.CharField(primary_key=True, max_length=50)
+class Order(models.Model):
+        product = models.ForeignKey(Product, on_delete=models.CASCADE)
+If the relation is initialized on the parent with an empty instance that does 
+not yet specify its primary key, and the primary key is subsequently defined, 
+the parent does not "see" the primary key's change:
+with transaction.atomic():
+        order = Order()
+        order.product = Product()
+        order.product.sku = "foo"
+        order.product.save()
+        order.save()
+        assert Order.objects.filter(product_id="").exists() # Succeeds, but 
+shouldn't
+        assert Order.objects.filter(product=order.product).exists() # Fails
+Instead of product_id being populated with product.sku, it is set to 
+emptystring. The foreign key constraint which would enforce the existence of a 
+product with sku="" is deferred until the transaction commits. The transaction 
+does correctly fail on commit with a ForeignKeyViolation due to the 
+non-existence of a product with emptystring as its primary key.
+On the other hand, if the related unsaved instance is initialized with its 
+primary key before assignment to the parent, it is persisted correctly:
+with transaction.atomic():
+        order = Order()
+        order.product = Product(sku="foo")
+        order.product.save()
+        order.save()
+        assert Order.objects.filter(product=order.product).exists() # succeeds
+Committing the transaction also succeeds.
+This may have something to do with how the Order.product_id field is handled at 
+assignment, together with something about handling fetching of auto vs non-auto 
+primary keys from the related instance.
+
+Hints:
+Thanks for this report. product_id is an empty string in 
+​_prepare_related_fields_for_save() that's why pk from a related object is not 
+used. We could use empty_values: diff --git a/django/db/models/base.py 
+b/django/db/models/base.py index 822aad080d..8e7a8e3ae7 100644 --- 
+a/django/db/models/base.py +++ b/django/db/models/base.py @@ -933,7 +933,7 @@ 
+class Model(metaclass=ModelBase): "%s() prohibited to prevent data loss due to 
+unsaved " "related object '%s'." % (operation_name, field.name) ) - elif 
+getattr(self, field.attname) is None: + elif getattr(self, field.attname) in 
+field.empty_values: # Use pk from related object if it has been saved after # an
+assignment. setattr(self, field.attname, obj.pk) but I'm not sure. Related with 
+#28147.
+
+◌ decision routing
+✓ decision routing Completed.
+
+Answer ─────────────────────────────────────────────────────────────────────────
+Codex completed the repository mutation. Changed files:                         
+
+ • django/db/models/base.py Commands run: /bin/zsh -lc 'rg -n                   
+   "_prepare_related_fields_for_save|empty_values" django/db/models/base.py     
+   django/db/models/fields', /bin/zsh -lc "sed -n '900,955p'                    
+   django/db/models/base.py && sed -n '2310,2355p'                              
+   django/db/models/fields/init.py && sed -n '660,705p'                         
+   django/db/models/base.py", /bin/zsh -lc 'git diff --check && git diff --     
+   django/db/models/base.py' Updated _prepare_related_fields_for_save() to use  
+   the relation field’s empty_values, so it copies the saved related object’s   
+   primary key when the parent’s foreign-key value is ''.                       
+
+git diff --check passed. Tests were not run. The production change remains      
+uncommitted.                                                                    
+
+Exiting chat (single-shot).
+
+--- stderr (tail) ---
+
+
+
+## Execution metadata
+
+{
+  "instance_id": "django__django-13964",
+  "status": "ok",
+  "error": "",
+  "duration_seconds": 102.33285462483764,
+  "empty_patch": false,
+  "patch_chars": 706,
+  "worktree": "/Users/ah/Documents/mana-agent/.swe-bench/worktrees/django__django-13964",
+  "agent_name": "mana-agent",
+  "agent_provider": "openai",
+  "agent_model": "gpt-6-luna",
+  "model_name_or_path": "mana-agent__gpt-6-luna"
+}

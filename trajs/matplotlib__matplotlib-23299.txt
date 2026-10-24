@@ -1,0 +1,408 @@
+# Mana-Agent trajectory: matplotlib__matplotlib-23299
+
+
+## Original task and instructions
+
+You are solving a single SWE-bench issue inside an isolated git checkout.
+Repository: matplotlib/matplotlib
+Instance ID: matplotlib__matplotlib-23299
+Working directory (repository root): /Users/ah/Documents/mana-agent/.swe-bench/worktrees/matplotlib__matplotlib-23299
+
+Task:
+- Read the issue carefully.
+- Inspect only the files needed to implement a minimal correct fix.
+- Prefer reading source files and applying edits over running the package.
+- The repository is a source checkout and may not be installed or importable;
+  do not spend the turn diagnosing import/runtime environment failures.
+- If you run Python, always use `python3` (never bare `python`, which may be 2.x).
+- Apply the fix directly in this repository (edit production source files only).
+- Do not add, edit, delete, or rename test files or test helpers.
+- Do not modify tests solely to make them pass.
+- Official evaluation tests are applied separately; test changes cause harness failures.
+- Do not commit, push, rebase, or rewrite git history.
+- Do not interact with the user; complete the coding task in one pass.
+- Success means production-source edits left as uncommitted working-tree changes.
+- Do not finish with only analysis or chat text when a code fix is required.
+
+Issue / problem statement:
+[Bug]: get_backend() clears figures from Gcf.figs if they were created under rc_context
+### Bug summary
+
+calling `matplotlib.get_backend()` removes all figures from `Gcf` if the *first* figure in `Gcf.figs` was created in an `rc_context`.
+
+### Code for reproduction
+
+```python
+import matplotlib.pyplot as plt
+from matplotlib import get_backend, rc_context
+
+# fig1 = plt.figure()  # <- UNCOMMENT THIS LINE AND IT WILL WORK
+# plt.ion()            # <- ALTERNATIVELY, UNCOMMENT THIS LINE AND IT WILL ALSO WORK
+with rc_context():
+    fig2 = plt.figure()
+before = f'{id(plt._pylab_helpers.Gcf)} {plt._pylab_helpers.Gcf.figs!r}'
+get_backend()
+after = f'{id(plt._pylab_helpers.Gcf)} {plt._pylab_helpers.Gcf.figs!r}'
+
+assert before == after, '\n' + before + '\n' + after
+```
+
+
+### Actual outcome
+
+```
+---------------------------------------------------------------------------
+AssertionError                            Traceback (most recent call last)
+<ipython-input-1-fa4d099aa289> in <cell line: 11>()
+      9 after = f'{id(plt._pylab_helpers.Gcf)} {plt._pylab_helpers.Gcf.figs!r}'
+     10 
+---> 11 assert before == after, '\n' + before + '\n' + after
+     12 
+
+AssertionError: 
+94453354309744 OrderedDict([(1, <matplotlib.backends.backend_qt.FigureManagerQT object at 0x7fb33e26c220>)])
+94453354309744 OrderedDict()
+```
+
+### Expected outcome
+
+The figure should not be missing from `Gcf`.  Consequences of this are, e.g, `plt.close(fig2)` doesn't work because `Gcf.destroy_fig()` can't find it.
+
+### Additional information
+
+_No response_
+
+### Operating system
+
+Xubuntu
+
+### Matplotlib Version
+
+3.5.2
+
+### Matplotlib Backend
+
+QtAgg
+
+### Python version
+
+Python 3.10.4
+
+### Jupyter version
+
+n/a
+
+### Installation
+
+conda
+
+Hints:
+My knee-jerk guess is that  :  
+
+ - the `rcParams['backend']` in the auto-sentinel
+ - that is stashed by rc_context
+ - if you do the first thing to force the backend to be resolved in the context manager it get changes
+ - the context manager sets it back to the sentinel an the way out
+ - `get_backend()` re-resolves the backend which because it changes the backend it closes all of the figures
+
+
+This is probably been a long standing latent bug, but was brought to the front when we made the backend resolution lazier.
+
+
+## Agent execution output
+
+Mana-Agent v0.5.2  repo: matplotlib__matplotlib-23299  branch: detached/unknown
+model gpt-6-luna   mode chat   tools auto   memory off   skills not found
+cwd /Users/.../worktrees/matplotlib__matplotlib-23299
+auto tools  44 available · search×3
+Quiet startup (MANA_CHAT_QUIET); full tool catalog omitted.
+mana ❯ You are solving a single SWE-bench issue inside an isolated git checkout.
+Repository: matplotlib/matplotlib
+Instance ID: matplotlib__matplotlib-23299
+Working directory (repository root): 
+/Users/ah/Documents/mana-agent/.swe-bench/worktrees/matplotlib__matplotlib-23299
+
+Task:
+- Read the issue carefully.
+- Inspect only the files needed to implement a minimal correct fix.
+- Prefer reading source files and applying edits over running the package.
+- The repository is a source checkout and may not be installed or importable;
+  do not spend the turn diagnosing import/runtime environment failures.
+- If you run Python, always use `python3` (never bare `python`, which may be 
+2.x).
+- Apply the fix directly in this repository (edit production source files only).
+- Do not add, edit, delete, or rename test files or test helpers.
+- Do not modify tests solely to make them pass.
+- Official evaluation tests are applied separately; test changes cause harness 
+failures.
+- Do not commit, push, rebase, or rewrite git history.
+- Do not interact with the user; complete the coding task in one pass.
+- Success means production-source edits left as uncommitted working-tree 
+changes.
+- Do not finish with only analysis or chat text when a code fix is required.
+
+Issue / problem statement:
+[Bug]: get_backend() clears figures from Gcf.figs if they were created under 
+rc_context
+### Bug summary
+
+calling `matplotlib.get_backend()` removes all figures from `Gcf` if the *first*
+figure in `Gcf.figs` was created in an `rc_context`.
+
+### Code for reproduction
+
+```python
+import matplotlib.pyplot as plt
+from matplotlib import get_backend, rc_context
+
+# fig1 = plt.figure()  # <- UNCOMMENT THIS LINE AND IT WILL WORK
+# plt.ion()            # <- ALTERNATIVELY, UNCOMMENT THIS LINE AND IT WILL ALSO 
+WORK
+with rc_context():
+    fig2 = plt.figure()
+before = f'{id(plt._pylab_helpers.Gcf)} {plt._pylab_helpers.Gcf.figs!r}'
+get_backend()
+after = f'{id(plt._pylab_helpers.Gcf)} {plt._pylab_helpers.Gcf.figs!r}'
+
+assert before == after, '\n' + before + '\n' + after
+```
+
+
+### Actual outcome
+
+```
+---------------------------------------------------------------------------
+AssertionError                            Traceback (most recent call last)
+<ipython-input-1-fa4d099aa289> in <cell line: 11>()
+      9 after = f'{id(plt._pylab_helpers.Gcf)} {plt._pylab_helpers.Gcf.figs!r}'
+     10 
+---> 11 assert before == after, '\n' + before + '\n' + after
+     12 
+
+AssertionError: 
+94453354309744 OrderedDict([(1, <matplotlib.backends.backend_qt.FigureManagerQT 
+object at 0x7fb33e26c220>)])
+94453354309744 OrderedDict()
+```
+
+### Expected outcome
+
+The figure should not be missing from `Gcf`.  Consequences of this are, e.g, 
+`plt.close(fig2)` doesn't work because `Gcf.destroy_fig()` can't find it.
+
+### Additional information
+
+_No response_
+
+### Operating system
+
+Xubuntu
+
+### Matplotlib Version
+
+3.5.2
+
+### Matplotlib Backend
+
+QtAgg
+
+### Python version
+
+Python 3.10.4
+
+### Jupyter version
+
+n/a
+
+### Installation
+
+conda
+
+Hints:
+My knee-jerk guess is that  :  
+
+ - the `rcParams['backend']` in the auto-sentinel
+ - that is stashed by rc_context
+ - if you do the first thing to force the backend to be resolved in the context 
+manager it get changes
+ - the context manager sets it back to the sentinel an the way out
+ - `get_backend()` re-resolves the backend which because it changes the backend 
+it closes all of the figures
+
+
+This is probably been a long standing latent bug, but was brought to the front 
+when we made the backend resolution lazier.
+
+◌ decision routing
+✓ decision routing Completed.
+
+Answer ─────────────────────────────────────────────────────────────────────────
+Codex completed the repository mutation. Changed files:                         
+
+ • lib/matplotlib/pyplot.py Commands run: /bin/zsh -lc 'rg -n "def              
+   get_backend|def                                                              
+   rc_context|_auto_backend_sentinel|backend.*sentinel|switch_backend"          
+   lib/matplotlib', /bin/zsh -lc "sed -n '620,700p' lib/matplotlib/init.py &&   
+   sed -n '1050,1185p' lib/matplotlib/init.py && sed -n '185,285p'              
+   lib/matplotlib/pyplot.py && sed -n '580,610p' lib/matplotlib/pyplot.py && sed
+   -n '2180,2220p' lib/matplotlib/pyplot.py", /bin/zsh -lc "sed -n '285,340p'   
+   lib/matplotlib/pyplot.py && rg -n "def                                       
+   copy|dict.update\(rcParams|rcParamsOrig|rcParamsDefault"                     
+   lib/matplotlib/init.py lib/matplotlib/pyplot.py", /bin/zsh -lc "git status   
+   --short && sed -n '205,245p' lib/matplotlib/pyplot.py", /bin/zsh -lc 'git    
+   diff --check && git diff -- lib/matplotlib/pyplot.py && git status --short'  
+   Updated pyplot.py: when the auto-backend sentinel is restored after a backend
+   has already been loaded, switch_backend() now reuses that backend instead of 
+   closing figures and selecting it again.                                      
+
+git diff --check passed. I did not run tests.                                   
+
+Exiting chat (single-shot).
+
+
+## Agent execution summary
+
+returncode=0 elapsed=139.4s timed_out=False
+--- stdout (tail) ---
+coding task in one pass.
+- Success means production-source edits left as uncommitted working-tree 
+changes.
+- Do not finish with only analysis or chat text when a code fix is required.
+
+Issue / problem statement:
+[Bug]: get_backend() clears figures from Gcf.figs if they were created under 
+rc_context
+### Bug summary
+
+calling `matplotlib.get_backend()` removes all figures from `Gcf` if the *first*
+figure in `Gcf.figs` was created in an `rc_context`.
+
+### Code for reproduction
+
+```python
+import matplotlib.pyplot as plt
+from matplotlib import get_backend, rc_context
+
+# fig1 = plt.figure()  # <- UNCOMMENT THIS LINE AND IT WILL WORK
+# plt.ion()            # <- ALTERNATIVELY, UNCOMMENT THIS LINE AND IT WILL ALSO 
+WORK
+with rc_context():
+    fig2 = plt.figure()
+before = f'{id(plt._pylab_helpers.Gcf)} {plt._pylab_helpers.Gcf.figs!r}'
+get_backend()
+after = f'{id(plt._pylab_helpers.Gcf)} {plt._pylab_helpers.Gcf.figs!r}'
+
+assert before == after, '\n' + before + '\n' + after
+```
+
+
+### Actual outcome
+
+```
+---------------------------------------------------------------------------
+AssertionError                            Traceback (most recent call last)
+<ipython-input-1-fa4d099aa289> in <cell line: 11>()
+      9 after = f'{id(plt._pylab_helpers.Gcf)} {plt._pylab_helpers.Gcf.figs!r}'
+     10 
+---> 11 assert before == after, '\n' + before + '\n' + after
+     12 
+
+AssertionError: 
+94453354309744 OrderedDict([(1, <matplotlib.backends.backend_qt.FigureManagerQT 
+object at 0x7fb33e26c220>)])
+94453354309744 OrderedDict()
+```
+
+### Expected outcome
+
+The figure should not be missing from `Gcf`.  Consequences of this are, e.g, 
+`plt.close(fig2)` doesn't work because `Gcf.destroy_fig()` can't find it.
+
+### Additional information
+
+_No response_
+
+### Operating system
+
+Xubuntu
+
+### Matplotlib Version
+
+3.5.2
+
+### Matplotlib Backend
+
+QtAgg
+
+### Python version
+
+Python 3.10.4
+
+### Jupyter version
+
+n/a
+
+### Installation
+
+conda
+
+Hints:
+My knee-jerk guess is that  :  
+
+ - the `rcParams['backend']` in the auto-sentinel
+ - that is stashed by rc_context
+ - if you do the first thing to force the backend to be resolved in the context 
+manager it get changes
+ - the context manager sets it back to the sentinel an the way out
+ - `get_backend()` re-resolves the backend which because it changes the backend 
+it closes all of the figures
+
+
+This is probably been a long standing latent bug, but was brought to the front 
+when we made the backend resolution lazier.
+
+◌ decision routing
+✓ decision routing Completed.
+
+Answer ─────────────────────────────────────────────────────────────────────────
+Codex completed the repository mutation. Changed files:                         
+
+ • lib/matplotlib/pyplot.py Commands run: /bin/zsh -lc 'rg -n "def              
+   get_backend|def                                                              
+   rc_context|_auto_backend_sentinel|backend.*sentinel|switch_backend"          
+   lib/matplotlib', /bin/zsh -lc "sed -n '620,700p' lib/matplotlib/init.py &&   
+   sed -n '1050,1185p' lib/matplotlib/init.py && sed -n '185,285p'              
+   lib/matplotlib/pyplot.py && sed -n '580,610p' lib/matplotlib/pyplot.py && sed
+   -n '2180,2220p' lib/matplotlib/pyplot.py", /bin/zsh -lc "sed -n '285,340p'   
+   lib/matplotlib/pyplot.py && rg -n "def                                       
+   copy|dict.update\(rcParams|rcParamsOrig|rcParamsDefault"                     
+   lib/matplotlib/init.py lib/matplotlib/pyplot.py", /bin/zsh -lc "git status   
+   --short && sed -n '205,245p' lib/matplotlib/pyplot.py", /bin/zsh -lc 'git    
+   diff --check && git diff -- lib/matplotlib/pyplot.py && git status --short'  
+   Updated pyplot.py: when the auto-backend sentinel is restored after a backend
+   has already been loaded, switch_backend() now reuses that backend instead of 
+   closing figures and selecting it again.                                      
+
+git diff --check passed. I did not run tests.                                   
+
+Exiting chat (single-shot).
+
+--- stderr (tail) ---
+
+
+
+## Execution metadata
+
+{
+  "instance_id": "matplotlib__matplotlib-23299",
+  "status": "ok",
+  "error": "",
+  "duration_seconds": 145.27088104188442,
+  "empty_patch": false,
+  "patch_chars": 807,
+  "worktree": "/Users/ah/Documents/mana-agent/.swe-bench/worktrees/matplotlib__matplotlib-23299",
+  "agent_name": "mana-agent",
+  "agent_provider": "openai",
+  "agent_model": "gpt-6-luna",
+  "model_name_or_path": "mana-agent__gpt-6-luna"
+}

@@ -1,0 +1,55 @@
+diff --git a/sklearn/utils/_set_output.py b/sklearn/utils/_set_output.py
+index 335773c6a..a13b17458 100644
+--- a/sklearn/utils/_set_output.py
++++ b/sklearn/utils/_set_output.py
+@@ -127,12 +127,49 @@ def _wrap_data_with_container(method, data_to_wrap, original_input, estimator):
+         return data_to_wrap
+ 
+     # dense_config == "pandas"
+-    return _wrap_in_pandas_container(
++    wrapped_data = _wrap_in_pandas_container(
+         data_to_wrap=data_to_wrap,
+         index=getattr(original_input, "index", None),
+         columns=estimator.get_feature_names_out,
+     )
+ 
++    # If a transformer keeps input columns unchanged, preserve their dtypes in
++    # the pandas output. The transformer may have converted a heterogeneous
++    # DataFrame to a homogeneous NumPy array, losing this information.
++    pd = check_pandas_support("Setting output container to 'pandas'")
++    if (
++        isinstance(original_input, pd.DataFrame)
++        and not isinstance(data_to_wrap, pd.DataFrame)
++        and original_input.columns.is_unique
++        and wrapped_data.columns.is_unique
++    ):
++        for column in wrapped_data.columns.intersection(original_input.columns):
++            input_column = original_input[column]
++            output_column = wrapped_data[column]
++            if input_column.dtype == output_column.dtype:
++                continue
++
++            try:
++                equal_values = output_column.astype(object).eq(
++                    input_column.astype(object)
++                ) | (
++                    output_column.isna() & input_column.isna()
++                )
++            except (TypeError, ValueError):
++                continue
++
++            if equal_values.fillna(False).all():
++                try:
++                    wrapped_data[column] = wrapped_data[column].astype(
++                        input_column.dtype
++                    )
++                except (TypeError, ValueError):
++                    # A custom dtype may not support casting from the output
++                    # representation. Keep the valid transformed output.
++                    pass
++
++    return wrapped_data
++
+ 
+ def _wrap_method_output(f, method):
+     """Wrapper used by `_SetOutputMixin` to automatically wrap methods."""

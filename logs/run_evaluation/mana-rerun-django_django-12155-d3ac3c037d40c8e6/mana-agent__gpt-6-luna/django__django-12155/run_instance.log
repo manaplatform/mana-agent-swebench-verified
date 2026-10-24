@@ -1,0 +1,68 @@
+2026-10-24 01:02:49,240 - INFO - Creating container for django__django-12155...
+2026-10-24 01:02:49,357 - INFO - Container for django__django-12155 created: 770a9f5da474d11686de2ebdc40055f45200e51a502ce53bd371561679c5aa09
+2026-10-24 01:02:49,455 - INFO - Container for django__django-12155 started: 770a9f5da474d11686de2ebdc40055f45200e51a502ce53bd371561679c5aa09
+2026-10-24 01:02:49,455 - INFO - Intermediate patch for django__django-12155 written to logs/run_evaluation/mana-rerun-django_django-12155-d3ac3c037d40c8e6/mana-agent__gpt-6-luna/django__django-12155/patch.diff, now applying to container...
+2026-10-24 01:02:49,769 - INFO - >>>>> Applied Patch:
+Checking patch django/contrib/admindocs/utils.py...
+Applied patch django/contrib/admindocs/utils.py cleanly.
+
+2026-10-24 01:02:51,185 - INFO - Git diff before:
+diff --git a/django/contrib/admindocs/utils.py b/django/contrib/admindocs/utils.py
+index 4c0e7e2a56..84e76522fc 100644
+--- a/django/contrib/admindocs/utils.py
++++ b/django/contrib/admindocs/utils.py
+@@ -1,5 +1,6 @@
+ "Misc. utility functions/classes for admin documentation generator."
+ 
++import inspect
+ import re
+ from email.errors import HeaderParseError
+ from email.parser import HeaderParser
+@@ -32,11 +33,7 @@ def trim_docstring(docstring):
+     """
+     if not docstring or not docstring.strip():
+         return ''
+-    # Convert tabs to spaces and split into lines
+-    lines = docstring.expandtabs().splitlines()
+-    indent = min(len(line) - len(line.lstrip()) for line in lines if line.lstrip())
+-    trimmed = [lines[0].lstrip()] + [line[indent:].rstrip() for line in lines[1:]]
+-    return "\n".join(trimmed).strip()
++    return inspect.cleandoc(docstring).strip()
+ 
+ 
+ def parse_docstring(docstring):
+2026-10-24 01:02:51,186 - INFO - Eval script for django__django-12155 written to logs/run_evaluation/mana-rerun-django_django-12155-d3ac3c037d40c8e6/mana-agent__gpt-6-luna/django__django-12155/eval.sh; copying to container...
+2026-10-24 01:03:10,037 - INFO - Test runtime: 18.76 seconds
+2026-10-24 01:03:10,038 - INFO - Test output for django__django-12155 written to logs/run_evaluation/mana-rerun-django_django-12155-d3ac3c037d40c8e6/mana-agent__gpt-6-luna/django__django-12155/test_output.txt
+2026-10-24 01:03:10,099 - INFO - Git diff after:
+diff --git a/django/contrib/admindocs/utils.py b/django/contrib/admindocs/utils.py
+index 4c0e7e2a56..84e76522fc 100644
+--- a/django/contrib/admindocs/utils.py
++++ b/django/contrib/admindocs/utils.py
+@@ -1,5 +1,6 @@
+ "Misc. utility functions/classes for admin documentation generator."
+ 
++import inspect
+ import re
+ from email.errors import HeaderParseError
+ from email.parser import HeaderParser
+@@ -32,11 +33,7 @@ def trim_docstring(docstring):
+     """
+     if not docstring or not docstring.strip():
+         return ''
+-    # Convert tabs to spaces and split into lines
+-    lines = docstring.expandtabs().splitlines()
+-    indent = min(len(line) - len(line.lstrip()) for line in lines if line.lstrip())
+-    trimmed = [lines[0].lstrip()] + [line[indent:].rstrip() for line in lines[1:]]
+-    return "\n".join(trimmed).strip()
++    return inspect.cleandoc(docstring).strip()
+ 
+ 
+ def parse_docstring(docstring):
+2026-10-24 01:03:10,099 - INFO - Grading answer for django__django-12155...
+2026-10-24 01:03:10,101 - INFO - report: {'django__django-12155': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': True, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': ['test_parse_rst_with_docstring_no_leading_line_feed (admin_docs.test_utils.TestUtils)'], 'failure': []}, 'PASS_TO_PASS': {'success': ['test_description_output (admin_docs.test_utils.TestUtils)', 'test_initial_header_level (admin_docs.test_utils.TestUtils)', 'test_parse_docstring (admin_docs.test_utils.TestUtils)', 'test_parse_rst (admin_docs.test_utils.TestUtils)', 'test_publish_parts (admin_docs.test_utils.TestUtils)', 'test_title_output (admin_docs.test_utils.TestUtils)'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for django__django-12155: resolved: True
+2026-10-24 01:03:10,101 - INFO - Attempting to stop container sweb.eval.django__django-12155.mana-rerun-django_django-12155-d3ac3c037d40c8e6...
+2026-10-24 01:03:25,202 - INFO - Container sweb.eval.django__django-12155.mana-rerun-django_django-12155-d3ac3c037d40c8e6 stopped successfully.
+2026-10-24 01:03:25,202 - INFO - Attempting to remove container sweb.eval.django__django-12155.mana-rerun-django_django-12155-d3ac3c037d40c8e6...
+2026-10-24 01:03:25,231 - INFO - Container sweb.eval.django__django-12155.mana-rerun-django_django-12155-d3ac3c037d40c8e6 removed successfully.

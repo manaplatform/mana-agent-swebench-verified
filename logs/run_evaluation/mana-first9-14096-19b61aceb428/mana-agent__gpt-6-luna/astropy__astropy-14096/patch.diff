@@ -1,0 +1,69 @@
+diff --git a/astropy/coordinates/sky_coordinate.py b/astropy/coordinates/sky_coordinate.py
+index ab475f7d0..f08f8414c 100644
+--- a/astropy/coordinates/sky_coordinate.py
++++ b/astropy/coordinates/sky_coordinate.py
+@@ -1,4 +1,5 @@
+ import copy
++import inspect
+ import operator
+ import re
+ import warnings
+@@ -866,10 +867,28 @@ class SkyCoord(ShapedLikeNDArray):
+             isinstance(self.frame.name, list) and string in self.frame.name
+         )
+ 
+-    def __getattr__(self, attr):
++    def __getattribute__(self, attr):
++        """Get an attribute, preserving errors raised by existing attributes.
++
++        Python normally calls ``__getattr__`` after any ``AttributeError``
++        during normal attribute lookup.  That can obscure an ``AttributeError``
++        raised by a property on a ``SkyCoord`` subclass.  Only use the
++        coordinate-specific fallback when the requested attribute is actually
++        absent.
++        """
++        try:
++            return super().__getattribute__(attr)
++        except AttributeError:
++            try:
++                inspect.getattr_static(self, attr)
++            except AttributeError:
++                return self._getattr(attr)
++            raise
++
++    def _getattr(self, attr):
+         """
+-        Overrides getattr to return coordinates that this can be transformed
+-        to, based on the alias attr in the primary transform graph.
++        Return coordinates that this can be transformed to, based on the
++        alias attr in the primary transform graph.
+         """
+         if "_sky_coord_frame" in self.__dict__:
+             if self._is_name(attr):
+@@ -900,7 +919,7 @@ class SkyCoord(ShapedLikeNDArray):
+         )
+ 
+     def __setattr__(self, attr, val):
+-        # This is to make anything available through __getattr__ immutable
++        # This is to make anything available through __getattribute__ immutable
+         if "_sky_coord_frame" in self.__dict__:
+             if self._is_name(attr):
+                 raise AttributeError(f"'{attr}' is immutable")
+@@ -915,7 +934,7 @@ class SkyCoord(ShapedLikeNDArray):
+ 
+         if attr in frame_transform_graph.frame_attributes:
+             # All possible frame attributes can be set, but only via a private
+-            # variable.  See __getattr__ above.
++            # variable.  See __getattribute__ above.
+             super().__setattr__("_" + attr, val)
+             # Validate it
+             frame_transform_graph.frame_attributes[attr].__get__(self)
+@@ -942,7 +961,7 @@ class SkyCoord(ShapedLikeNDArray):
+ 
+         if attr in frame_transform_graph.frame_attributes:
+             # All possible frame attributes can be deleted, but need to remove
+-            # the corresponding private variable.  See __getattr__ above.
++            # the corresponding private variable.  See __getattribute__ above.
+             super().__delattr__("_" + attr)
+             # Also remove it from the set of extra attributes
+             self._extra_frameattr_names -= {attr}

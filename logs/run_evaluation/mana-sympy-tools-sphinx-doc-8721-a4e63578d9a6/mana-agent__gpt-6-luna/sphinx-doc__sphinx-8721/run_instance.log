@@ -1,0 +1,47 @@
+2026-10-24 00:12:20,766 - INFO - Creating container for sphinx-doc__sphinx-8721...
+2026-10-24 00:12:20,895 - INFO - Container for sphinx-doc__sphinx-8721 created: 8c894a4ce6f0f1c49fab7cacea19ec53e26f73cfeee9adb8e09deea677800188
+2026-10-24 00:12:21,015 - INFO - Container for sphinx-doc__sphinx-8721 started: 8c894a4ce6f0f1c49fab7cacea19ec53e26f73cfeee9adb8e09deea677800188
+2026-10-24 00:12:21,016 - INFO - Intermediate patch for sphinx-doc__sphinx-8721 written to logs/run_evaluation/mana-sympy-tools-sphinx-doc-8721-a4e63578d9a6/mana-agent__gpt-6-luna/sphinx-doc__sphinx-8721/patch.diff, now applying to container...
+2026-10-24 00:12:21,249 - INFO - >>>>> Applied Patch:
+Checking patch sphinx/ext/viewcode.py...
+warning: sphinx/ext/viewcode.py has type 100755, expected 100644
+Applied patch sphinx/ext/viewcode.py cleanly.
+
+2026-10-24 00:12:21,761 - INFO - Git diff before:
+diff --git a/sphinx/ext/viewcode.py b/sphinx/ext/viewcode.py
+index a7d52a91c..863fc3d6d 100755
+--- a/sphinx/ext/viewcode.py
++++ b/sphinx/ext/viewcode.py
+@@ -180,6 +180,8 @@ def should_generate_module_page(app: Sphinx, modname: str) -> bool:
+ 
+ def collect_pages(app: Sphinx) -> Generator[Tuple[str, Dict[str, Any], str], None, None]:
+     env = app.builder.env
++    if app.builder.name.startswith("epub") and not env.config.viewcode_enable_epub:
++        return
+     if not hasattr(env, '_viewcode_modules'):
+         return
+     highlighter = app.builder.highlighter  # type: ignore
+2026-10-24 00:12:21,762 - INFO - Eval script for sphinx-doc__sphinx-8721 written to logs/run_evaluation/mana-sympy-tools-sphinx-doc-8721-a4e63578d9a6/mana-agent__gpt-6-luna/sphinx-doc__sphinx-8721/eval.sh; copying to container...
+2026-10-24 00:12:32,009 - INFO - Test runtime: 10.19 seconds
+2026-10-24 00:12:32,010 - INFO - Test output for sphinx-doc__sphinx-8721 written to logs/run_evaluation/mana-sympy-tools-sphinx-doc-8721-a4e63578d9a6/mana-agent__gpt-6-luna/sphinx-doc__sphinx-8721/test_output.txt
+2026-10-24 00:12:32,070 - INFO - Git diff after:
+diff --git a/sphinx/ext/viewcode.py b/sphinx/ext/viewcode.py
+index a7d52a91c..863fc3d6d 100755
+--- a/sphinx/ext/viewcode.py
++++ b/sphinx/ext/viewcode.py
+@@ -180,6 +180,8 @@ def should_generate_module_page(app: Sphinx, modname: str) -> bool:
+ 
+ def collect_pages(app: Sphinx) -> Generator[Tuple[str, Dict[str, Any], str], None, None]:
+     env = app.builder.env
++    if app.builder.name.startswith("epub") and not env.config.viewcode_enable_epub:
++        return
+     if not hasattr(env, '_viewcode_modules'):
+         return
+     highlighter = app.builder.highlighter  # type: ignore
+2026-10-24 00:12:32,070 - INFO - Grading answer for sphinx-doc__sphinx-8721...
+2026-10-24 00:12:32,080 - INFO - report: {'sphinx-doc__sphinx-8721': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': True, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': ['tests/test_ext_viewcode.py::test_viewcode_epub_default'], 'failure': []}, 'PASS_TO_PASS': {'success': ['tests/test_ext_viewcode.py::test_viewcode_epub_enabled', 'tests/test_ext_viewcode.py::test_linkcode', 'tests/test_ext_viewcode.py::test_local_source_files'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for sphinx-doc__sphinx-8721: resolved: True
+2026-10-24 00:12:32,080 - INFO - Attempting to stop container sweb.eval.sphinx-doc__sphinx-8721.mana-sympy-tools-sphinx-doc-8721-a4e63578d9a6...
+2026-10-24 00:12:47,176 - INFO - Container sweb.eval.sphinx-doc__sphinx-8721.mana-sympy-tools-sphinx-doc-8721-a4e63578d9a6 stopped successfully.
+2026-10-24 00:12:47,177 - INFO - Attempting to remove container sweb.eval.sphinx-doc__sphinx-8721.mana-sympy-tools-sphinx-doc-8721-a4e63578d9a6...
+2026-10-24 00:12:47,225 - INFO - Container sweb.eval.sphinx-doc__sphinx-8721.mana-sympy-tools-sphinx-doc-8721-a4e63578d9a6 removed successfully.

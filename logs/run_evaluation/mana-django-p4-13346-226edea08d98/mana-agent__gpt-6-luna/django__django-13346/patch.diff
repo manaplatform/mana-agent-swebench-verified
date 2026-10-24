@@ -1,0 +1,43 @@
+diff --git a/django/db/models/fields/json.py b/django/db/models/fields/json.py
+index fafc1beee8..d241011c8c 100644
+--- a/django/db/models/fields/json.py
++++ b/django/db/models/fields/json.py
+@@ -479,6 +479,30 @@ class KeyTransformGte(KeyTransformNumericLookupMixin, lookups.GreaterThanOrEqual
+     pass
+ 
+ 
++class KeyTransformIn(lookups.In):
++    def resolve_expression_parameter(self, compiler, connection, sql, param):
++        if hasattr(param, 'resolve_expression') or hasattr(param, 'as_sql'):
++            return super().resolve_expression_parameter(compiler, connection, sql, param)
++        if not connection.features.has_native_json_field:
++            if connection.vendor == 'mysql':
++                sql = "JSON_EXTRACT(%s, '$')" % sql
++            elif connection.vendor == 'oracle':
++                value = json.loads(param)
++                if isinstance(value, (list, dict)):
++                    function = 'JSON_QUERY'
++                else:
++                    function = 'JSON_VALUE'
++                json_value = json.dumps({'value': value}).replace("'", "''")
++                sql = "%s('%s', '$.value')" % (
++                    function,
++                    json_value,
++                )
++                return sql, []
++            elif connection.vendor == 'sqlite':
++                sql = "JSON_EXTRACT(%s, '$')" % sql
++        return sql, [param]
++
++
+ KeyTransform.register_lookup(KeyTransformExact)
+ KeyTransform.register_lookup(KeyTransformIExact)
+ KeyTransform.register_lookup(KeyTransformIsNull)
+@@ -494,6 +518,7 @@ KeyTransform.register_lookup(KeyTransformLt)
+ KeyTransform.register_lookup(KeyTransformLte)
+ KeyTransform.register_lookup(KeyTransformGt)
+ KeyTransform.register_lookup(KeyTransformGte)
++KeyTransform.register_lookup(KeyTransformIn)
+ 
+ 
+ class KeyTransformFactory:

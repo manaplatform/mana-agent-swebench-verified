@@ -1,0 +1,20 @@
+diff --git a/sympy/core/mod.py b/sympy/core/mod.py
+index eae25630cc..3811dc4c48 100644
+--- a/sympy/core/mod.py
++++ b/sympy/core/mod.py
+@@ -118,6 +118,15 @@ def doit(p, q):
+                 return cls(net, q)
+ 
+         elif isinstance(p, Mul):
++            # An integer coefficient can be reduced modulo an integer
++            # divisor when the remaining factor is also known to be integer.
++            # In that case the difference is an integer multiple of q.
++            coeff, rest = p.as_coeff_Mul()
++            if (coeff.is_Integer and q.is_Integer and rest.is_integer):
++                reduced = coeff % q
++                if reduced != coeff:
++                    return cls(reduced*rest, q)
++
+             # separating into modulus and non modulus
+             both_l = non_mod_l, mod_l = [], []
+             for arg in p.args:

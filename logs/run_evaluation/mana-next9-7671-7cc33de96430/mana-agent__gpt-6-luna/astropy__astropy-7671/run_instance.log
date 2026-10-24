@@ -1,0 +1,70 @@
+2026-10-22 00:32:25,903 - INFO - Creating container for astropy__astropy-7671...
+2026-10-22 00:32:26,251 - INFO - Container for astropy__astropy-7671 created: cf57c2f457a933615157e1ba76881aa5ed34eebbb9c8cca5128b12803c4efc69
+2026-10-22 00:32:26,315 - INFO - Container for astropy__astropy-7671 started: cf57c2f457a933615157e1ba76881aa5ed34eebbb9c8cca5128b12803c4efc69
+2026-10-22 00:32:26,315 - INFO - Intermediate patch for astropy__astropy-7671 written to logs/run_evaluation/mana-next9-7671-7cc33de96430/mana-agent__gpt-6-luna/astropy__astropy-7671/patch.diff, now applying to container...
+2026-10-22 00:32:26,407 - INFO - >>>>> Applied Patch:
+Checking patch astropy/utils/introspection.py...
+Applied patch astropy/utils/introspection.py cleanly.
+
+2026-10-22 00:32:26,751 - INFO - Git diff before:
+diff --git a/astropy/utils/introspection.py b/astropy/utils/introspection.py
+index 3e784f9fc..2a9cf4ce5 100644
+--- a/astropy/utils/introspection.py
++++ b/astropy/utils/introspection.py
+@@ -6,6 +6,7 @@
+ import inspect
+ import types
+ import importlib
++import re
+ from distutils.version import LooseVersion
+ 
+ 
+@@ -139,6 +140,12 @@ def minversion(module, version, inclusive=True, version_path='__version__'):
+     else:
+         have_version = resolve_name(module.__name__, version_path)
+ 
++    # LooseVersion can fail when corresponding components are integers in one
++    # version and strings in the other (e.g. '1.14.3' and '1.14dev'). Compare
++    # the numeric release portion, ignoring any suffix such as 'dev' or 'rc1'.
++    have_version = re.search(r'\d+(?:\.\d+)*', have_version).group()
++    version = re.search(r'\d+(?:\.\d+)*', version).group()
++
+     if inclusive:
+         return LooseVersion(have_version) >= LooseVersion(version)
+     else:
+2026-10-22 00:32:26,751 - INFO - Eval script for astropy__astropy-7671 written to logs/run_evaluation/mana-next9-7671-7cc33de96430/mana-agent__gpt-6-luna/astropy__astropy-7671/eval.sh; copying to container...
+2026-10-22 00:32:33,419 - INFO - Test runtime: 6.64 seconds
+2026-10-22 00:32:33,419 - INFO - Test output for astropy__astropy-7671 written to logs/run_evaluation/mana-next9-7671-7cc33de96430/mana-agent__gpt-6-luna/astropy__astropy-7671/test_output.txt
+2026-10-22 00:32:33,521 - INFO - Git diff after:
+diff --git a/astropy/utils/introspection.py b/astropy/utils/introspection.py
+index 3e784f9fc..2a9cf4ce5 100644
+--- a/astropy/utils/introspection.py
++++ b/astropy/utils/introspection.py
+@@ -6,6 +6,7 @@
+ import inspect
+ import types
+ import importlib
++import re
+ from distutils.version import LooseVersion
+ 
+ 
+@@ -139,6 +140,12 @@ def minversion(module, version, inclusive=True, version_path='__version__'):
+     else:
+         have_version = resolve_name(module.__name__, version_path)
+ 
++    # LooseVersion can fail when corresponding components are integers in one
++    # version and strings in the other (e.g. '1.14.3' and '1.14dev'). Compare
++    # the numeric release portion, ignoring any suffix such as 'dev' or 'rc1'.
++    have_version = re.search(r'\d+(?:\.\d+)*', have_version).group()
++    version = re.search(r'\d+(?:\.\d+)*', version).group()
++
+     if inclusive:
+         return LooseVersion(have_version) >= LooseVersion(version)
+     else:
+2026-10-22 00:32:33,522 - INFO - Grading answer for astropy__astropy-7671...
+2026-10-22 00:32:33,522 - INFO - report: {'astropy__astropy-7671': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': True, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': ['astropy/utils/tests/test_introspection.py::test_minversion'], 'failure': []}, 'PASS_TO_PASS': {'success': ['astropy/utils/tests/test_introspection.py::test_pkg_finder', 'astropy/utils/tests/test_introspection.py::test_find_current_mod', 'astropy/utils/tests/test_introspection.py::test_find_mod_objs'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for astropy__astropy-7671: resolved: True
+2026-10-22 00:32:33,522 - INFO - Attempting to stop container sweb.eval.astropy__astropy-7671.mana-next9-7671-7cc33de96430...
+2026-10-22 00:32:48,620 - INFO - Container sweb.eval.astropy__astropy-7671.mana-next9-7671-7cc33de96430 stopped successfully.
+2026-10-22 00:32:48,620 - INFO - Attempting to remove container sweb.eval.astropy__astropy-7671.mana-next9-7671-7cc33de96430...
+2026-10-22 00:32:48,650 - INFO - Container sweb.eval.astropy__astropy-7671.mana-next9-7671-7cc33de96430 removed successfully.

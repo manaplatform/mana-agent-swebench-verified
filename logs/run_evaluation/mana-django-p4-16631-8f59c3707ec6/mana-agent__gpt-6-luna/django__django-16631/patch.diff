@@ -1,0 +1,55 @@
+diff --git a/django/contrib/auth/__init__.py b/django/contrib/auth/__init__.py
+index 155330c596..dcd8d1fd07 100644
+--- a/django/contrib/auth/__init__.py
++++ b/django/contrib/auth/__init__.py
+@@ -202,6 +202,13 @@ def get_user(request):
+                 session_hash_verified = session_hash and constant_time_compare(
+                     session_hash, user.get_session_auth_hash()
+                 )
++                if not session_hash_verified and session_hash:
++                    if hasattr(user, "get_session_auth_fallback_hash"):
++                        fallback_hashes = user.get_session_auth_fallback_hash()
++                        session_hash_verified = any(
++                            constant_time_compare(session_hash, fallback_session_hash)
++                            for fallback_session_hash in fallback_hashes
++                        )
+                 if not session_hash_verified:
+                     request.session.flush()
+                     user = None
+diff --git a/django/contrib/auth/base_user.py b/django/contrib/auth/base_user.py
+index 5ee30bf59c..f8da1fbb1f 100644
+--- a/django/contrib/auth/base_user.py
++++ b/django/contrib/auth/base_user.py
+@@ -5,6 +5,7 @@ not in INSTALLED_APPS.
+ import unicodedata
+ import warnings
+ 
++from django.conf import settings
+ from django.contrib.auth import password_validation
+ from django.contrib.auth.hashers import (
+     check_password,
+@@ -131,7 +132,7 @@ class AbstractBaseUser(models.Model):
+         """
+         return is_password_usable(self.password)
+ 
+-    def get_session_auth_hash(self):
++    def get_session_auth_hash(self, secret=None):
+         """
+         Return an HMAC of the password field.
+         """
+@@ -139,9 +140,15 @@ class AbstractBaseUser(models.Model):
+         return salted_hmac(
+             key_salt,
+             self.password,
++            secret=secret,
+             algorithm="sha256",
+         ).hexdigest()
+ 
++    def get_session_auth_fallback_hash(self):
++        """Return the session auth hashes for fallback secrets."""
++        for fallback_secret in settings.SECRET_KEY_FALLBACKS:
++            yield self.get_session_auth_hash(secret=fallback_secret)
++
+     @classmethod
+     def get_email_field_name(cls):
+         try:

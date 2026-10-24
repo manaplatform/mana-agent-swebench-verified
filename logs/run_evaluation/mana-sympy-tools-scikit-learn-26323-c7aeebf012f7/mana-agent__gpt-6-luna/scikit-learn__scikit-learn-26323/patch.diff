@@ -1,0 +1,15 @@
+diff --git a/sklearn/compose/_column_transformer.py b/sklearn/compose/_column_transformer.py
+index 4eddd12b1..f38a7f32c 100644
+--- a/sklearn/compose/_column_transformer.py
++++ b/sklearn/compose/_column_transformer.py
+@@ -296,7 +296,9 @@ class ColumnTransformer(TransformerMixin, _BaseComposition):
+         transformers = (
+             trans
+             for _, trans, _ in chain(
+-                self.transformers, getattr(self, "transformers_", [])
++                self.transformers,
++                getattr(self, "transformers_", []),
++                [("remainder", self.remainder, None)],
+             )
+             if trans not in {"passthrough", "drop"}
+         )

@@ -1,0 +1,74 @@
+2026-10-23 21:34:19,186 - INFO - Creating container for sympy__sympy-23413...
+2026-10-23 21:34:19,293 - INFO - Container for sympy__sympy-23413 created: f44f1400f17005d635edc079fddd0fca46133edf02431e988f87a12203b87e19
+2026-10-23 21:34:19,426 - INFO - Container for sympy__sympy-23413 started: f44f1400f17005d635edc079fddd0fca46133edf02431e988f87a12203b87e19
+2026-10-23 21:34:19,427 - INFO - Intermediate patch for sympy__sympy-23413 written to logs/run_evaluation/mana-sympy-tools-sympy-23413-c570c67028f3/mana-agent__gpt-6-luna/sympy__sympy-23413/patch.diff, now applying to container...
+2026-10-23 21:34:19,573 - INFO - >>>>> Applied Patch:
+Checking patch sympy/polys/matrices/normalforms.py...
+Applied patch sympy/polys/matrices/normalforms.py cleanly.
+
+2026-10-23 21:34:20,087 - INFO - Git diff before:
+diff --git a/sympy/polys/matrices/normalforms.py b/sympy/polys/matrices/normalforms.py
+index 30f5534b08..12a0f41657 100644
+--- a/sympy/polys/matrices/normalforms.py
++++ b/sympy/polys/matrices/normalforms.py
+@@ -205,16 +205,18 @@ def _hermite_normal_form(A):
+     if not A.domain.is_ZZ:
+         raise DMDomainError('Matrix must be over domain ZZ.')
+     # We work one row at a time, starting from the bottom row, and working our
+-    # way up. The total number of rows we will consider is min(m, n), where
+-    # A is an m x n matrix.
++    # way up. We consider every row of A, since a pivot may occur above the
++    # bottom min(m, n) rows.
+     m, n = A.shape
+-    rows = min(m, n)
+     A = A.to_dense().rep.copy()
+     # Our goal is to put pivot entries in the rightmost columns.
+     # Invariant: Before processing each row, k should be the index of the
+     # leftmost column in which we have so far put a pivot.
+     k = n
+-    for i in range(m - 1, m - 1 - rows, -1):
++    for i in range(m - 1, -1, -1):
++        # There are no more pivot columns to use.
++        if k == 0:
++            break
+         k -= 1
+         # k now points to the column in which we want to put a pivot.
+         # We want zeros in all entries to the left of the pivot column.
+2026-10-23 21:34:20,088 - INFO - Eval script for sympy__sympy-23413 written to logs/run_evaluation/mana-sympy-tools-sympy-23413-c570c67028f3/mana-agent__gpt-6-luna/sympy__sympy-23413/eval.sh; copying to container...
+2026-10-23 21:34:28,537 - INFO - Test runtime: 8.40 seconds
+2026-10-23 21:34:28,537 - INFO - Test output for sympy__sympy-23413 written to logs/run_evaluation/mana-sympy-tools-sympy-23413-c570c67028f3/mana-agent__gpt-6-luna/sympy__sympy-23413/test_output.txt
+2026-10-23 21:34:28,663 - INFO - Git diff after:
+diff --git a/sympy/polys/matrices/normalforms.py b/sympy/polys/matrices/normalforms.py
+index 30f5534b08..12a0f41657 100644
+--- a/sympy/polys/matrices/normalforms.py
++++ b/sympy/polys/matrices/normalforms.py
+@@ -205,16 +205,18 @@ def _hermite_normal_form(A):
+     if not A.domain.is_ZZ:
+         raise DMDomainError('Matrix must be over domain ZZ.')
+     # We work one row at a time, starting from the bottom row, and working our
+-    # way up. The total number of rows we will consider is min(m, n), where
+-    # A is an m x n matrix.
++    # way up. We consider every row of A, since a pivot may occur above the
++    # bottom min(m, n) rows.
+     m, n = A.shape
+-    rows = min(m, n)
+     A = A.to_dense().rep.copy()
+     # Our goal is to put pivot entries in the rightmost columns.
+     # Invariant: Before processing each row, k should be the index of the
+     # leftmost column in which we have so far put a pivot.
+     k = n
+-    for i in range(m - 1, m - 1 - rows, -1):
++    for i in range(m - 1, -1, -1):
++        # There are no more pivot columns to use.
++        if k == 0:
++            break
+         k -= 1
+         # k now points to the column in which we want to put a pivot.
+         # We want zeros in all entries to the left of the pivot column.
+2026-10-23 21:34:28,663 - INFO - Grading answer for sympy__sympy-23413...
+2026-10-23 21:34:28,664 - INFO - report: {'sympy__sympy-23413': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': True, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': ['test_hermite_normal'], 'failure': []}, 'PASS_TO_PASS': {'success': ['test_smith_normal', 'test_smith_normal_deprecated'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for sympy__sympy-23413: resolved: True
+2026-10-23 21:34:28,665 - INFO - Attempting to stop container sweb.eval.sympy__sympy-23413.mana-sympy-tools-sympy-23413-c570c67028f3...
+2026-10-23 21:34:43,751 - INFO - Container sweb.eval.sympy__sympy-23413.mana-sympy-tools-sympy-23413-c570c67028f3 stopped successfully.
+2026-10-23 21:34:43,751 - INFO - Attempting to remove container sweb.eval.sympy__sympy-23413.mana-sympy-tools-sympy-23413-c570c67028f3...
+2026-10-23 21:34:43,786 - INFO - Container sweb.eval.sympy__sympy-23413.mana-sympy-tools-sympy-23413-c570c67028f3 removed successfully.

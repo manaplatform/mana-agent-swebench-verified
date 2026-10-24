@@ -1,0 +1,48 @@
+2026-10-23 17:35:44,617 - INFO - Creating container for psf__requests-1142...
+2026-10-23 17:35:44,699 - INFO - Container for psf__requests-1142 created: 90d4b8400625804759003e564eb5e2151daad65bd2e59f95f350b7a39fe0e2b7
+2026-10-23 17:35:44,861 - INFO - Container for psf__requests-1142 started: 90d4b8400625804759003e564eb5e2151daad65bd2e59f95f350b7a39fe0e2b7
+2026-10-23 17:35:44,861 - INFO - Intermediate patch for psf__requests-1142 written to logs/run_evaluation/mana-five-psf-1142-8605ebe59414/mana-agent__gpt-6-luna/psf__requests-1142/patch.diff, now applying to container...
+2026-10-23 17:35:45,052 - INFO - >>>>> Applied Patch:
+Checking patch requests/models.py...
+Applied patch requests/models.py cleanly.
+
+2026-10-23 17:35:45,213 - INFO - Git diff before:
+diff --git a/requests/models.py b/requests/models.py
+index 9926045..dfe4c60 100644
+--- a/requests/models.py
++++ b/requests/models.py
+@@ -386,6 +386,9 @@ class PreparedRequest(RequestEncodingMixin, RequestHooksMixin):
+         self.body = body
+ 
+     def prepare_content_length(self, body):
++        if self.method == 'GET' and body is None:
++            return
++
+         self.headers['Content-Length'] = '0'
+         if hasattr(body, 'seek') and hasattr(body, 'tell'):
+             body.seek(0, 2)
+2026-10-23 17:35:45,213 - INFO - Eval script for psf__requests-1142 written to logs/run_evaluation/mana-five-psf-1142-8605ebe59414/mana-agent__gpt-6-luna/psf__requests-1142/eval.sh; copying to container...
+2026-10-23 17:35:51,408 - INFO - Test runtime: 6.13 seconds
+2026-10-23 17:35:51,408 - INFO - Test output for psf__requests-1142 written to logs/run_evaluation/mana-five-psf-1142-8605ebe59414/mana-agent__gpt-6-luna/psf__requests-1142/test_output.txt
+2026-10-23 17:35:51,474 - INFO - Git diff after:
+diff --git a/requests/models.py b/requests/models.py
+index 9926045..dfe4c60 100644
+--- a/requests/models.py
++++ b/requests/models.py
+@@ -386,6 +386,9 @@ class PreparedRequest(RequestEncodingMixin, RequestHooksMixin):
+         self.body = body
+ 
+     def prepare_content_length(self, body):
++        if self.method == 'GET' and body is None:
++            return
++
+         self.headers['Content-Length'] = '0'
+         if hasattr(body, 'seek') and hasattr(body, 'tell'):
+             body.seek(0, 2)
+2026-10-23 17:35:51,474 - INFO - Grading answer for psf__requests-1142...
+2026-10-23 17:35:51,475 - INFO - report: {'psf__requests-1142': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': False, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': [], 'failure': ['test_requests.py::RequestsTestCase::test_no_content_length']}, 'PASS_TO_PASS': {'success': ['test_requests.py::RequestsTestCase::test_basic_building', 'test_requests.py::RequestsTestCase::test_entry_points', 'test_requests.py::RequestsTestCase::test_invalid_url', 'test_requests.py::RequestsTestCase::test_params_are_added_before_fragment', 'test_requests.py::RequestsTestCase::test_path_is_not_double_encoded'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for psf__requests-1142: resolved: False
+2026-10-23 17:35:51,476 - INFO - Attempting to stop container sweb.eval.psf__requests-1142.mana-five-psf-1142-8605ebe59414...
+2026-10-23 17:36:06,595 - INFO - Container sweb.eval.psf__requests-1142.mana-five-psf-1142-8605ebe59414 stopped successfully.
+2026-10-23 17:36:06,596 - INFO - Attempting to remove container sweb.eval.psf__requests-1142.mana-five-psf-1142-8605ebe59414...
+2026-10-23 17:36:06,636 - INFO - Container sweb.eval.psf__requests-1142.mana-five-psf-1142-8605ebe59414 removed successfully.

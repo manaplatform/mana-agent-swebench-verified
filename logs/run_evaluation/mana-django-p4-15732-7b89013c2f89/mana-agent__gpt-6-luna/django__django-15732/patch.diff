@@ -1,0 +1,61 @@
+diff --git a/django/db/backends/base/schema.py b/django/db/backends/base/schema.py
+index f2ca8c8df9..d5ec9b5318 100644
+--- a/django/db/backends/base/schema.py
++++ b/django/db/backends/base/schema.py
+@@ -527,12 +527,56 @@ class BaseDatabaseSchemaEditor:
+         news = {tuple(fields) for fields in new_unique_together}
+         # Deleted uniques
+         for fields in olds.difference(news):
++            if len(fields) == 1:
++                field = model._meta.get_field(fields[0])
++                if field.unique or field.primary_key:
++                    # A single-field unique_together constraint is redundant
++                    # when the field is already unique. If the constraint was
++                    # created before the field became unique, remove the
++                    # unique_together constraint by its generated name.
++                    columns = [field.column]
++                    name = self._create_index_name(
++                        model._meta.db_table, columns, suffix="_uniq"
++                    )
++                    meta_constraint_names = {
++                        constraint.name for constraint in model._meta.constraints
++                    }
++                    meta_index_names = {
++                        constraint.name for constraint in model._meta.indexes
++                    }
++                    constraint_names = self._constraint_names(
++                        model,
++                        columns,
++                        unique=True,
++                        exclude=meta_constraint_names | meta_index_names,
++                    )
++                    identifier_converter = (
++                        self.connection.introspection.identifier_converter
++                    )
++                    constraint_name = identifier_converter(name)
++                    constraint_names_by_normalized_name = {
++                        identifier_converter(name): name for name in constraint_names
++                    }
++                    if constraint_name in constraint_names_by_normalized_name and (
++                        field.primary_key
++                        or len(constraint_names_by_normalized_name) > 1
++                    ):
++                        self.execute(
++                            self._delete_constraint_sql(
++                                self.sql_delete_unique,
++                                model,
++                                constraint_names_by_normalized_name[constraint_name],
++                            )
++                        )
++                    continue
+             self._delete_composed_index(
+                 model, fields, {"unique": True}, self.sql_delete_unique
+             )
+         # Created uniques
+         for field_names in news.difference(olds):
+             fields = [model._meta.get_field(field) for field in field_names]
++            if len(fields) == 1 and (fields[0].unique or fields[0].primary_key):
++                continue
+             self.execute(self._create_unique_sql(model, fields))
+ 
+     def alter_index_together(self, model, old_index_together, new_index_together):

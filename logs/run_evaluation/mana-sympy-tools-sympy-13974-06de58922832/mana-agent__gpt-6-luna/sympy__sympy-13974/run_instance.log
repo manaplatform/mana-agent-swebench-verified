@@ -1,0 +1,118 @@
+2026-10-23 20:38:21,709 - INFO - Creating container for sympy__sympy-13974...
+2026-10-23 20:38:21,924 - INFO - Container for sympy__sympy-13974 created: fc1db4683af27f4e323ceead1f50db26f2f6dba29aa444b49a4d68a8706caffc
+2026-10-23 20:38:22,051 - INFO - Container for sympy__sympy-13974 started: fc1db4683af27f4e323ceead1f50db26f2f6dba29aa444b49a4d68a8706caffc
+2026-10-23 20:38:22,052 - INFO - Intermediate patch for sympy__sympy-13974 written to logs/run_evaluation/mana-sympy-tools-sympy-13974-06de58922832/mana-agent__gpt-6-luna/sympy__sympy-13974/patch.diff, now applying to container...
+2026-10-23 20:38:22,331 - INFO - >>>>> Applied Patch:
+Checking patch sympy/physics/quantum/tensorproduct.py...
+Applied patch sympy/physics/quantum/tensorproduct.py cleanly.
+
+2026-10-23 20:38:22,863 - INFO - Git diff before:
+diff --git a/sympy/physics/quantum/tensorproduct.py b/sympy/physics/quantum/tensorproduct.py
+index 9dd10d219..729292c8d 100644
+--- a/sympy/physics/quantum/tensorproduct.py
++++ b/sympy/physics/quantum/tensorproduct.py
+@@ -143,6 +143,9 @@ def flatten(cls, args):
+     def _eval_adjoint(self):
+         return TensorProduct(*[Dagger(i) for i in self.args])
+ 
++    def _eval_power(self, exp):
++        return TensorProduct(*[arg**exp for arg in self.args])
++
+     def _eval_rewrite(self, pattern, rule, **hints):
+         sargs = self.args
+         terms = [t._eval_rewrite(pattern, rule, **hints) for t in sargs]
+@@ -345,13 +348,22 @@ def tensor_product_simp_Mul(e):
+         return e
+ 
+ 
++def tensor_product_simp_Pow(e):
++    """Simplify a power of a TensorProduct."""
++    base = tensor_product_simp(e.base)
++    if isinstance(base, TensorProduct):
++        return TensorProduct(*[arg**e.exp for arg in base.args])
++    return base**e.exp
++
++
+ def tensor_product_simp(e, **hints):
+     """Try to simplify and combine TensorProducts.
+ 
+     In general this will try to pull expressions inside of ``TensorProducts``.
+-    It currently only works for relatively simple cases where the products have
+-    only scalars, raw ``TensorProducts``, not ``Add``, ``Pow``, ``Commutators``
+-    of ``TensorProducts``. It is best to see what it does by showing examples.
++    It currently only works for relatively simple cases where products have
++    only scalars and raw ``TensorProducts``. Sums, powers, commutators, and
++    anticommutators are handled recursively. It is best to see what it does by
++    showing examples.
+ 
+     Examples
+     ========
+@@ -382,7 +394,7 @@ def tensor_product_simp(e, **hints):
+     if isinstance(e, Add):
+         return Add(*[tensor_product_simp(arg) for arg in e.args])
+     elif isinstance(e, Pow):
+-        return tensor_product_simp(e.base) ** e.exp
++        return tensor_product_simp_Pow(e)
+     elif isinstance(e, Mul):
+         return tensor_product_simp_Mul(e)
+     elif isinstance(e, Commutator):
+2026-10-23 20:38:22,863 - INFO - Eval script for sympy__sympy-13974 written to logs/run_evaluation/mana-sympy-tools-sympy-13974-06de58922832/mana-agent__gpt-6-luna/sympy__sympy-13974/eval.sh; copying to container...
+2026-10-23 20:38:32,105 - INFO - Test runtime: 9.19 seconds
+2026-10-23 20:38:32,105 - INFO - Test output for sympy__sympy-13974 written to logs/run_evaluation/mana-sympy-tools-sympy-13974-06de58922832/mana-agent__gpt-6-luna/sympy__sympy-13974/test_output.txt
+2026-10-23 20:38:32,300 - INFO - Git diff after:
+diff --git a/sympy/physics/quantum/tensorproduct.py b/sympy/physics/quantum/tensorproduct.py
+index 9dd10d219..729292c8d 100644
+--- a/sympy/physics/quantum/tensorproduct.py
++++ b/sympy/physics/quantum/tensorproduct.py
+@@ -143,6 +143,9 @@ def flatten(cls, args):
+     def _eval_adjoint(self):
+         return TensorProduct(*[Dagger(i) for i in self.args])
+ 
++    def _eval_power(self, exp):
++        return TensorProduct(*[arg**exp for arg in self.args])
++
+     def _eval_rewrite(self, pattern, rule, **hints):
+         sargs = self.args
+         terms = [t._eval_rewrite(pattern, rule, **hints) for t in sargs]
+@@ -345,13 +348,22 @@ def tensor_product_simp_Mul(e):
+         return e
+ 
+ 
++def tensor_product_simp_Pow(e):
++    """Simplify a power of a TensorProduct."""
++    base = tensor_product_simp(e.base)
++    if isinstance(base, TensorProduct):
++        return TensorProduct(*[arg**e.exp for arg in base.args])
++    return base**e.exp
++
++
+ def tensor_product_simp(e, **hints):
+     """Try to simplify and combine TensorProducts.
+ 
+     In general this will try to pull expressions inside of ``TensorProducts``.
+-    It currently only works for relatively simple cases where the products have
+-    only scalars, raw ``TensorProducts``, not ``Add``, ``Pow``, ``Commutators``
+-    of ``TensorProducts``. It is best to see what it does by showing examples.
++    It currently only works for relatively simple cases where products have
++    only scalars and raw ``TensorProducts``. Sums, powers, commutators, and
++    anticommutators are handled recursively. It is best to see what it does by
++    showing examples.
+ 
+     Examples
+     ========
+@@ -382,7 +394,7 @@ def tensor_product_simp(e, **hints):
+     if isinstance(e, Add):
+         return Add(*[tensor_product_simp(arg) for arg in e.args])
+     elif isinstance(e, Pow):
+-        return tensor_product_simp(e.base) ** e.exp
++        return tensor_product_simp_Pow(e)
+     elif isinstance(e, Mul):
+         return tensor_product_simp_Mul(e)
+     elif isinstance(e, Commutator):
+2026-10-23 20:38:32,301 - INFO - Grading answer for sympy__sympy-13974...
+2026-10-23 20:38:32,302 - INFO - report: {'sympy__sympy-13974': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': True, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': ['test_tensor_product_simp'], 'failure': []}, 'PASS_TO_PASS': {'success': ['test_tensor_product_abstract', 'test_tensor_product_expand', 'test_tensor_product_commutator', 'test_issue_5923'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for sympy__sympy-13974: resolved: True
+2026-10-23 20:38:32,302 - INFO - Attempting to stop container sweb.eval.sympy__sympy-13974.mana-sympy-tools-sympy-13974-06de58922832...
+2026-10-23 20:38:47,402 - INFO - Container sweb.eval.sympy__sympy-13974.mana-sympy-tools-sympy-13974-06de58922832 stopped successfully.
+2026-10-23 20:38:47,403 - INFO - Attempting to remove container sweb.eval.sympy__sympy-13974.mana-sympy-tools-sympy-13974-06de58922832...
+2026-10-23 20:38:47,433 - INFO - Container sweb.eval.sympy__sympy-13974.mana-sympy-tools-sympy-13974-06de58922832 removed successfully.

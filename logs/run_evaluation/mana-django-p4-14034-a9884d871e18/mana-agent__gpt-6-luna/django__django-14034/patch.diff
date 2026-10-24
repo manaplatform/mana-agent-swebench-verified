@@ -1,0 +1,43 @@
+diff --git a/django/forms/fields.py b/django/forms/fields.py
+index 65d6a9ec82..507ed70251 100644
+--- a/django/forms/fields.py
++++ b/django/forms/fields.py
+@@ -988,11 +988,19 @@ class MultiValueField(Field):
+     def __init__(self, fields, *, require_all_fields=True, **kwargs):
+         self.require_all_fields = require_all_fields
+         super().__init__(**kwargs)
+-        for f in fields:
++        subwidgets = getattr(self.widget, 'widgets', None)
++        if not self.require_all_fields and subwidgets is not None:
++            self.widget._required_by_subwidget = True
++        for i, f in enumerate(fields):
+             f.error_messages.setdefault('incomplete',
+                                         self.error_messages['incomplete'])
+             if self.disabled:
+                 f.disabled = True
++            if not self.require_all_fields and subwidgets is not None and i < len(subwidgets):
++                # The parent widget's required attribute is added to all
++                # subwidgets. Preserve the field-level required state on each
++                # subwidget so MultiWidget can apply it individually.
++                subwidgets[i].is_required = self.required and f.required
+             if self.require_all_fields:
+                 # Set 'required' to False on the individual fields, because the
+                 # required validation will be handled by MultiValueField, not
+diff --git a/django/forms/widgets.py b/django/forms/widgets.py
+index 00c19e2c55..ceb4f06c82 100644
+--- a/django/forms/widgets.py
++++ b/django/forms/widgets.py
+@@ -843,7 +843,12 @@ class MultiWidget(Widget):
+                 widget_attrs = final_attrs.copy()
+                 widget_attrs['id'] = '%s_%s' % (id_, i)
+             else:
+-                widget_attrs = final_attrs
++                widget_attrs = final_attrs.copy()
++            if getattr(self, '_required_by_subwidget', False) and 'required' in widget_attrs:
++                if widget.is_required and widget.use_required_attribute(widget_value):
++                    widget_attrs['required'] = True
++                else:
++                    widget_attrs.pop('required')
+             subwidgets.append(widget.get_context(widget_name, widget_value, widget_attrs)['widget'])
+         context['widget']['subwidgets'] = subwidgets
+         return context

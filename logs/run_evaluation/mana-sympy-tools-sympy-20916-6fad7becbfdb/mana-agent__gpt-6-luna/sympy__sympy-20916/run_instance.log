@@ -1,0 +1,46 @@
+2026-10-23 21:23:13,014 - INFO - Creating container for sympy__sympy-20916...
+2026-10-23 21:23:13,183 - INFO - Container for sympy__sympy-20916 created: b1648ddfa4612f03254bf9cbe2371955dff77d313776f1bd5b2e63afd2826d0b
+2026-10-23 21:23:13,300 - INFO - Container for sympy__sympy-20916 started: b1648ddfa4612f03254bf9cbe2371955dff77d313776f1bd5b2e63afd2826d0b
+2026-10-23 21:23:13,300 - INFO - Intermediate patch for sympy__sympy-20916 written to logs/run_evaluation/mana-sympy-tools-sympy-20916-6fad7becbfdb/mana-agent__gpt-6-luna/sympy__sympy-20916/patch.diff, now applying to container...
+2026-10-23 21:23:13,518 - INFO - >>>>> Applied Patch:
+Checking patch sympy/printing/conventions.py...
+Applied patch sympy/printing/conventions.py cleanly.
+
+2026-10-23 21:23:14,181 - INFO - Git diff before:
+diff --git a/sympy/printing/conventions.py b/sympy/printing/conventions.py
+index 9a3be6bbe9..67b0ab4645 100644
+--- a/sympy/printing/conventions.py
++++ b/sympy/printing/conventions.py
+@@ -7,7 +7,7 @@
+ from collections.abc import Iterable
+ from sympy import Derivative
+ 
+-_name_with_digits_p = re.compile(r'^([a-zA-Z]+)([0-9]+)$')
++_name_with_digits_p = re.compile(r'^(\w+)([0-9]+)$')
+ 
+ 
+ def split_super_sub(text):
+2026-10-23 21:23:14,181 - INFO - Eval script for sympy__sympy-20916 written to logs/run_evaluation/mana-sympy-tools-sympy-20916-6fad7becbfdb/mana-agent__gpt-6-luna/sympy__sympy-20916/eval.sh; copying to container...
+2026-10-23 21:23:22,011 - INFO - Test runtime: 7.77 seconds
+2026-10-23 21:23:22,011 - INFO - Test output for sympy__sympy-20916 written to logs/run_evaluation/mana-sympy-tools-sympy-20916-6fad7becbfdb/mana-agent__gpt-6-luna/sympy__sympy-20916/test_output.txt
+2026-10-23 21:23:22,125 - INFO - Git diff after:
+diff --git a/sympy/printing/conventions.py b/sympy/printing/conventions.py
+index 9a3be6bbe9..67b0ab4645 100644
+--- a/sympy/printing/conventions.py
++++ b/sympy/printing/conventions.py
+@@ -7,7 +7,7 @@
+ from collections.abc import Iterable
+ from sympy import Derivative
+ 
+-_name_with_digits_p = re.compile(r'^([a-zA-Z]+)([0-9]+)$')
++_name_with_digits_p = re.compile(r'^(\w+)([0-9]+)$')
+ 
+ 
+ def split_super_sub(text):
+2026-10-23 21:23:22,125 - INFO - Grading answer for sympy__sympy-20916...
+2026-10-23 21:23:22,126 - INFO - report: {'sympy__sympy-20916': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': False, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': [], 'failure': ['test_super_sub']}, 'PASS_TO_PASS': {'success': ['test_requires_partial'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for sympy__sympy-20916: resolved: False
+2026-10-23 21:23:22,127 - INFO - Attempting to stop container sweb.eval.sympy__sympy-20916.mana-sympy-tools-sympy-20916-6fad7becbfdb...
+2026-10-23 21:23:37,254 - INFO - Container sweb.eval.sympy__sympy-20916.mana-sympy-tools-sympy-20916-6fad7becbfdb stopped successfully.
+2026-10-23 21:23:37,254 - INFO - Attempting to remove container sweb.eval.sympy__sympy-20916.mana-sympy-tools-sympy-20916-6fad7becbfdb...
+2026-10-23 21:23:37,297 - INFO - Container sweb.eval.sympy__sympy-20916.mana-sympy-tools-sympy-20916-6fad7becbfdb removed successfully.
